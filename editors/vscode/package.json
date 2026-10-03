@@ -1,0 +1,35 @@
+{
+  "name": "keel-language",
+  "displayName": "Keel Language",
+  "description": "Syntax highlighting and basic editing support for the experimental Keel language.",
+  "version": "0.1.0",
+  "publisher": "jakecyr",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Programming Languages"],
+  "keywords": ["keel", "syntax", "highlighting"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jakecyr/keel.git",
+    "directory": "editors/vscode"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "keel",
+        "aliases": ["Keel", "keel"],
+        "extensions": [".keel"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "keel",
+        "scopeName": "source.keel",
+        "path": "./syntaxes/keel.tmLanguage.json"
+      }
+    ]
+  }
+}

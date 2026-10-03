@@ -44,6 +44,13 @@ export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 
 Use `--force` when reinstalling an updated source checkout, and `cargo uninstall keel` to remove a Cargo installation. If you have both installations, `command -v keel` shows which one your PATH selects.
 
+### VS Code syntax highlighting
+
+The [Keel language extension](editors/vscode/README.md) adds highlighting for
+`.keel` files, comment toggling, and bracket/quote pairing. Open `editors/vscode`
+in VS Code and press **F5** to preview it, or follow its README to package and
+install it locally.
+
 ## 2. Create your first project
 
 ```sh

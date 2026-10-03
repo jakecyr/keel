@@ -1,0 +1,101 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Keel",
+  "scopeName": "source.keel",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#functions" },
+    { "include": "#builtins" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#constants" },
+    { "include": "#calls" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.line.double-slash.keel",
+      "begin": "//",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.keel" }
+      },
+      "end": "$"
+    },
+    "strings": {
+      "name": "string.quoted.double.keel",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.keel" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.keel" }
+      },
+      "patterns": [
+        { "name": "constant.character.escape.keel", "match": "\\\\[nrt\"\\\\]" },
+        { "name": "invalid.illegal.escape.keel", "match": "\\\\." }
+      ]
+    },
+    "functions": {
+      "begin": "\\bfn\\b",
+      "beginCaptures": {
+        "0": { "name": "storage.type.function.keel" }
+      },
+      "end": "(?=\\()",
+      "patterns": [
+        { "include": "#comments" },
+        { "name": "entity.name.function.keel", "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b" }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "name": "support.function.keel",
+          "match": "\\b(?:text\\s*\\.\\s*(?:clone|concat|len|from_int|parse_int)|list\\s*\\.\\s*(?:new|clone|len|get|at|contains|push|set)|option\\s*\\.\\s*(?:some|none)|result\\s*\\.\\s*(?:ok|err)|io\\s*\\.\\s*println|http\\s*\\.\\s*(?:response|status|body|serve)|gen\\s*\\.\\s*int|hole)\\b"
+        },
+        {
+          "name": "support.constant.effect.keel",
+          "match": "\\b(?:io\\s*\\.\\s*stdout|net\\s*\\.\\s*listen)\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        { "name": "storage.modifier.keel", "match": "\\b(?:pub|read|edit|take)\\b" },
+        { "name": "storage.type.keel", "match": "\\b(?:let|var)\\b" },
+        { "name": "keyword.control.keel", "match": "\\b(?:if|else|while|for|in|return|match|assert)\\b" },
+        { "name": "keyword.other.keel", "match": "\\b(?:test|property|effects|requires|ensures)\\b" },
+        { "name": "variable.language.keel", "match": "\\bresult\\b" }
+      ]
+    },
+    "types": {
+      "name": "support.type.keel",
+      "match": "\\b(?:Int|Bool|Text|Unit|List|Option|Result)\\b"
+    },
+    "constants": {
+      "patterns": [
+        { "name": "constant.language.boolean.keel", "match": "\\b(?:true|false)\\b" },
+        { "name": "constant.language.variant.keel", "match": "\\b(?:Some|None|Ok|Err)\\b" },
+        { "name": "constant.numeric.integer.keel", "match": "\\b[0-9]+\\b" }
+      ]
+    },
+    "calls": {
+      "name": "entity.name.function.keel",
+      "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b(?=\\s*\\()"
+    },
+    "operators": {
+      "name": "keyword.operator.keel",
+      "match": "->|=>|==|!=|<=|>=|&&|\\|\\||[-+*/%<>=!]"
+    },
+    "punctuation": {
+      "patterns": [
+        { "name": "punctuation.section.block.keel", "match": "[{}]" },
+        { "name": "punctuation.section.brackets.keel", "match": "[\\[\\]]" },
+        { "name": "punctuation.section.parens.keel", "match": "[()]" },
+        { "name": "punctuation.separator.keel", "match": "[,:;.]" }
+      ]
+    }
+  }
+}
