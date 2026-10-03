@@ -121,6 +121,8 @@ pub fn atomic_write(
             file.set_permissions(permissions)?;
         }
         file.sync_all()?;
+        // Do not publish an executable while this process still holds its writer.
+        drop(file);
         fs::rename(&stage, path)?;
         Ok(())
     })();

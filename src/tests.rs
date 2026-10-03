@@ -368,6 +368,7 @@ fn native_text_lifetimes_under_address_and_undefined_behavior_sanitizers() {
     );
     let mut limits = options();
     limits.memory_mib = 0;
+    limits.timeout_ms = 10_000; // Allow sanitizer startup on hosted Intel macOS.
     let (state, failure) = run_worker(&binary, 0, &limits, None).unwrap();
     assert_eq!(state, "TESTED", "{failure:?}");
 }

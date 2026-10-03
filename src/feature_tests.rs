@@ -277,6 +277,9 @@ fn collections_and_results_under_native_memory_sanitizers() {
     );
     let mut limits = options();
     limits.memory_mib = 0;
+    // Sanitizer initialization on hosted Intel macOS is much slower than an
+    // ordinary native test. Keep the same assertions and a bounded deadline.
+    limits.timeout_ms = 10_000;
     for index in 0..program.tests.len() {
         let (state, failure) = run_worker(&binary, index, &limits, None).unwrap();
         assert_eq!(

@@ -15,6 +15,30 @@ pub struct Output {
     pub truncated: bool,
 }
 
+// Concurrent fork/exec can briefly inherit another thread's CLOEXEC writer.
+// Linux then rejects a freshly published executable with ETXTBSY until that
+// unrelated child execs. Retry only this pre-execution error, never test failures.
+// See https://github.com/rust-lang/rust/issues/114554.
+fn retry_executable_busy<T>(
+    mut spawn: impl FnMut() -> io::Result<T>,
+    deadline: Instant,
+) -> io::Result<T> {
+    loop {
+        match spawn() {
+            #[cfg(unix)]
+            Err(error)
+                if error.raw_os_error() == Some(libc::ETXTBSY) && Instant::now() < deadline =>
+            {
+                thread::sleep(
+                    Duration::from_millis(2)
+                        .min(deadline.saturating_duration_since(Instant::now())),
+                );
+            }
+            result => return result,
+        }
+    }
+}
+
 struct Guard(Child);
 impl Guard {
     fn kill_group(&mut self) {
@@ -110,9 +134,10 @@ pub fn capture(command: &mut Command, timeout_ms: u64, memory_mib: u64) -> Resul
             });
         }
     }
+    let deadline = Instant::now() + Duration::from_millis(timeout_ms);
+    let spawn_deadline = deadline.min(Instant::now() + Duration::from_millis(250));
     let mut child = Guard(
-        command
-            .spawn()
+        retry_executable_busy(|| command.spawn(), spawn_deadline)
             .map_err(|e| format!("cannot start subprocess: {e}"))?,
     );
     let stderr = child
@@ -120,7 +145,6 @@ pub fn capture(command: &mut Command, timeout_ms: u64, memory_mib: u64) -> Resul
         .stderr
         .take()
         .ok_or("missing subprocess error stream")?;
-    let deadline = Instant::now() + Duration::from_millis(timeout_ms);
     #[cfg(unix)]
     {
         use std::os::fd::AsRawFd;
@@ -167,4 +191,72 @@ pub fn capture(command: &mut Command, timeout_ms: u64, memory_mib: u64) -> Resul
         timed_out,
         truncated,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn retries_only_busy_executable_and_keeps_a_bounded_deadline() {
+        let mut attempts = 0;
+        let value = retry_executable_busy(
+            || {
+                attempts += 1;
+                if attempts < 3 {
+                    Err(io::Error::from_raw_os_error(libc::ETXTBSY))
+                } else {
+                    Ok(17)
+                }
+            },
+            Instant::now() + Duration::from_millis(250),
+        )
+        .unwrap();
+        assert_eq!(value, 17);
+        assert_eq!(attempts, 3);
+        let mut attempts = 0;
+        let error = retry_executable_busy::<()>(
+            || {
+                attempts += 1;
+                Err(io::Error::from_raw_os_error(libc::EACCES))
+            },
+            Instant::now() + Duration::from_millis(250),
+        )
+        .unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(libc::EACCES));
+        assert_eq!(attempts, 1);
+        let started = Instant::now();
+        let error = retry_executable_busy::<()>(
+            || Err(io::Error::from_raw_os_error(libc::ETXTBSY)),
+            started + Duration::from_millis(10),
+        )
+        .unwrap_err();
+        assert_eq!(error.raw_os_error(), Some(libc::ETXTBSY));
+        assert!(started.elapsed() < Duration::from_secs(1));
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn temporarily_busy_native_executable_runs_after_writer_closes() {
+        let temp = crate::Temp::new().unwrap();
+        let binary = temp.0.join("true");
+        crate::files::atomic_write(
+            &binary,
+            &std::fs::read("/bin/true").unwrap(),
+            Some(std::fs::metadata("/bin/true").unwrap().permissions()),
+        )
+        .unwrap();
+        let writer = std::fs::OpenOptions::new()
+            .write(true)
+            .open(&binary)
+            .unwrap();
+        let closer = thread::spawn(move || {
+            thread::sleep(Duration::from_millis(20));
+            drop(writer);
+        });
+        let result = capture(&mut Command::new(&binary), 1000, 256).unwrap();
+        closer.join().unwrap();
+        assert!(result.status.success());
+        assert!(!result.timed_out);
+    }
 }

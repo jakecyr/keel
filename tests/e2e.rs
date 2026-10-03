@@ -374,7 +374,8 @@ fn worker_timeouts_and_empty_suites_are_unknown_instead_of_passed() {
     );
     let started = Instant::now();
     let result = work.json(
-        &["test", "loop.keel", "--timeout-ms", "40", "--json"],
+        // This tests termination/continuation, not host startup performance.
+        &["test", "loop.keel", "--timeout-ms", "500", "--json"],
         false,
     );
     assert!(started.elapsed() < Duration::from_secs(10));
@@ -795,7 +796,11 @@ fn response(port: u16, fragments: &[&[u8]]) -> String {
             thread::sleep(Duration::from_millis(5));
         }
     }
-    stream.shutdown(Shutdown::Write).unwrap();
+    // A bounded server may already have closed after rejecting an oversized
+    // request. Still read and validate its full response below.
+    if let Err(error) = stream.shutdown(Shutdown::Write) {
+        assert_eq!(error.kind(), std::io::ErrorKind::NotConnected);
+    }
     let mut result = Vec::new();
     match stream.read_to_end(&mut result) {
         Ok(_) => (),
