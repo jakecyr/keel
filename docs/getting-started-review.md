@@ -6,11 +6,12 @@ plugin, or an internet search to learn the installed language version.
 
 ## The path a new developer should follow
 
-From a source checkout, install with `cargo install --path . --locked`; ensure
-Cargo's reported binary directory is on PATH. Source installation needs Rust and
-Cargo. Native Keel builds additionally need a supported POSIX host and a
-GCC/Clang-compatible C compiler. `keel doctor --json` checks that compiler; a
-working static checker alone does not establish that native builds can run.
+The primary README route is a checksum-verified prebuilt download piped to bash,
+with no checkout or Rust required. Add the printed installation directory to
+PATH. Contributors can instead use `cargo install --path . --locked`. Native
+Keel builds need a supported POSIX host and GCC/Clang-compatible C compiler.
+`keel doctor --json` checks that compiler; a working static checker alone does
+not establish that native builds can run.
 
 ```sh
 keel --version
@@ -84,6 +85,27 @@ collapsing into an unexplained `FAILED` line.
 
 ## Verification added in this review
 
+The install-to-init audit found and fixed:
+
+- The installer URL used `main`, although the repository's default is `master`.
+- Download instructions had no release artifacts behind them. Tag-triggered CI
+  now gates publication on all four platforms and checks real release downloads.
+- README installation started with cloning and Rust. Prebuilt installation is
+  now first, with prerequisites, PATH, upgrade, version pinning, and uninstall.
+- Project paths were mandatory even inside a project. `init`, `check`, `fmt`,
+  `lint`, `build`, `run`, and `test` now default to the current directory.
+- Every subcommand displayed global help. Focused help now explains defaults,
+  examples, permissions, and evidence states; missing manifests suggest `init`.
+- Plain diagnostics omitted the filename; formatting reports hid affected paths.
+- A root syntax/semantics tour was missing. `LANGUAGE.md` now contains four
+  runnable examples tested with both engines and links to the detailed reference.
+
+The expanded CI matrix also exposed a Linux executable-publication/fork race,
+an HTTP test's already-closed-socket assumption, and sanitizer startup timing on
+Intel macOS. Launch retries are limited to pre-execution ETXTBSY, never program
+failures. Timeout tests still assert that hung work becomes UNKNOWN; sanitizer
+tests retain all assertions with a separate bounded instrumentation budget.
+
 `tests/agent_workflow.rs` drives the public installed-style executable in isolated
 temporary directories. It covers:
 
@@ -103,8 +125,8 @@ external compiler or repository tooling. It is not a network sandbox or a formal
 proof that all possible command paths are offline.
 
 The repository includes an offline-tested release-download installer and CI
-archive/checksum packaging. Downloads still require published release assets;
-this implementation did not publish them. Future distribution work includes
+archive/checksum packaging. Published assets and their source tags are listed on
+the [release page](https://github.com/jakecyr/keel/releases). Future distribution work includes
 signed release artifacts, broader platform validation, rollback instructions,
 protocol compatibility tests across versions, and editor integrations. The
 current source installation and local agent CLI can be useful before those

@@ -14,10 +14,11 @@ python3 -m unittest discover -s benchmarks -p 'test_*.py'
 python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 ```
 
-The Rust suite has 50 unit/audit/tooling tests, 10 developer/agent-workflow
+The macOS Rust suite has 52 unit/audit/tooling tests, 11 developer/agent-workflow
 integration tests, and 19 CLI/native/HTTP end-to-end tests. Many are table-driven
-and exercise multiple programs. The Python suites have 38 benchmark-methodology
-tests and 16 offline installer tests.
+and exercise multiple programs. Linux adds a real busy-executable regression
+and an address-space-limit integration test. The Python suites have 38
+benchmark-methodology tests and 17 offline installer tests.
 
 Coverage includes:
 
@@ -45,10 +46,11 @@ Coverage includes:
   missing evidence, and refusal to turn UNKNOWN economics into a passing result.
 
 Linux/macOS GitHub Actions configuration is in
-[ci.yml](../.github/workflows/ci.yml). Local checks do not establish that remote CI
-has run; no GitHub run or release was performed during this implementation.
-Linux memory enforcement is configured through RLIMIT_AS; it has not been
-validated on Linux by this local macOS run. macOS worker memory is not enforced.
+[ci.yml](../.github/workflows/ci.yml), covering both ARM64 and x86_64. Remote
+results are retained in [Actions](https://github.com/jakecyr/keel/actions).
+Linux memory enforcement is tested through RLIMIT_AS; macOS worker memory is not
+enforced. Tag workflows publish only after validation and then test the actual
+downloaded release's first-project flow on all four platforms.
 
 ## Example projects and installation
 
@@ -66,10 +68,9 @@ integration suite. `examples/holes.keel` deliberately reports BLOCKED and
 `examples/counterexample.keel` deliberately fails; their nonzero exits are
 expected and regression-tested.
 
-The installer tests are offline fixture tests, not downloads from a published
-release. CI packages archives and checksums but does not publish them. The source
-installation smoke uses a temporary Cargo prefix, leaving the user's normal
-installation and shell configuration untouched.
+The Python installer tests are offline fixtures; the tag workflow separately
+checks actual published downloads. Source/download installation smoke tests use
+temporary prefixes, leaving normal installations and shell profiles untouched.
 
 ## Measured performance and agent trials
 

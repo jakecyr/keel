@@ -31,8 +31,10 @@
   ],
   "local_validation_platform": "macOS ARM64",
   "ci_configured_platforms": ["Linux", "macOS"],
-  "remote_ci_executed_by_this_session": false,
-  "release_published_by_this_session": false,
+  "remote_ci_executed_by_this_session": true,
+  "release_published_by_this_session": true,
+  "experimental_release": "https://github.com/jakecyr/keel/releases/tag/v0.1.0",
+  "ci_evidence": "https://github.com/jakecyr/keel/actions/runs/37092412707",
   "efficiency_target": {
     "required_cost_reduction": 0.25,
     "status": "UNKNOWN",
