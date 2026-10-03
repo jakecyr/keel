@@ -14,6 +14,8 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
+#include <fcntl.h>
+#include <poll.h>
 
 typedef struct { const char *ptr; size_t len; bool owned; } KText;
 static bool k_has_value = false;
@@ -126,9 +128,21 @@ static KText k_body(KText response) {
     for (size_t i=0; i+4<=response.len; i++) if (memcmp(response.ptr+i,"\r\n\r\n",4)==0) return k_clone((KText){response.ptr+i+4,response.len-i-4,false});
     return k_alloc(0);
 }
+/* Shared bounded host helpers are defined in stdlib.c. */
+static int64_t k_millis(void);
+static bool k_wait_fd(int fd, short events, int64_t deadline);
+static bool k_utf8(KText text);
 static bool k_send_all(int socket, KText data) {
     size_t sent = 0;
-    while (sent < data.len) { ssize_t n = send(socket,data.ptr+sent,data.len-sent,0); if (n<0 && errno==EINTR) continue; if (n<=0) return false; sent += (size_t)n; } return true;
+    int64_t deadline = k_millis() + 2000;
+    while (sent < data.len) {
+        if (!k_wait_fd(socket, POLLOUT, deadline)) return false;
+        ssize_t n = send(socket, data.ptr + sent, data.len - sent, 0);
+        if (n < 0 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)) continue;
+        if (n <= 0) return false;
+        sent += (size_t)n;
+    }
+    return true;
 }
 static void k_serve(int64_t port, KText (*handler)(KText)) {
     if (port < 1 || port > 65535) k_fail("invalid_port",0);
@@ -142,11 +156,14 @@ static void k_serve(int64_t port, KText (*handler)(KText)) {
     fprintf(stderr,"Keel listening on http://127.0.0.1:%" PRId64 "\n",port); fflush(stderr);
     for (;;) {
         int client = accept(server,NULL,NULL); if (client<0) { if(errno==EINTR) continue; close(server); k_fail("accept_failed",0); }
-        struct timeval timeout = {2,0}; setsockopt(client,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout)); setsockopt(client,SOL_SOCKET,SO_SNDTIMEO,&timeout,sizeof(timeout));
+        int flags = fcntl(client, F_GETFL, 0);
+        if (flags < 0 || fcntl(client, F_SETFL, flags | O_NONBLOCK) < 0) { close(client); continue; }
+        int64_t deadline = k_millis() + 2000;
         char request[16385]; size_t used=0; bool complete=false;
         while (used < sizeof(request)-1) {
+            if (!k_wait_fd(client, POLLIN, deadline)) break;
             ssize_t n=recv(client,request+used,sizeof(request)-1-used,0);
-            if(n<0 && errno==EINTR) continue;
+            if(n<0 && (errno==EINTR || errno==EAGAIN || errno==EWOULDBLOCK)) continue;
             if(n<=0) break;
             if(memchr(request+used,0,(size_t)n)) break;
             used+=(size_t)n; request[used]=0;
@@ -158,6 +175,14 @@ static void k_serve(int64_t port, KText (*handler)(KText)) {
             char *space=memchr(request,' ',used); char *line=strstr(request,"\r\n");
             char *end=space ? memchr(space+1,' ',used-(size_t)(space+1-request)) : NULL;
             bool valid=space && end && line && end<line && end>space+1 && space[1]=='/' && (size_t)(line-end)==9 && (!memcmp(end+1,"HTTP/1.1",8) || !memcmp(end+1,"HTTP/1.0",8));
+            if (valid) {
+                KText target = {space + 1, (size_t)(end - space - 1), false};
+                valid = k_utf8(target);
+                for (size_t i = 0; i < target.len; i++) {
+                    unsigned char c = (unsigned char)target.ptr[i];
+                    if (c <= 32 || c == 127 || c == '#') valid = false;
+                }
+            }
             if(!valid) response=k_response(400,(KText){"bad request\n",12,false});
             else if(space-request!=3 || memcmp(request,"GET",3)) response=k_response(405,(KText){"GET only\n",9,false});
             else { char *query=memchr(space+1,'?',(size_t)(end-space-1)); if(query) end=query; response=handler((KText){space+1,(size_t)(end-space-1),false}); }

@@ -792,9 +792,15 @@ fn execute() -> Result<i32> {
             return Err("usage: keel api BUILTIN [--json]".into());
         }
         let name = &args[1];
-        if name == "parallel.map" || name == "http.serve" || name == "http.serve_app" {
+        if name == "parallel.map"
+            || name == "http.serve"
+            || name == "http.serve_app"
+            || name == "http.serve_api"
+        {
             let value = if name == "parallel.map" {
                 json!({"name":name,"parameters":[["ListInt","Read"],["named pure fn(Int) -> Int","Function"]],"result":"ListInt","effects":[],"trusted_host_adapter":true,"max_workers":4})
+            } else if name == "http.serve_api" {
+                json!({"name":name,"parameters":[["Int","Value"],["Text","Read"],["named fn(read Text, read Text, read Text, read Text) -> Text","Function"]],"result":"Unit","effects":["net.listen","fs.read","handler effects"],"trusted_host_adapter":true,"static_fallback":"GET/HEAD after handler returns 404; empty root disables files","request":"method, raw target including query, CRLF headers, UTF-8 body"})
             } else if name == "http.serve_app" {
                 json!({"name":name,"parameters":[["Int","Value"],["Text","Read"],["named fn(read Text, read Text, read Text) -> Text","Function"]],"result":"Unit","effects":["net.listen","fs.read","handler effects"],"trusted_host_adapter":true,"static_fallback":"GET/HEAD after handler returns 404; empty root disables files","request":"method, path without query, UTF-8 body"})
             } else {

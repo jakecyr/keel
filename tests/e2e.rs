@@ -891,3 +891,58 @@ fn native_web_project_handles_fragmentation_invalid_requests_and_permissions() {
     let final_response = response(port, &[b"GET /health HTTP/1.0\r\n\r\n"]);
     assert!(final_response.ends_with("ok\n"));
 }
+
+#[test]
+fn all_application_examples_check_test_both_engines_and_build_offline() {
+    let work = Workspace::new();
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("examples");
+    // Intentionally failing teaching fixtures are covered separately with their
+    // required FAILED/BLOCKED outcomes. No live API calls or game workers launch here.
+    let projects = [
+        ("ownership.keel", true),
+        ("collections.keel", true),
+        ("web_server.keel", true),
+        ("stdlib.keel", true),
+        ("web", true),
+        ("http_app", true),
+        ("catalog_api", true),
+        ("jev", true),
+        ("evolving_arena", true),
+        ("jev_pong", true),
+        ("evolving_arena/worker-blue.json", true),
+        ("evolving_arena/worker-red.json", true),
+        ("jev_pong/left-worker.json", false),
+        ("jev_pong/right-worker.json", false),
+    ];
+    for (index, (project, has_tests)) in projects.iter().enumerate() {
+        let path = root.join(project);
+        let path = path.to_str().unwrap();
+        let checked = work.json(&["check", path, "--json"], true);
+        assert_eq!(checked["status"], "CHECKED", "{project}: {checked}");
+        // Some worker manifests deliberately contain no tests; build them, but
+        // do not turn empty-suite UNKNOWN into successful testing evidence.
+        if *has_tests {
+            let tested = work.json(
+                &["test", path, "--engine", "both", "--cases", "30", "--json"],
+                true,
+            );
+            assert_eq!(tested["status"], "TESTED", "{project}: {tested}");
+        }
+        let output = work.path(&format!("example-{index}"));
+        work.json(
+            &["build", path, "-o", output.to_str().unwrap(), "--json"],
+            true,
+        );
+    }
+    for name in [
+        "http.serve_api",
+        "http.path",
+        "http.query",
+        "http.header",
+        "json.set",
+        "json.array_len",
+    ] {
+        let api = work.json(&["api", name, "--json"], true);
+        assert_eq!(api["name"], name);
+    }
+}

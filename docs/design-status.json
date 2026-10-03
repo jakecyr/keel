@@ -19,7 +19,10 @@
     "bounded HTTP/TCP/UDP clients and host-dependent WebSocket exchange",
     "scoped pure integer parallel map with up to four pthread workers",
     "sequential localhost static-file and JSON API application host",
-    "atomic text writes, monotonic clock and owned background process handles"
+    "atomic text writes, monotonic clock and owned background process handles",
+    "bounded request header/query extraction and four-argument API handlers",
+    "validated existing-location JSON replacement and root array counting",
+    "total I/O deadlines for both localhost HTTP hosts"
   ],
   "remaining_original_design_work": [
     "nominal records and user-defined tagged unions",

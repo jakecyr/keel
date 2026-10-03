@@ -312,6 +312,21 @@ impl Evaluator<'_> {
                 values[0].text()?,
                 values[1].text()?,
             )),
+            "json.set" => Val::TextResult(crate::stdlib::json_set(
+                values[0].text()?,
+                values[1].text()?,
+                values[2].text()?,
+            )),
+            "json.array_len" => Val::Result(crate::stdlib::json_array_len(values[0].text()?)),
+            "http.path" => Val::Text(crate::stdlib::http_path(values[0].text()?)),
+            "http.query" => Val::TextResult(crate::stdlib::http_query(
+                values[0].text()?,
+                values[1].text()?,
+            )),
+            "http.header" => Val::TextResult(crate::stdlib::http_header(
+                values[0].text()?,
+                values[1].text()?,
+            )),
             "json.int" => Val::Result(
                 crate::stdlib::json_get(values[0].text()?, values[1].text()?)
                     .and_then(|s| parse_integer(&s)),
@@ -400,7 +415,7 @@ impl Evaluator<'_> {
                 state: "BLOCKED",
             });
         }
-        if name == "http.serve_app" {
+        if name == "http.serve_app" || name == "http.serve_api" {
             let port = self.expr(&args[0], env)?.integer()?;
             self.expr(&args[1], env)?;
             if !(1..=65535).contains(&port) {

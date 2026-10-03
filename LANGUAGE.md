@@ -216,3 +216,36 @@ General records/unions/generics, modules/packages, shared ownership, closures,
 general structured tasks/channels, capability simulation, formal proofs, and Cranelift are
 not supported. Native compilation currently lowers through C and your system C
 compiler. The HTTP host is an example, not a production web framework.
+
+
+## JSON transformation and request metadata
+
+`json.set` returns a new document, replacing an existing JSON Pointer location.
+Other values retain their exact source spelling. `json.array_len` validates a
+root array and returns its length. Both report invalid inputs with Result.
+
+```keel
+fn main() {}
+
+test "replace a price while retaining decimal metadata" {
+    let source = "[{\"price_cents\":199,\"score\":0.9900}]"
+    match json.set(source, "/0/price_cents", "180") {
+        Ok(updated) => { assert updated == "[{\"price_cents\":180,\"score\":0.9900}]" }
+        Err(_error) => { assert false }
+    }
+    match json.array_len(source) {
+        Ok(count) => { assert count == 1 }
+        Err(_error) => { assert false }
+    }
+    match http.query("/api/discount?percent=%31%30", "percent") {
+        Ok(percent) => { assert percent == "10" }
+        Err(_error) => { assert false }
+    }
+}
+```
+
+`http.serve_api(port, root, handler)` supplies borrowed method, raw target,
+CRLF headers, and body to a named four-Text handler. `http.path` returns the
+path before `?`; `http.query` and `http.header` return text results and reject
+duplicate matches. Read [the catalog example](examples/catalog_api/README.md)
+for a complete API and [the standard library](docs/stdlib.md) for limits.

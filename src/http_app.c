@@ -33,9 +33,98 @@ static bool k_app_token(unsigned char c) {
   return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
          (c >= '0' && c <= '9') || (c && strchr("!#$%&'*+-.^_`|~", c));
 }
+static KText k_http_path(KText target) {
+  const char *query = memchr(target.ptr, '?', target.len);
+  return k_clone((KText){target.ptr, query ? (size_t)(query - target.ptr) : target.len, false});
+}
+static bool k_http_name_equal(KText a, KText b) {
+  if (a.len != b.len) return false;
+  for (size_t i = 0; i < a.len; i++) {
+    unsigned char x = (unsigned char)a.ptr[i], y = (unsigned char)b.ptr[i];
+    if (x >= 'A' && x <= 'Z') x += 'a' - 'A';
+    if (y >= 'A' && y <= 'Z') y += 'a' - 'A';
+    if (x != y) return false;
+  }
+  return true;
+}
+static KTextResult k_http_header(KText headers, KText name) {
+  if (headers.len > K_APP_HEADERS || !name.len || !k_utf8(headers)) return k_text_error("invalid HTTP headers");
+  for (size_t i = 0; i < name.len; i++) if (!k_app_token((unsigned char)name.ptr[i])) return k_text_error("invalid HTTP headers");
+  KText found = {0}; size_t count = 0;
+  for (size_t p = 0; p < headers.len;) {
+    size_t end = p;
+    while (end + 1 < headers.len && memcmp(headers.ptr + end, "\r\n", 2)) end++;
+    if (end + 1 >= headers.len) return k_text_error("invalid HTTP headers");
+    size_t colon = p;
+    while (colon < end && headers.ptr[colon] != ':') {
+      if (!k_app_token((unsigned char)headers.ptr[colon])) return k_text_error("invalid HTTP headers");
+      colon++;
+    }
+    if (colon == p || colon == end) return k_text_error("invalid HTTP headers");
+    size_t a = colon + 1, b = end;
+    for (size_t i = a; i < b; i++) {
+      unsigned char c = (unsigned char)headers.ptr[i];
+      if ((c < 32 && c != '\t') || c == 127) return k_text_error("invalid HTTP headers");
+    }
+    while (a < b && (headers.ptr[a] == ' ' || headers.ptr[a] == '\t')) a++;
+    while (b > a && (headers.ptr[b - 1] == ' ' || headers.ptr[b - 1] == '\t')) b--;
+    if (k_http_name_equal(k_slice(headers, p, colon), name)) { count++; found = k_slice(headers, a, b); }
+    p = end + 2;
+  }
+  if (count > 1) return k_text_error("duplicate HTTP header");
+  return count ? k_text_ok(k_clone(found)) : k_text_error("HTTP header not found");
+}
+static KTextResult k_form_decode(KText input) {
+  KText out = k_alloc(input.len); size_t n = 0;
+  for (size_t i = 0; i < input.len; i++) {
+    unsigned char c = (unsigned char)input.ptr[i];
+    if (c == '+') c = ' ';
+    else if (c == '%') {
+      if (i + 2 >= input.len) goto invalid;
+      int a = k_hex(input.ptr[i + 1]), b = k_hex(input.ptr[i + 2]);
+      if (a < 0 || b < 0) goto invalid;
+      c = (unsigned char)(a * 16 + b); i += 2;
+    }
+    if (c < 32 || c == 127) goto invalid;
+    ((char *)out.ptr)[n++] = (char)c;
+  }
+  out.len = n; ((char *)out.ptr)[n] = 0;
+  if (!k_utf8(out)) goto invalid;
+  return k_text_ok(out);
+invalid:
+  k_drop(&out); return k_text_error("invalid HTTP query");
+}
+static KTextResult k_http_query(KText target, KText name) {
+  if (target.len > 4096 || !target.len || target.ptr[0] != '/' || !name.len || name.len > 4096 || !k_utf8(target)) return k_text_error("invalid HTTP query");
+  size_t query = target.len;
+  for (size_t i = 0; i < target.len; i++) {
+    unsigned char c = (unsigned char)target.ptr[i];
+    if (c <= 32 || c == 127 || c == '#') return k_text_error("invalid HTTP query");
+    if (c == '?' && query == target.len) query = i;
+  }
+  KText found = {0}; size_t count = 0;
+  for (size_t p = query < target.len ? query + 1 : target.len; p < target.len;) {
+    size_t end = p;
+    while (end < target.len && target.ptr[end] != '&') end++;
+    if (end == p) { p++; continue; }
+    size_t eq = p;
+    while (eq < end && target.ptr[eq] != '=') eq++;
+    KTextResult key = k_form_decode(k_slice(target, p, eq));
+    KTextResult value = k_form_decode(k_slice(target, eq < end ? eq + 1 : end, end));
+    if (!key.ok || !value.ok) {
+      k_drop(&key); k_drop(&value); k_drop(&found); return k_text_error("invalid HTTP query");
+    }
+    if (k_equal(key.value, name)) { count++; k_drop(&found); found = k_move(&value.value); }
+    k_drop(&key); k_drop(&value);
+    p = end < target.len ? end + 1 : end;
+  }
+  if (count == 1) return k_text_ok(found);
+  k_drop(&found);
+  return k_text_error(count ? "duplicate HTTP query parameter" : "HTTP query parameter not found");
+}
 /* Parse exactly one framed request. Unsupported transfer encodings and duplicate
  * lengths are rejected rather than guessing which framing the client intended. */
-static int k_app_request(int fd, int64_t port, KText *storage, KText *method, KText *path, KText *body) {
+static int k_app_request(int fd, int64_t port, KText *storage, KText *method, KText *path, KText *target, KText *headers, KText *body) {
   *storage = k_alloc(K_APP_HEADERS + K_STD_LIMIT);
   char *data = (char *)storage->ptr;
   size_t used = 0, header_size = 0, body_size = 0;
@@ -67,7 +156,9 @@ static int k_app_request(int fd, int64_t port, KText *storage, KText *method, KT
   *method = (KText){data, (size_t)(first - data), false};
   char *query = memchr(first + 1, '?', (size_t)(second - first - 1));
   *path = (KText){first + 1, (size_t)((query ? query : second) - first - 1), false};
-  if (!k_utf8(*path)) return 400;
+  *target = (KText){first + 1, (size_t)(second - first - 1), false};
+  *headers = (KText){line + 2, (size_t)((data + header_size - 2) - (line + 2)), false};
+  if (!k_utf8(*target) || !k_utf8(*headers) || memchr(target->ptr, '#', target->len)) return 400;
   bool has_length = false, has_host = false, has_origin = false, has_site = false;
   KText host = {0}, origin = {0}, site = {0};
   char *cursor = line + 2, *headers_end = data + header_size - 2;
@@ -217,7 +308,7 @@ static bool k_app_static(int client, int root, KText path, bool head) {
   close(fd);
   return true;
 }
-static void k_serve_app(int64_t port, KText static_root, KText (*handler)(KText, KText, KText)) {
+static void k_serve_application(int64_t port, KText static_root, KText (*handler)(KText, KText, KText), KText (*api_handler)(KText, KText, KText, KText)) {
   if (port < 1 || port > 65535) k_fail("invalid_port", 0);
   char permission[64]; snprintf(permission, sizeof(permission), "127.0.0.1:%" PRId64, port);
   if (!k_net_permission || strcmp(permission, k_net_permission)) k_fail("permission_denied_net", 0);
@@ -243,16 +334,23 @@ static void k_serve_app(int64_t port, KText static_root, KText (*handler)(KText,
     if (client < 0) { if (errno == EINTR) continue; k_fail("accept_failed", 0); }
     int flags = fcntl(client, F_GETFL, 0);
     if (flags < 0 || fcntl(client, F_SETFL, flags | O_NONBLOCK) < 0) { close(client); continue; }
-    KText storage = {0}, method = {0}, path = {0}, body = {0};
-    int error = k_app_request(client, port, &storage, &method, &path, &body);
+    KText storage = {0}, method = {0}, path = {0}, target = {0}, headers = {0}, body = {0};
+    int error = k_app_request(client, port, &storage, &method, &path, &target, &headers, &body);
     bool head = k_equal(method, K_TEXT("HEAD"));
     if (error) k_app_error(client, error, "invalid or unsupported request\n", head);
     else {
-      KText response = handler(method, path, body);
+      KText response = api_handler ? api_handler(method, target, headers, body) : handler(method, path, body);
       if (!(k_status(response) == 404 && (head || k_equal(method, K_TEXT("GET"))) && k_app_static(client, root, path, head)))
         k_app_response(client, response, head, k_millis() + 2000);
       k_drop(&response);
     }
     k_drop(&storage); close(client);
   }
+}
+
+static void k_serve_app(int64_t port, KText root, KText (*handler)(KText, KText, KText)) {
+  k_serve_application(port, root, handler, NULL);
+}
+static void k_serve_api(int64_t port, KText root, KText (*handler)(KText, KText, KText, KText)) {
+  k_serve_application(port, root, NULL, handler);
 }

@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "name": "catalog-api",
+  "entry": "main.keel",
+  "sources": ["routes.keel"],
+  "tests": ["tests.keel"]
+}

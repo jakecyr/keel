@@ -104,13 +104,36 @@ fn exchange_raw(port: u16, parts: &[&[u8]]) -> Vec<u8> {
     socket
         .set_read_timeout(Some(Duration::from_secs(5)))
         .unwrap();
+    socket
+        .set_write_timeout(Some(Duration::from_secs(5)))
+        .unwrap();
     for part in parts {
-        socket.write_all(part).unwrap();
+        if let Err(error) = socket.write_all(part) {
+            // A malformed request can be rejected before its remaining chunks
+            // arrive. Still validate the actual response, including for success cases.
+            assert!(
+                matches!(
+                    error.kind(),
+                    std::io::ErrorKind::BrokenPipe | std::io::ErrorKind::ConnectionReset
+                ),
+                "{error}"
+            );
+            break;
+        }
         thread::sleep(Duration::from_millis(2));
     }
-    socket.shutdown(std::net::Shutdown::Write).unwrap();
+    if let Err(error) = socket.shutdown(std::net::Shutdown::Write) {
+        assert_eq!(error.kind(), std::io::ErrorKind::NotConnected);
+    }
     let mut response = Vec::new();
-    socket.read_to_end(&mut response).unwrap();
+    if let Err(error) = socket.read_to_end(&mut response) {
+        assert_eq!(error.kind(), std::io::ErrorKind::ConnectionReset);
+    }
+    assert!(
+        !response.is_empty(),
+        "server sent no response to {:?}",
+        parts.concat()
+    );
     response
 }
 fn body(response: &[u8]) -> &[u8] {
@@ -186,14 +209,17 @@ fn static_assets_and_json_endpoints_under_sanitizers() {
     );
     let deadline = Instant::now() + Duration::from_secs(5);
     loop {
-        if TcpStream::connect(("127.0.0.1", port)).is_ok() {
-            break;
-        }
         assert!(
             child.0.try_wait().unwrap().is_none(),
             "{}",
             fs::read_to_string(&errors).unwrap()
         );
+        if fs::read_to_string(&errors)
+            .unwrap()
+            .contains("listening on")
+        {
+            break;
+        }
         assert!(Instant::now() < deadline, "server startup timed out");
         thread::sleep(Duration::from_millis(10));
     }
@@ -342,4 +368,256 @@ fn main() effects {{net.connect}} {{
         String::from_utf8_lossy(&output.stderr)
     );
     server.join().unwrap();
+}
+
+fn sanitized_server(source: &str, temp: &Temp) -> PathBuf {
+    let (p, a) = checked(source).unwrap();
+    let cpath = temp.0.join("host.c");
+    let binary = temp.0.join("host");
+    fs::write(&cpath, native::emit(&p, &a, false)).unwrap();
+    let output = Command::new(env::var("CC").unwrap_or_else(|_| "cc".into()))
+        .args([
+            "-std=c11",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+        ])
+        .arg(cpath)
+        .arg("-o")
+        .arg(&binary)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    binary
+}
+struct ObservedServer {
+    child: AppChild,
+    errors: PathBuf,
+}
+impl Drop for ObservedServer {
+    fn drop(&mut self) {
+        if thread::panicking() {
+            eprintln!(
+                "server status: {:?}; stderr: {}",
+                self.child.0.try_wait(),
+                fs::read_to_string(&self.errors).unwrap_or_default()
+            );
+        }
+    }
+}
+fn start_server(binary: &Path, port: u16, temp: &Temp) -> ObservedServer {
+    let errors = temp.0.join("stderr");
+    let mut child = AppChild(
+        Command::new(binary)
+            .arg(format!("--allow-net=127.0.0.1:{port}"))
+            .current_dir(&temp.0)
+            .env("ASAN_OPTIONS", "detect_leaks=0")
+            .stdout(Stdio::null())
+            .stderr(fs::File::create(&errors).unwrap())
+            .spawn()
+            .unwrap(),
+    );
+    let deadline = Instant::now() + Duration::from_secs(5);
+    loop {
+        assert!(
+            child.0.try_wait().unwrap().is_none(),
+            "{}",
+            fs::read_to_string(&errors).unwrap()
+        );
+        if fs::read_to_string(&errors)
+            .unwrap()
+            .contains("listening on")
+        {
+            break;
+        }
+        assert!(Instant::now() < deadline, "server startup timed out");
+        thread::sleep(Duration::from_millis(10));
+    }
+    ObservedServer { child, errors }
+}
+fn slow_request_is_bounded(port: u16) {
+    let mut socket = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    socket
+        .set_read_timeout(Some(Duration::from_secs(7)))
+        .unwrap();
+    socket.write_all(b"GET /").unwrap();
+    let mut writer = socket.try_clone().unwrap();
+    let trickle = thread::spawn(move || {
+        for _ in 0..40 {
+            thread::sleep(Duration::from_millis(100));
+            if writer.write_all(b"x").is_err() {
+                return;
+            }
+        }
+        let _ = writer.shutdown(std::net::Shutdown::Write);
+    });
+    let start = Instant::now();
+    let mut response = Vec::new();
+    let read = socket.read_to_end(&mut response);
+    if let Err(e) = read {
+        assert_eq!(e.kind(), std::io::ErrorKind::ConnectionReset);
+    }
+    let elapsed = start.elapsed();
+    trickle.join().unwrap();
+    assert!(
+        elapsed < Duration::from_millis(3500),
+        "slow client monopolized server for {elapsed:?}"
+    );
+    assert!(response.starts_with(b"HTTP/1.1 400") || response.starts_with(b"HTTP/1.1 408"));
+}
+
+#[test]
+fn catalog_example_real_http_and_adversarial_requests_under_sanitizers() {
+    let temp = Temp::new().unwrap();
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let source = format!(
+        "{}\n{}",
+        include_str!("../examples/catalog_api/main.keel").replace("8092", &port.to_string()),
+        include_str!("../examples/catalog_api/routes.keel")
+    );
+    let binary = sanitized_server(&source, &temp);
+    let denied = Command::new(&binary).output().unwrap();
+    assert!(String::from_utf8_lossy(&denied.stderr).contains("permission_denied_net"));
+    drop(listener);
+    let _child = start_server(&binary, port, &temp);
+    let data = "[{\"name\":\"tea 🍵\",\"price_cents\":199,\"score\":0.9900}]";
+    let header = format!(
+        "POST /api/discount?percent=%31%30 HTTP/1.1\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n",
+        data.len()
+    );
+    let response = exchange(
+        port,
+        &[
+            header.as_bytes(),
+            &data.as_bytes()[..10],
+            &data.as_bytes()[10..],
+        ],
+    );
+    assert!(
+        response.starts_with(b"HTTP/1.1 200"),
+        "{}",
+        String::from_utf8_lossy(&response)
+    );
+    assert_eq!(
+        body(&response),
+        "[{\"name\":\"tea 🍵\",\"price_cents\":180,\"score\":0.9900}]".as_bytes()
+    );
+    for (request, status) in [
+        (b"POST /api/discount?percent=10&percent=20 HTTP/1.1\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n[]".as_slice(), 400),
+        (b"POST /api/discount?percent=10 HTTP/1.1\r\nContent-Type: application/json\r\ncontent-type: text/plain\r\nContent-Length: 2\r\n\r\n[]", 400),
+        (b"GET /api/health?x=\xff HTTP/1.1\r\n\r\n", 400),
+        (b"GET /api/health HTTP/1.1\r\nX-Test: \xff\r\n\r\n", 400),
+        (b"GET /api/health#fragment HTTP/1.1\r\n\r\n", 400),
+        (b"POST /api/discount?percent=10 HTTP/1.1\r\nTransfer-Encoding: chunked\r\nContent-Length: 0\r\n\r\n", 400),
+        (b"POST /api/discount?percent=10 HTTP/1.1\r\nContent-Length: 0\r\nContent-Length: 0\r\n\r\n", 400),
+        (b"POST /api/discount?percent=10 HTTP/1.1\r\nContent-Length: 1048577\r\n\r\n", 413),
+        (b"POST /api/discount?percent=10 HTTP/1.1\r\nExpect: 100-continue\r\n\r\n", 417),
+    ] {
+        let response = exchange(port, &[request]);
+        assert!(response.starts_with(format!("HTTP/1.1 {status}").as_bytes()), "{}", String::from_utf8_lossy(&response));
+    }
+    slow_request_is_bounded(port);
+    assert!(exchange(port, &[b"GET /api/health HTTP/1.1\r\n\r\n"]).starts_with(b"HTTP/1.1 200"));
+    let stderr = fs::read_to_string(temp.0.join("stderr")).unwrap();
+    assert!(
+        !stderr.contains("Sanitizer") && !stderr.contains("runtime error:"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn legacy_host_rejects_invalid_text_and_bounds_trickle_clients() {
+    let temp = Temp::new().unwrap();
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let source = format!(
+        "fn route(path:read Text)->Text{{return http.response(200,path)}} fn main() effects{{net.listen}}{{http.serve({port},route)}}"
+    );
+    let binary = sanitized_server(&source, &temp);
+    drop(listener);
+    let _child = start_server(&binary, port, &temp);
+    for request in [
+        b"GET /\xff HTTP/1.1\r\n\r\n".as_slice(),
+        b"GET /x\t HTTP/1.1\r\n\r\n",
+        b"GET /x#fragment HTTP/1.1\r\n\r\n",
+    ] {
+        assert!(exchange_raw(port, &[request]).starts_with(b"HTTP/1.1 400"));
+    }
+    slow_request_is_bounded(port);
+    assert_eq!(
+        body(&exchange_raw(port, &[b"GET /ok HTTP/1.1\r\n\r\n"])),
+        b"/ok"
+    );
+    let stderr = fs::read_to_string(temp.0.join("stderr")).unwrap();
+    assert!(
+        !stderr.contains("Sanitizer") && !stderr.contains("runtime error:"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn response_backpressure_obeys_total_deadline_under_sanitizers() {
+    let temp = Temp::new().unwrap();
+    let cpath = temp.0.join("backpressure.c");
+    let binary = temp.0.join("backpressure");
+    let harness = r#"
+int main(void) {
+  int sockets[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets)) return 1;
+  int size = 1024;
+  if (setsockopt(sockets[0], SOL_SOCKET, SO_SNDBUF, &size, sizeof(size))) return 2;
+  int flags = fcntl(sockets[0], F_GETFL, 0);
+  if (flags < 0 || fcntl(sockets[0], F_SETFL, flags | O_NONBLOCK)) return 3;
+  KText payload = k_alloc(1024 * 1024);
+  memset((char *)payload.ptr, 'x', payload.len);
+  int64_t start = k_millis();
+  bool success = k_send_all(sockets[0], payload);
+  int64_t elapsed = k_millis() - start;
+  k_drop(&payload); close(sockets[0]); close(sockets[1]);
+  return !success && elapsed >= 1900 && elapsed < 3500 ? 0 : 4;
+}
+"#;
+    fs::write(
+        &cpath,
+        format!(
+            "{}\n{}\n{harness}",
+            include_str!("runtime.c"),
+            include_str!("stdlib.c")
+        ),
+    )
+    .unwrap();
+    let output = Command::new(env::var("CC").unwrap_or_else(|_| "cc".into()))
+        .args([
+            "-std=c11",
+            "-O1",
+            "-g",
+            "-fsanitize=address,undefined",
+            "-fno-omit-frame-pointer",
+            "-pthread",
+        ])
+        .arg(cpath)
+        .arg("-o")
+        .arg(&binary)
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    // ASan reserves a large virtual address range. Keep the execution deadline,
+    // but do not constrain its address space with the ordinary worker RLIMIT_AS.
+    let output = process::capture(&mut Command::new(binary), 6000, 0).unwrap();
+    assert!(
+        !output.timed_out && output.status.success(),
+        "{}",
+        output.stderr
+    );
+    assert!(!output.stderr.contains("Sanitizer") && !output.stderr.contains("runtime error:"));
 }

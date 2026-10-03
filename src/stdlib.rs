@@ -57,7 +57,7 @@ pub fn json_parse(source: &str) -> TextResult {
     raw(source, 0)?;
     Ok(source.into())
 }
-pub fn json_get(source: &str, pointer: &str) -> TextResult {
+fn json_select<'a>(source: &'a str, pointer: &str) -> Result<&'a str, String> {
     let mut value = raw(source, 0)?;
     if pointer.len() > LIMIT || (!pointer.is_empty() && !pointer.starts_with('/')) {
         return Err("invalid JSON pointer".into());
@@ -98,7 +98,29 @@ pub fn json_get(source: &str, pointer: &str) -> TextResult {
         }
         .ok_or("JSON path not found")?;
     }
-    Ok(value.get().into())
+    Ok(value.get())
+}
+pub fn json_get(source: &str, pointer: &str) -> TextResult {
+    json_select(source, pointer).map(str::to_owned)
+}
+pub fn json_set(source: &str, pointer: &str, replacement: &str) -> TextResult {
+    let selected = json_select(source, pointer)?;
+    raw(replacement, 0)?;
+    if source.len() - selected.len() + replacement.len() > LIMIT {
+        return Err("JSON output exceeds 1 MiB".into());
+    }
+    let start = selected.as_ptr() as usize - source.as_ptr() as usize;
+    let mut output = String::with_capacity(source.len() - selected.len() + replacement.len());
+    output.push_str(&source[..start]);
+    output.push_str(replacement);
+    output.push_str(&source[start + selected.len()..]);
+    raw(&output, 0)?;
+    Ok(output)
+}
+pub fn json_array_len(source: &str) -> Result<i64, String> {
+    raw(source, 0)?;
+    let array: Vec<&RawValue> = serde_json::from_str(source).map_err(|_| "expected JSON array")?;
+    Ok(array.len() as i64)
 }
 pub fn json_text(source: &str, path: &str) -> TextResult {
     serde_json::from_str::<String>(&json_get(source, path)?)
@@ -288,4 +310,93 @@ pub fn dotenv_get(source: &str, name: &str) -> TextResult {
         }
     }
     found.ok_or("dotenv key not found".into())
+}
+
+pub fn http_path(target: &str) -> String {
+    target
+        .split_once('?')
+        .map_or(target, |(path, _)| path)
+        .into()
+}
+fn http_token(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || b"!#$%&'*+-.^_`|~".contains(&byte)
+}
+pub fn http_header(headers: &str, name: &str) -> TextResult {
+    if headers.len() > 16384 || name.is_empty() || !name.bytes().all(http_token) {
+        return Err("invalid HTTP headers".into());
+    }
+    let mut found = None;
+    let mut count = 0;
+    let mut rest = headers;
+    while !rest.is_empty() {
+        let (line, tail) = rest.split_once("\r\n").ok_or("invalid HTTP headers")?;
+        rest = tail;
+        let (key, value) = line.split_once(':').ok_or("invalid HTTP headers")?;
+        if key.is_empty()
+            || !key.bytes().all(http_token)
+            || value.bytes().any(|b| (b < 32 && b != b'\t') || b == 127)
+        {
+            return Err("invalid HTTP headers".into());
+        }
+        if key.eq_ignore_ascii_case(name) {
+            count += 1;
+            found = Some(value.trim_matches([' ', '\t']).to_owned());
+        }
+    }
+    if count > 1 {
+        return Err("duplicate HTTP header".into());
+    }
+    found.ok_or("HTTP header not found".into())
+}
+fn form_decode(input: &str) -> TextResult {
+    let mut bytes = input.bytes();
+    let mut output = Vec::with_capacity(input.len());
+    while let Some(byte) = bytes.next() {
+        let decoded = match byte {
+            b'+' => b' ',
+            b'%' => {
+                let a = bytes.next().and_then(|b| (b as char).to_digit(16));
+                let b = bytes.next().and_then(|b| (b as char).to_digit(16));
+                match (a, b) {
+                    (Some(a), Some(b)) => (a * 16 + b) as u8,
+                    _ => return Err("invalid HTTP query".into()),
+                }
+            }
+            b => b,
+        };
+        if decoded < 32 || decoded == 127 {
+            return Err("invalid HTTP query".into());
+        }
+        output.push(decoded);
+    }
+    String::from_utf8(output).map_err(|_| "invalid HTTP query".into())
+}
+pub fn http_query(target: &str, name: &str) -> TextResult {
+    if target.len() > 4096
+        || !target.starts_with('/')
+        || target.contains('#')
+        || target.bytes().any(|b| b <= 32 || b == 127)
+        || name.is_empty()
+        || name.len() > 4096
+    {
+        return Err("invalid HTTP query".into());
+    }
+    let (_, query) = target
+        .split_once('?')
+        .ok_or("HTTP query parameter not found")?;
+    let mut found = None;
+    let mut count = 0;
+    for pair in query.split('&').filter(|pair| !pair.is_empty()) {
+        let (key, value) = pair.split_once('=').unwrap_or((pair, ""));
+        let key = form_decode(key)?;
+        let value = form_decode(value)?;
+        if key == name {
+            count += 1;
+            found = Some(value);
+        }
+    }
+    if count > 1 {
+        return Err("duplicate HTTP query parameter".into());
+    }
+    found.ok_or("HTTP query parameter not found".into())
 }

@@ -17,7 +17,7 @@ fn root_language_guide_examples_are_checked_and_tested_by_both_engines() {
         assert_eq!(report["status"], "TESTED", "{report}");
         count += 1;
     }
-    assert_eq!(count, 5, "keep the runnable language tour covered");
+    assert_eq!(count, 6, "keep the runnable language tour covered");
 }
 
 #[test]

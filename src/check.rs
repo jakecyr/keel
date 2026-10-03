@@ -14,9 +14,12 @@ pub fn builtin(name: &str) -> Option<Signature> {
     let (params, result, effects) = match name {
         "result.text_ok" | "result.text_err" => (vec![(Text, Take)], ResultTextText, vec![]),
         "json.parse" => (vec![(Text, Read)], ResultTextText, vec![]),
-        "json.get" | "json.text" | "dotenv.get" => {
+        "json.get" | "json.text" | "dotenv.get" | "http.query" | "http.header" => {
             (vec![(Text, Read), (Text, Read)], ResultTextText, vec![])
         }
+        "json.set" => (vec![(Text, Read); 3], ResultTextText, vec![]),
+        "json.array_len" => (vec![(Text, Read)], ResultIntText, vec![]),
+        "http.path" => (vec![(Text, Read)], Text, vec![]),
         "json.int" => (vec![(Text, Read), (Text, Read)], ResultIntText, vec![]),
         "json.quote" => (vec![(Text, Read)], Text, vec![]),
         "csv.get" => (
@@ -512,13 +515,13 @@ impl Checker<'_> {
                     .insert(handler.clone());
                 Type::ListInt
             }
-            Call(name, args) if name == "http.serve_app" => {
+            Call(name, args) if name == "http.serve_app" || name == "http.serve_api" => {
                 self.effects(e.at, &["net.listen".into(), "fs.read".into()])?;
                 if args.len() != 3 {
                     return self.err(
                         e.at,
                         "arity",
-                        "http.serve_app expects a port, static root, and named handler",
+                        format!("{name} expects a port, static root, and named handler"),
                     );
                 }
                 self.expect(&args[0], env, Type::Int, false)?;
@@ -529,8 +532,14 @@ impl Checker<'_> {
                 let Some(sig) = self.signatures.get(handler).cloned() else {
                     return self.err(args[2].at, "handler", "unknown HTTP application handler");
                 };
-                if sig.params != vec![(Type::Text, Mode::Read); 3] || sig.result != Type::Text {
-                    return self.err(args[2].at, "handler", "application handler must have signature fn(method: read Text, path: read Text, body: read Text) -> Text");
+                let count = if name == "http.serve_api" { 4 } else { 3 };
+                if sig.params != vec![(Type::Text, Mode::Read); count] || sig.result != Type::Text {
+                    let signature = if count == 4 {
+                        "API handler must have signature fn(method: read Text, target: read Text, headers: read Text, body: read Text) -> Text"
+                    } else {
+                        "application handler must have signature fn(method: read Text, path: read Text, body: read Text) -> Text"
+                    };
+                    return self.err(args[2].at, "handler", signature);
                 }
                 self.effects(e.at, &sig.effects)?;
                 self.analysis

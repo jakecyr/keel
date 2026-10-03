@@ -122,8 +122,8 @@ outside the suite's execution deadline. Exact defaults are in the
 Bounded file reads reject nonregular inputs. Output protection checks source
 aliases and symlink traversal; atomic staging cleanup does not remove files
 created by another writer. These guardrails are not a hostile multi-tenant
-compilation sandbox. The legacy HTTP adapter has per-socket timeouts. The app
-host adds total reception/transmission I/O deadlines, but not a handler deadline,
+compilation sandbox. Both HTTP adapters enforce total reception/transmission I/O
+deadlines, but not a handler deadline,
 production lifecycle, or concurrent request execution. Process execution grants
 authorize the selected program and arguments; they are not an OS sandbox or
 automatic attenuation of child authority.
@@ -171,3 +171,6 @@ Although its repairs passed independent assertions, none met the experiment's
 aggregate-token budget; monetary costs and enforced condition isolation were
 unavailable. The proposed 25% cost-per-accepted-change improvement remains
 UNKNOWN and is not achieved by these results.
+
+The [server design review](server-readiness.md) maps application needs, type-system
+constraints, security findings, and bounded request/data APIs to release gates.

@@ -77,7 +77,17 @@ static unsigned k_json_hex(KJson *j) {
   return v;
 }
 static KText k_json_string(KJson *j, bool decode) {
-  KText out = decode ? k_alloc(j->source.len - j->pos) : (KText){0};
+  size_t extent = 0;
+  if (decode && j->pos < j->source.len) {
+    size_t end = j->pos + 1;
+    while (end < j->source.len) {
+      char c = j->source.ptr[end++];
+      if (c == '"') break;
+      if (c == '\\' && end < j->source.len) end++;
+    }
+    extent = end - j->pos;
+  }
+  KText out = decode ? k_alloc(extent) : (KText){0};
   size_t used = 0;
   if (j->pos >= j->source.len || j->source.ptr[j->pos++] != '"') {
     j->bad = true;
@@ -282,7 +292,7 @@ static bool k_json_valid(KText s) {
 static KTextResult k_json_parse(KText s) {
   return k_json_valid(s) ? k_text_ok(k_clone(s)) : k_text_error("invalid JSON");
 }
-static KTextResult k_json_get(KText s, KText pointer) {
+static KTextResult k_json_select(KText s, KText pointer) {
   if (!k_json_valid(s))
     return k_text_error("invalid JSON");
   if (pointer.len > K_STD_LIMIT || (pointer.len && pointer.ptr[0] != '/'))
@@ -356,10 +366,44 @@ static KTextResult k_json_get(KText s, KText pointer) {
       return k_text_error("JSON path not found");
     current = found;
   }
-  return k_text_ok(k_clone(current));
+  return k_text_ok(current);
+}
+static KTextResult k_json_get(KText s, KText pointer) {
+  KTextResult r = k_json_select(s, pointer);
+  if (r.ok) r.value = k_clone(r.value);
+  return r;
+}
+static KTextResult k_json_set(KText s, KText pointer, KText replacement) {
+  KTextResult r = k_json_select(s, pointer);
+  if (!r.ok) return r;
+  if (!k_json_valid(replacement)) return k_text_error("invalid JSON");
+  size_t size = s.len - r.value.len;
+  if (replacement.len > K_STD_LIMIT - size) return k_text_error("JSON output exceeds 1 MiB");
+  size_t start = (size_t)(r.value.ptr - s.ptr), end = start + r.value.len;
+  KText out = k_alloc(size + replacement.len);
+  memcpy((char *)out.ptr, s.ptr, start);
+  memcpy((char *)out.ptr + start, replacement.ptr, replacement.len);
+  memcpy((char *)out.ptr + start + replacement.len, s.ptr + end, s.len - end);
+  if (!k_json_valid(out)) { k_drop(&out); return k_text_error("invalid JSON"); }
+  return k_text_ok(out);
+}
+static KResult k_json_array_len(KText s) {
+  if (!k_json_valid(s)) return k_err(K_TEXT("invalid JSON"));
+  KJson j = {s, 0, false}; k_json_ws(&j);
+  if (s.ptr[j.pos++] != '[') return k_err(K_TEXT("expected JSON array"));
+  int64_t count = 0;
+  for (;;) {
+    k_json_ws(&j);
+    if (s.ptr[j.pos] == ']') break;
+    k_json_value(&j, 1); count++;
+    k_json_ws(&j);
+    if (s.ptr[j.pos] != ',') break;
+    j.pos++;
+  }
+  return k_ok(count);
 }
 static KTextResult k_json_text(KText s, KText path) {
-  KTextResult r = k_json_get(s, path);
+  KTextResult r = k_json_select(s, path);
   if (!r.ok)
     return r;
   if (!r.value.len || r.value.ptr[0] != '"') {
@@ -372,7 +416,7 @@ static KTextResult k_json_text(KText s, KText path) {
   return k_text_ok(out);
 }
 static KResult k_json_int(KText s, KText path) {
-  KTextResult r = k_json_get(s, path);
+  KTextResult r = k_json_select(s, path);
   if (!r.ok) {
     KText e = k_move(&r.error);
     k_drop(&r);

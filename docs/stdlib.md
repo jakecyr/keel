@@ -33,6 +33,11 @@ effect is listed. Text-returning recoverable operations return
 | `json.get` | document, pointer → text result | Select a value using an RFC 6901 JSON Pointer; return its JSON source spelling. Empty pointer selects the root. `~0` means `~`, `~1` means `/`. |
 | `json.text` | document, pointer → text result | Select and decode a JSON string, including Unicode escapes. Other types return Err. |
 | `json.int` | document, pointer → `Result<Int, Text>` | Select an integer and check the signed 64-bit range; fractions/exponents are errors. |
+| `json.set` | document, pointer, replacement JSON → text result | Replace an existing value with validated JSON; empty pointer replaces root. Returns a new document preserving all bytes outside that value. Missing paths (including array append `-`) are errors; no implicit insertion/coercion. |
+| `json.array_len` | document → `Result<Int, Text>` | Validate and count a root array. Objects/scalars return Err; nested arrays count as one element. |
+| `http.path` | request target → Text | Copy the prefix before the first `?`, without URL decoding. |
+| `http.query` | request target, name → text result | Case-sensitive form query lookup: `%HH` UTF-8 decoding and `+` as space, `&` fields, first `=` separator. Bare names/empty values are empty Text. Reject malformed fields anywhere and duplicate matching names (including encoded aliases). |
+| `http.header` | CRLF header block, name → text result | ASCII case-insensitive lookup, trim spaces/tabs. Reject malformed fields anywhere and duplicate matching names; distinguish empty from missing values. |
 | `json.quote` | Text → Text | Escape text as a JSON string, including quotes and control characters. |
 | `csv.get` | document, row: Int, column: Int → text result | Zero-based cell; comma delimiter, LF/CRLF records, doubled quotes, embedded newlines. Validates the entire input. No header inference. Empty input has zero records; trailing delimiters create empty cells. Bare CR and malformed quotes are errors. |
 | `xml.text` | document, path → text result | Text content of the first matching element at each step, e.g. `/root/name`; includes descendant text. UTF-8 XML with DTDs disabled. Paths only select elements without namespaces; this is not XPath. |
@@ -49,6 +54,20 @@ members must still be valid. Missing paths, JSON null, and empty strings are
 separate outcomes. `json.get` preserves decimals/exponents as Text without loss;
 Keel does not yet have a floating-point or decimal arithmetic type. Each lookup
 parses again; retained typed JSON trees and record decoding are future work.
+`json.set` applies the same input and resulting-document bounds; replacement
+values must be JSON (`json.quote(text)` encodes a text value). It preserves sibling
+number spelling and replaces the last duplicate object member, just like `json.get`.
+It is not JSON Patch or a retained tree. `json.array_len` enables bounded array
+iteration using integer pointer components.
+
+`http.query` accepts targets up to 4096 bytes starting with `/`, with no fragments,
+raw spaces or controls. Decoded controls/NUL, malformed escapes, and invalid UTF-8
+return Err. Percent decoding happens exactly once; empty `&` fields are ignored.
+`http.header` accepts at most 16 KiB; each field ends with CRLF and the block excludes
+the final empty line. It rejects folding, invalid names, bare CR/LF, and controls
+other than value tabs. Missing and duplicate matches are errors, not empty strings.
+Neither helper is an authentication scheme.
+
 `json.quote` accepts at most 1 MiB and traps with `resource_limit` above that bound.
 CSV, XML, SSE, dotenv, file contents, and environment values are capped at 1 MiB.
 XML rejects DTD declarations, external entities, malformed documents, and paths
@@ -99,7 +118,14 @@ The named handler must have signature
 `fn(method: read Text, path: read Text, body: read Text) -> Text`. It may declare
 effects; the caller must declare those effects plus `net.listen` and `fs.read`.
 The handler receives the HTTP method, path before `?` without URL decoding,
-and the complete UTF-8 body. Use `http.json_response` for JSON APIs. Existing
+and the complete UTF-8 body. For request metadata, `http.serve_api(port,
+static_root, handler)` uses the same host/permissions with a four-argument handler:
+`fn(method: read Text, target: read Text, headers: read Text, body: read Text) -> Text`.
+Target includes the query; headers include each field's CRLF, excluding the final
+empty line. All four values are read borrows valid only during the handler.
+Use `http.path`, `http.query`, and `http.header` to inspect them. The existing
+three-argument handler behavior is unchanged; both hosts use the path for static
+fallback. See `examples/catalog_api` for a tested transformation endpoint. Use `http.json_response` for JSON APIs. Existing
 `http.serve` retains its original pure GET/path-only behavior.
 
 A 404 returned by the handler on GET/HEAD falls back to `static_root`. An empty
@@ -121,8 +147,8 @@ sequentially. Headers are capped at 16 KiB, request bodies at 1 MiB, paths at
 4096 bytes, and static files at 8 MiB. Reception and transmission each have a
 two-second total I/O deadline; handler execution is not deadline-limited.
 Content-Length framing is supported; duplicate lengths, Transfer-Encoding,
-Expect, malformed headers, invalid UTF-8 bodies, and NUL bytes are rejected.
-There is no TLS, keep-alive, streaming, multipart parsing, header/query API,
+Expect, malformed headers, invalid UTF-8 targets/headers/bodies, fragments, and NUL bytes are rejected.
+There is no TLS, keep-alive, streaming, multipart parsing, response-header builder,
 WebSocket server, or general concurrency. See `examples/http_app` for a browser
 page and JSON POST endpoint without an external HTTP host. This remains an
 experimental adapter, not a production web framework.
@@ -231,7 +257,7 @@ These system libraries join the trusted C runtime/system compiler boundary.
 
 | Need | Implemented now | Remaining gap |
 | --- | --- | --- |
-| JSON applications | Validation, pointers, string/int decoding, escaping, JSON responses | Typed records, retained JSON values, numeric types, mutation/builders, Result propagation. |
+| JSON applications | Validation, pointers, string/int decoding, escaping, JSON responses | Typed records, retained JSON values, numeric types, insertion/removal/builders, Result propagation. |
 | Files and data formats | Bounded UTF-8 reads/atomic writes, CSV cells, XML element text, dotenv/env | Directories, binary language I/O, streaming parsers, general text collections. |
 | Network applications | HTTP GET/JSON POST, TCP/UDP exchanges, conditional WebSocket exchange, buffered SSE | Session handles, protocol servers, streaming, richer request/response types, cancellation/backpressure. |
 | Threading | Scoped pure integer map | General structured tasks, channels, shared ownership, race/lifetime review and deterministic simulation. |

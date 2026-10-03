@@ -1,0 +1,42 @@
+test "discount preserves descriptions and exact decimal metadata" {
+    let input = "[{\"name\":\"tea 🍵\",\"price_cents\":199,\"score\":0.9900},{\"name\":\"coffee\",\"price_cents\":1000}]"
+    match discount_catalog(input, 10) {
+        Ok(updated) => {
+            assert updated == "[{\"name\":\"tea 🍵\",\"price_cents\":180,\"score\":0.9900},{\"name\":\"coffee\",\"price_cents\":900}]"
+        }
+        Err(_error) => { assert false }
+    }
+    match json.int(input, "/0/price_cents") {
+        Ok(price) => { assert price == 199 }
+        Err(_error) => { assert false }
+    }
+}
+
+test "API validates method headers query and domain input" {
+    let headers = "Content-Type: application/json\r\n"
+    let data = "[{\"price_cents\":100}]"
+    assert http.status(route("POST", "/api/discount?percent=20", headers, data)) == 200
+    assert http.status(route("GET", "/api/discount?percent=20", headers, data)) == 405
+    assert http.status(route("POST", "/api/discount?percent=20", "", data)) == 400
+    assert http.status(route("POST", "/api/discount?percent=20", "Content-Type: text/plain\r\n", data)) == 415
+    assert http.status(route("POST", "/api/discount?percent=20&percent=30", headers, data)) == 400
+    assert http.status(route("POST", "/api/discount?percent=20&bad=%FF", headers, data)) == 400
+    assert http.status(route("POST", "/api/discount?percent=101", headers, data)) == 422
+    assert http.status(route("POST", "/api/discount?percent=10", headers, "[{\"price_cents\":1.5}]")) == 422
+    assert http.status(route("POST", "/api/discount?percent=10", headers, "[{\"price_cents\":-1}]")) == 422
+    assert http.status(route("POST", "/api/discount?percent=10", headers, "[{}]")) == 422
+    assert http.status(route("POST", "/api/discount?percent=10", headers, "{}")) == 422
+    assert http.status(route("GET", "/unknown", "", "")) == 404
+}
+
+property "valid percentage keeps price within independent bounds" (percent in gen.int(min: 0, max: 100)) {
+    match discount_catalog("[{\"price_cents\":100}]", percent) {
+        Ok(updated) => {
+            match json.int(updated, "/0/price_cents") {
+                Ok(price) => { assert price == 100 - percent }
+                Err(_error) => { assert false }
+            }
+        }
+        Err(_error) => { assert false }
+    }
+}

@@ -307,3 +307,14 @@ run in optimized builds as well.
 For project setup, revision-bound transactions, managed agent instructions,
 formatting/linting, and the persistent service, see the
 [agent protocol](agent-protocol.md) and [developer workflow](getting-started-review.md).
+
+
+For metadata-aware APIs, `http.serve_api(port, root, handler)` expects
+`fn(method: read Text, target: read Text, headers: read Text, body: read Text) -> Text`.
+It has the same effects/permissions as `http.serve_app`. Use `http.path(target)`
+for routing, `http.query(target, name)` and `http.header(headers, name)` for
+recoverable extraction (duplicate matches are errors). `json.array_len(document)`
+returns `Result<Int, Text>`; `json.set(document, pointer, replacement_json)` returns
+`Result<Text, Text>` and only replaces existing values. Use `json.quote` to encode
+string replacements. Bounds and exact semantics are in the stdlib guide; the
+runnable example is `examples/catalog_api`.

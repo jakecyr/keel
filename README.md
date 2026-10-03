@@ -86,5 +86,7 @@ keel check --json
 - [Development workflows](docs/workflows.md) — build, test, use agent tools, and try the web-server example
 - [Installation guide](docs/installation.md) — platform support, upgrades, and editor setup
 - [Contributing](CONTRIBUTING.md) — work on Keel itself
+- [Server design review](docs/server-readiness.md) — workloads, security findings, and remaining production needs
+- [Catalog API](examples/catalog_api/README.md) — validated HTTP requests and JSON transformations
 - [Release gaps](docs/release-gaps.md) — what's supported and what's still experimental
 - [Icon and design](docs/design.md) — the retro visual identity

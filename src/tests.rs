@@ -5,6 +5,8 @@ mod feature_tests;
 mod http_app_tests;
 #[path = "process_runtime_tests.rs"]
 mod process_runtime_tests;
+#[path = "server_data_tests.rs"]
+mod server_data_tests;
 #[path = "stdlib_tests.rs"]
 mod stdlib_tests;
 use std::io::{Read, Write};

@@ -226,7 +226,7 @@ impl<'a> Emitter<'a> {
                     format!("k_parallel_map({}, f_{handler})", values.name),
                 )
             }
-            ExprKind::Call(name, args) if name == "http.serve_app" => {
+            ExprKind::Call(name, args) if name == "http.serve_app" || name == "http.serve_api" => {
                 let port = self.expr(&args[0]);
                 let root = self.expr(&args[1]);
                 let ExprKind::Var(handler) = &args[2].kind else {
@@ -234,7 +234,16 @@ impl<'a> Emitter<'a> {
                 };
                 self.assign_temp(
                     Type::Unit,
-                    format!("k_serve_app({}, {}, f_{handler})", port.name, root.name),
+                    format!(
+                        "{}({}, {}, f_{handler})",
+                        if name == "http.serve_api" {
+                            "k_serve_api"
+                        } else {
+                            "k_serve_app"
+                        },
+                        port.name,
+                        root.name
+                    ),
                 )
             }
             ExprKind::Call(name, args) if name == "http.serve" => {
@@ -252,6 +261,11 @@ impl<'a> Emitter<'a> {
                         "dotenv.get" => "k_dotenv_get",
                         "json.parse" => "k_json_parse",
                         "json.get" => "k_json_get",
+                        "json.set" => "k_json_set",
+                        "json.array_len" => "k_json_array_len",
+                        "http.path" => "k_http_path",
+                        "http.query" => "k_http_query",
+                        "http.header" => "k_http_header",
                         "json.text" => "k_json_text",
                         "json.int" => "k_json_int",
                         "json.quote" => "k_json_quote",

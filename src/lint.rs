@@ -14,7 +14,7 @@ fn expression(e: &Expr, used: &mut BTreeSet<String>, calls: &mut BTreeSet<String
         }
         ExprKind::Call(name, args) => {
             calls.insert(name.clone());
-            if name == "http.serve_app"
+            if (name == "http.serve_app" || name == "http.serve_api")
                 && let Some(Expr {
                     kind: ExprKind::Var(handler),
                     ..
@@ -103,7 +103,7 @@ pub fn run(source: &str, program: &Program, deny: bool) -> Value {
         }
         let mut needed = BTreeSet::new();
         for call in calls {
-            if call == "http.serve_app" {
+            if call == "http.serve_app" || call == "http.serve_api" {
                 needed.insert("net.listen".to_string());
                 needed.insert("fs.read".to_string());
             } else if call == "http.serve" {

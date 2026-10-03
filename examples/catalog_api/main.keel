@@ -1,0 +1,3 @@
+fn main() effects { net.listen, fs.read } {
+    http.serve_api(8092, "", route)
+}

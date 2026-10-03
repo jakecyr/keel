@@ -82,7 +82,8 @@ fn standard_library_under_sanitizers() {
     );
     let mut limits = options();
     limits.timeout_ms = 10000;
-    limits.memory_mib = 4096;
+    // ASan reserves shadow address space beyond ordinary worker limits.
+    limits.memory_mib = 0;
     for i in 0..program.tests.len() {
         let (status, error) = run_worker(&binary, i, &limits, None).unwrap();
         assert_eq!(status, "TESTED", "{error:?}");

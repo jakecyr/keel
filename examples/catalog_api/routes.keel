@@ -1,0 +1,66 @@
+// Money uses integer cents. Discount is an integer percentage, rounded down.
+fn discount_catalog(body: read Text, percent: Int) -> Result<Text, Text> {
+    if percent < 0 || percent > 100 { return result.text_err("invalid percentage") }
+    match json.array_len(body) {
+        Ok(count) => {
+            if count > 100 { return result.text_err("at most 100 products") }
+            var output = text.clone(body)
+            var index = 0
+            while index < count {
+                let pointer = text.concat(text.concat("/", text.from_int(index)), "/price_cents")
+                match json.int(output, pointer) {
+                    Ok(price) => {
+                        if price < 0 || price > 1000000000 {
+                            return result.text_err("price_cents must be 0..1000000000")
+                        }
+                        let discounted = price - price * percent / 100
+                        match json.set(output, pointer, text.from_int(discounted)) {
+                            Ok(updated) => { output = text.clone(updated) }
+                            Err(_error) => { return result.text_err("cannot update product") }
+                        }
+                    }
+                    Err(_error) => { return result.text_err("expected integer price_cents") }
+                }
+                index = index + 1
+            }
+            return result.text_ok(take output)
+        }
+        Err(_error) => { return result.text_err("expected JSON product array") }
+    }
+}
+
+fn json_response(status: Int, body: read Text) -> Text {
+    match http.json_response(status, body) {
+        Ok(response) => { return text.clone(response) }
+        Err(_error) => { return http.response(500, "response error") }
+    }
+}
+
+fn route(method: read Text, target: read Text, headers: read Text, body: read Text) -> Text {
+    let path = http.path(target)
+    if path == "/api/health" && method == "GET" {
+        return json_response(200, "{\"ok\":true}")
+    }
+    if path != "/api/discount" { return http.response(404, "not found") }
+    if method != "POST" { return http.response(405, "POST required") }
+    match http.header(headers, "content-type") {
+        Ok(content_type) => {
+            if content_type != "application/json" { return http.response(415, "application/json required") }
+        }
+        Err(_error) => { return http.response(400, "one Content-Type required") }
+    }
+    match http.query(target, "percent") {
+        Ok(raw) => {
+            match text.parse_int(raw) {
+                Ok(percent) => {
+                    match discount_catalog(body, percent) {
+                        Ok(updated) => { return json_response(200, updated) }
+                        Err(_error) => { return http.response(422, "invalid catalog or percentage") }
+                    }
+                }
+                Err(_error) => { return http.response(400, "integer percent required") }
+            }
+        }
+        Err(_error) => { return http.response(400, "one valid percent query parameter required") }
+    }
+}

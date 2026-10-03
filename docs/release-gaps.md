@@ -23,7 +23,7 @@ claims that those criteria have already been met.
 | Property testing | Examples and one bounded integer generator per property; shrinking and replay | Generic record/variant/list generators, generated stateful operation sequences, rejection/vacuity detection, precondition-aware shrinking, fault injection, mutation testing, and controlled-world simulation are absent. Add independent oracles and verify shrinkers preserve their domain. |
 | Diagnostics and evidence | Structured static/runtime failures with source locations, shrunk integer cases, source context and textual review | No recorded expression/branch trace, contract provenance graph, generated resource-cost proof, or full transitive assurance report. Test-case counts on failing runs are budgets, not measured completion counts. Distinguish traps, runtime faults, permissions, and resource limits. |
 | Compilation | Rust frontend, C11 lowering and system native compiler; bounded independent reference evaluator for the supported test subset | Cranelift is absent. The daemon caches whole-source checked snapshots; it has no declaration-level dependency invalidation, function native-code cache, or incremental optimized-call invalidation. Extend reference/native differential coverage with every language feature. The reference evaluator does not execute host effects. |
-| Resource bounds | Source/parser limits; bounded subprocess stderr and execution; Linux worker address-space limits; bounded cache estimate | Cache accounting is an estimate, not measured total daemon memory. Frontend CPU/memory, macOS worker memory, runtime allocation reporting, and legacy HTTP total request deadlines need explicit enforcement/measurement. The app host bounds socket I/O time, not handler execution. Test adversarial inputs at published limits. |
+| Resource bounds | Source/parser limits; bounded subprocess stderr and execution; Linux worker address-space limits; bounded cache estimate | Cache accounting is an estimate, not measured total daemon memory. Frontend CPU/memory, macOS worker memory, and runtime allocation reporting need explicit enforcement/measurement. Both HTTP hosts now enforce total I/O deadlines. The app host bounds socket I/O time, not handler execution. Test adversarial inputs at published limits. |
 | Observability | Structured failures and basic service startup message | No bounded structured production events, build/source-linked telemetry, dropped-event counters, sampling semantics, secret-bearing types, or field allowlists. Add explicit value-capture approval and redaction tests before telemetry captures application data. |
 | Projects and dependencies | Explicit manifest combines named source files in one namespace; Rust implementation dependencies are pinned | This is not a module system or Keel package manager. Namespaces/import resolution, Keel lockfiles/artifact hashes, signature packages, typed FFI, ABI stability, dependency supply-chain policy, and cross-compilation remain absent. Never download dependencies during ordinary compilation. |
 | Adoption and compatibility | Example CLI/HTTP/collection programs; agent instructions and CLI/service interfaces | Versioned protocol compatibility, migration guidance, release packaging/signing, long-running service operations, supported platform/ABI matrix, and sustained external user testing remain release work. The HTTP adapter is a small example host, not a production HTTP stack. |
@@ -35,8 +35,10 @@ claims that those criteria have already been met.
 from an explicitly granted root; see `examples/http_app` and `docs/stdlib.md`.
 Its request reception and response transmission have total I/O deadlines, while
 handler execution remains unbounded. TLS, production concurrency, streaming,
-header/query APIs, and service operations remain gaps. The legacy `http.serve`
-adapter retains its original narrower behavior and limits.
+response-header builders and service operations remain gaps. Request header/query
+APIs are supported through `http.serve_api`. The legacy `http.serve`
+adapter retains its pure GET/path-only interface, now with total I/O deadlines
+and UTF-8/control validation for paths.
 
 Native local orchestration now includes atomic UTF-8 file writes, monotonic time,
 bounded subprocess calls, and owned background child handles. These additions
@@ -124,3 +126,12 @@ correctness checks, but many still exceeded the registered token budget. These
 small Keel-only comparisons do not establish an agent-token or dollar-cost
 advantage over C, Rust, or other languages, and do not pass the economic release
 gate. The original cross-language pilot remains unchanged.
+
+## Server and data review
+
+The [server review](server-readiness.md) maps common application workloads to
+implemented capabilities and remaining type-system, storage, authentication,
+streaming, and operations work. `examples/catalog_api` demonstrates header/query
+validation, bounded arrays, integer money, and existing-location JSON replacement.
+[Local evidence](server-validation.md) and the linked raw allocation benchmark
+cover this change; independent audit and broader release gates remain unmet.

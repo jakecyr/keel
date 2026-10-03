@@ -1,0 +1,340 @@
+{
+  "schema": 1,
+  "scope": "wide-object final-key JSON lookup in trusted C runtime",
+  "agent_efficiency": "UNKNOWN",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "processor": "arm",
+  "members": 2000,
+  "iterations": 100,
+  "repeats": 7,
+  "allocation_metric": "cumulative requested k_alloc bytes including terminators, not RSS",
+  "timing": "monotonic in-process seconds; parsing/lookup/allocation/assertion included; uncontrolled warm OS caches",
+  "flags": [
+    "-std=c11",
+    "-O2",
+    "-pthread"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "cc",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.2.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "--verify",
+        "73f7ba0^{commit}"
+      ],
+      "returncode": 0,
+      "stdout": "73f7ba0ce7dcf55a40dd37a707f067ec239380b0\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stdout": "73f7ba0ce7dcf55a40dd37a707f067ec239380b0\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "returncode": 0,
+      "stdout": " M .gitignore\n M examples/evolving_arena/README.md\n M examples/evolving_arena/agent-prompt.txt\n M examples/evolving_arena/arena.keel\n M examples/evolving_arena/launch.sh\n M examples/evolving_arena/main.keel\n M examples/evolving_arena/public/index.html\n M examples/evolving_arena/test_arena.py\n M examples/evolving_arena/tests.keel\n M examples/jev_pong/README.md\n M examples/jev_pong/decisions.keel\n M examples/jev_pong/game.keel\n M examples/jev_pong/native.keel\n M examples/jev_pong/run.sh\n M examples/jev_pong/test_pong.py\n M examples/jev_pong/tests.keel\n M examples/jev_pong/web/app.js\n M examples/jev_pong/web/index.html\n M examples/jev_pong/web/style.css\n M scripts/build_site.py\n M site/README.md\n M site/index.html\n M site/style.css\n M src/check.rs\n M src/eval.rs\n M src/http_app.c\n M src/http_app_tests.rs\n M src/lint.rs\n M src/main.rs\n M src/native.rs\n M src/runtime.c\n M src/stdlib.c\n M src/stdlib.rs\n M src/tests.rs\n?? artifacts/.DS_Store\n?? benchmarks/json_lookup.py\n?? benchmarks/results/json-lookup-2026-10-03.json\n?? examples/catalog_api/\n?? src/server_data_tests.rs\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "73f7ba0ce7dcf55a40dd37a707f067ec239380b0:src/runtime.c"
+      ],
+      "returncode": 0,
+      "stdout": "[source identified by SHA-256]",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "show",
+        "73f7ba0ce7dcf55a40dd37a707f067ec239380b0:src/stdlib.c"
+      ],
+      "returncode": 0,
+      "stdout": "[source identified by SHA-256]",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-pthread",
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline.c",
+        "-o",
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-pthread",
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree.c",
+        "-o",
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.019661000,\"requested_bytes\":1890300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.016476000,\"requested_bytes\":1890300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.014395000,\"requested_bytes\":1890300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.016613000,\"requested_bytes\":2900580300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.014001000,\"requested_bytes\":1890300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.014003000,\"requested_bytes\":1890300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.016263000,\"requested_bytes\":2900580300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.016319000,\"requested_bytes\":2900580300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.014024000,\"requested_bytes\":1890300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.016502000,\"requested_bytes\":2900580300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.017600000,\"requested_bytes\":2900580300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.018665000,\"requested_bytes\":2900580300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/baseline"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.017067000,\"requested_bytes\":2900580300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-json-bench-30ys2yjy/working_tree"
+      ],
+      "returncode": 0,
+      "stdout": "{\"seconds\":0.014311000,\"requested_bytes\":1890300,\"allocations\":200200,\"accepted\":true}\n",
+      "stderr": ""
+    }
+  ],
+  "samples": [
+    {
+      "variant": "working_tree",
+      "seconds": 0.019661,
+      "requested_bytes": 1890300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "working_tree",
+      "seconds": 0.016476,
+      "requested_bytes": 1890300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "working_tree",
+      "seconds": 0.014395,
+      "requested_bytes": 1890300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "baseline",
+      "seconds": 0.016613,
+      "requested_bytes": 2900580300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "working_tree",
+      "seconds": 0.014001,
+      "requested_bytes": 1890300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "working_tree",
+      "seconds": 0.014003,
+      "requested_bytes": 1890300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "baseline",
+      "seconds": 0.016263,
+      "requested_bytes": 2900580300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "baseline",
+      "seconds": 0.016319,
+      "requested_bytes": 2900580300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "working_tree",
+      "seconds": 0.014024,
+      "requested_bytes": 1890300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "baseline",
+      "seconds": 0.016502,
+      "requested_bytes": 2900580300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "baseline",
+      "seconds": 0.0176,
+      "requested_bytes": 2900580300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "baseline",
+      "seconds": 0.018665,
+      "requested_bytes": 2900580300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "baseline",
+      "seconds": 0.017067,
+      "requested_bytes": 2900580300,
+      "allocations": 200200,
+      "accepted": true
+    },
+    {
+      "variant": "working_tree",
+      "seconds": 0.014311,
+      "requested_bytes": 1890300,
+      "allocations": 200200,
+      "accepted": true
+    }
+  ],
+  "sources": {
+    "baseline": {
+      "runtime": "78090b215000bf221a350e675e108a98aeb36630fed209e1912b3cbaa3bb19ef",
+      "stdlib": "b52b71b682384223f2a31571ed74de83c65877c73fb8449c50f9883ba28507db"
+    },
+    "working_tree": {
+      "runtime": "c01c7b31580419dc1c2a591e7b9d5cd20500869a42c9dd3637f9b2560e0eba73",
+      "stdlib": "e098bbe5ac77c5658c9ab395a7c52b96136b9b1e86c748a16fba7e48524670b4"
+    }
+  },
+  "status": "COMPLETE",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.2.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+  "baseline": "73f7ba0ce7dcf55a40dd37a707f067ec239380b0",
+  "head": "73f7ba0ce7dcf55a40dd37a707f067ec239380b0",
+  "git_status": " M .gitignore\n M examples/evolving_arena/README.md\n M examples/evolving_arena/agent-prompt.txt\n M examples/evolving_arena/arena.keel\n M examples/evolving_arena/launch.sh\n M examples/evolving_arena/main.keel\n M examples/evolving_arena/public/index.html\n M examples/evolving_arena/test_arena.py\n M examples/evolving_arena/tests.keel\n M examples/jev_pong/README.md\n M examples/jev_pong/decisions.keel\n M examples/jev_pong/game.keel\n M examples/jev_pong/native.keel\n M examples/jev_pong/run.sh\n M examples/jev_pong/test_pong.py\n M examples/jev_pong/tests.keel\n M examples/jev_pong/web/app.js\n M examples/jev_pong/web/index.html\n M examples/jev_pong/web/style.css\n M scripts/build_site.py\n M site/README.md\n M site/index.html\n M site/style.css\n M src/check.rs\n M src/eval.rs\n M src/http_app.c\n M src/http_app_tests.rs\n M src/lint.rs\n M src/main.rs\n M src/native.rs\n M src/runtime.c\n M src/stdlib.c\n M src/stdlib.rs\n M src/tests.rs\n?? artifacts/.DS_Store\n?? benchmarks/json_lookup.py\n?? benchmarks/results/json-lookup-2026-10-03.json\n?? examples/catalog_api/\n?? src/server_data_tests.rs\n",
+  "order_seed": 42,
+  "median_seconds": {
+    "baseline": 0.016613,
+    "working_tree": 0.014311
+  }
+}
