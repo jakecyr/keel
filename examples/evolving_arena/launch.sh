@@ -3,7 +3,8 @@ set -eu
 cd "$(dirname "$0")"
 mode="${1:-demo}"
 ARENA_PORT="${ARENA_PORT:-8780}"
-export ARENA_PORT
+ARENA_MAX_ATTEMPTS="${ARENA_MAX_ATTEMPTS:-10}"
+export ARENA_PORT ARENA_MAX_ATTEMPTS
 case "$mode" in demo|agents) ;; *) echo 'Usage: ./launch.sh [demo|agents]' >&2; exit 2;; esac
 cargo build --locked --manifest-path ../../Cargo.toml
 mkdir -p runtime
@@ -19,7 +20,7 @@ for player in 0 1; do
 done
 if [ "${ARENA_BUILD_ONLY:-0}" = 1 ]; then exit 0; fi
 printf '\nKeel evolving arena: http://127.0.0.1:%s\nMode: %s\n' "$ARENA_PORT" "$mode"
-set -- "--allow-net=127.0.0.1:$ARENA_PORT" --allow-env=ARENA_PORT --allow-clock=monotonic --allow-read=public \
+set -- "--allow-net=127.0.0.1:$ARENA_PORT" --allow-env=ARENA_PORT --allow-env=ARENA_MAX_ATTEMPTS --allow-clock=monotonic --allow-read=public \
     --allow-read=runtime/mode.txt --allow-read=runtime/state.json --allow-write=runtime/state.json \
     --allow-write=runtime/observation.json
 for player in 0 1; do

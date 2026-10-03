@@ -158,6 +158,13 @@ def build(sync=False):
         (ROOT / "site/index.html").write_text(html)
     for name in ("style.css", "app.js"):
         shutil.copyfile(ROOT / "site" / name, OUTPUT / name)
+    # Only public site assets belong in the Pages artifact. Example runtime
+    # directories and credentials are never part of this copy.
+    assets = ROOT / "site" / "assets"
+    if assets.is_dir():
+        shutil.copytree(assets, OUTPUT / "assets", dirs_exist_ok=True)
+    for asset in re.findall(r'(?:src|poster)="(assets/[^\"]+)"', html):
+        assert (assets.parent / asset).is_file(), f"Missing public site asset: {asset}"
     (OUTPUT / ".nojekyll").touch()
     print(f"Built {OUTPUT} from recorded benchmarks; anchors verified.")
 

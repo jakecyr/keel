@@ -1,3 +1,15 @@
+fn parse_attempt_limit(raw: read Text) -> Result<Int, Text> {
+    match text.parse_int(raw) {
+        Ok(value) => {
+            if value>0 { return result.ok(value) }
+            return result.err("ARENA_MAX_ATTEMPTS must be positive")
+        }
+        Err(_error) => { return result.err("ARENA_MAX_ATTEMPTS must be a positive integer") }
+    }
+}
+fn can_generate(s: read List<Int>,player: Int) -> Bool {
+    return list.at(s,32+player)<list.at(s,34)
+}
 // Numeric state layout is documented in README; all authority stays in this host.
 fn observation(s: read List<Int>, player: Int) -> List<Int> {
     var own = 3
@@ -12,7 +24,10 @@ fn feedback(player: Int, message: read Text) effects { fs.write } {
 }
 fn start_worker(s: edit List<Int>, player: Int) effects { fs.read, fs.write, process.exec, clock.read } {
     if list.at(s,19+player) != 0 || list.at(s,25+player) != 0 { return; }
-    if list.at(s,32+player) >= 10 { feedback(player,"Generation limit reached: 10 attempts per player") return; }
+    if !can_generate(s,player) {
+        feedback(player,text.concat(text.concat("Generation limit reached: ",text.from_int(list.at(s,34)))," attempts per player"))
+        return;
+    }
     let slot = 1 - list.at(s,21+player)
     let task_path = player_path("runtime/task-",player,".json")
     let result_path = player_path("runtime/result-",player,".json")
@@ -153,6 +168,7 @@ fn advance(s: edit List<Int>) effects { fs.read, fs.write, process.exec, clock.r
 }
 fn snapshot(s: read List<Int>) -> Text effects { fs.read } {
     var body=text.concat("{\"game\":",encode(s))
+    body=text.concat(body,text.concat(",\"max_attempts\":",text.from_int(list.at(s,34))))
     body=text.concat(body,text.concat(",\"mode\":",json.quote(read_file("runtime/mode.txt","demo"))))
     body=text.concat(body,text.concat(",\"players\":[",read_file(active_path(0),"{}")))
     body=text.concat(body,text.concat(",",read_file(active_path(1),"{}")))
@@ -160,8 +176,9 @@ fn snapshot(s: read List<Int>) -> Text effects { fs.read } {
     body=text.concat(body,text.concat(",",read_file(feedback_path(1),"\"\"")))
     return text.concat(body,"]}")
 }
-fn initialize() effects { fs.read, fs.write, process.exec, clock.read } {
+fn initialize(maximum: Int) effects { fs.read, fs.write, process.exec, clock.read } {
     var s=[0,15,30,30,85,70,30,3,3,2,2,3,3,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    list.push(edit s,maximum)
     var player=0
     while player<2 {
         write_file(active_path(player),"{\"name\":\"Standard issue\",\"body\":\"{ return [3,3,2,2] }\",\"memory\":\"\"}")
@@ -175,14 +192,14 @@ fn initialize() effects { fs.read, fs.write, process.exec, clock.read } {
 }
 fn route(method: read Text,path: read Text,body: read Text) -> Text effects { fs.read, fs.write, process.exec, clock.read } {
     if path=="/state" && method=="GET" {
-        var s=decode(read_file("runtime/state.json","[]"),34)
+        var s=decode(read_file("runtime/state.json","[]"),35)
         advance(edit s)
         write_file("runtime/state.json",encode(s))
         return json_reply(200,snapshot(s))
     }
     if path=="/pause" && method=="POST" {
         if body!="{}" { return json_reply(400,"{}") }
-        var s=decode(read_file("runtime/state.json","[]"),34)
+        var s=decode(read_file("runtime/state.json","[]"),35)
         let paused=1-list.at(s,27)
         list.set(edit s,27,paused)
         var player=0

@@ -43,12 +43,17 @@ The native worker calls the [OpenAI Responses API](https://developers.openai.com
 with a strict `{name, body, memory}` string schema. `OPENAI_MODEL` is optional;
 the default is `gpt-5-mini`. The key is read only by background workers, never
 sent to the browser or generated code. No SDK or Python adapter is involved.
+For at most one attempt per player, use
+`ARENA_MAX_ATTEMPTS=1 ./examples/evolving_arena/launch.sh agents`. Gameplay
+continues with accepted abilities after the cap; failures and cancellation also
+consume attempts. The UI displays each player’s attempt count and limit.
+
 The HTTP call has a 60-second deadline, and the host terminates workers after
 90 seconds. Errors, incomplete responses and refusals retain the previous code.
 
 Live mode consumes API usage: up to one proposal per player per round, with
-at most one outstanding worker per player and a hard cap of 10 worker attempts
-per player per launch. Startup launches the first pair.
+at most one outstanding worker per player and a positive `ARENA_MAX_ATTEMPTS` cap of worker attempts per player per launch
+(default 10). Startup launches the first pair.
 Rounds advance while a browser polls; a round lasts up to 150 ticks, with a
 100ms minimum tick interval. Pausing stops gameplay and cancels in-flight generation workers; queued
 validated abilities remain ready. Resuming can start a replacement worker and
@@ -146,4 +151,5 @@ active proposal metadata, per-player feedback and a numeric `game` array:
 | 19–24 | worker handles, active slots, worker start times (red then blue) |
 | 25–29 | pending slots + 1, paused, per-player disabled flags |
 | 30–31 | damage received this tick, red then blue |
-| 32–33 | total worker attempts per player (maximum 10) |
+| 32–33 | total worker attempts per player |
+| 34 | configured per-player maximum attempts (default 10) |

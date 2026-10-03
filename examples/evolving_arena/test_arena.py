@@ -59,7 +59,7 @@ class NativeArenaTests(unittest.TestCase):
             sock.bind(('127.0.0.1', 0))
             self.port = sock.getsockname()[1]
         args = [str(self.runtime / 'arena'), f'--allow-net=127.0.0.1:{self.port}',
-                '--allow-env=ARENA_PORT', '--allow-clock=monotonic', '--allow-read=public',
+                '--allow-env=ARENA_PORT', '--allow-env=ARENA_MAX_ATTEMPTS', '--allow-clock=monotonic', '--allow-read=public',
                 '--allow-read=runtime/mode.txt', '--allow-read=runtime/state.json',
                 '--allow-write=runtime/state.json', '--allow-write=runtime/observation.json']
         for player in range(2):
@@ -71,7 +71,7 @@ class NativeArenaTests(unittest.TestCase):
                          f'--allow-write=runtime/{kind}-{player}.json']
         self.logs = tempfile.TemporaryFile()
         self.server = subprocess.Popen(args, cwd=self.example,
-                                       env={**os.environ, 'ARENA_PORT': str(self.port)},
+                                       env={**os.environ, 'ARENA_PORT': str(self.port), 'ARENA_MAX_ATTEMPTS': '2'},
                                        stdout=self.logs, stderr=self.logs, start_new_session=True)
         for _ in range(100):
             try:
@@ -167,6 +167,23 @@ class NativeArenaTests(unittest.TestCase):
             self.assertIn('Runtime ability rejected', frame['feedback'][0])
         finally:
             self.compile('runtime/ability-0-0.keel', 'runtime/ability-0-0')
+
+    def test_generation_cap_keeps_playing_without_new_workers(self):
+        frame = self.frame()
+        self.assertEqual(frame['max_attempts'], 2)
+        for _ in range(400):
+            frame = self.advance_immediately()
+            if frame['game'][15] >= 4 and frame['game'][19:21] == [0, 0]:
+                break
+            time.sleep(.01)
+        self.assertGreaterEqual(frame['game'][15], 4)
+        self.assertEqual(frame['game'][32:34], [2, 2])
+        self.assertEqual(frame['game'][19:21], [0, 0])
+        attempts = frame['game'][32:34]
+        previous_tick = frame['game'][0]
+        next_frame = self.advance_immediately()
+        self.assertNotEqual(next_frame['game'][0], previous_tick)
+        self.assertEqual(next_frame['game'][32:34], attempts)
 
     def test_unseen_state_loop_is_bounded_and_disabled(self):
         source = self.runtime / 'loop.keel'

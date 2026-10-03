@@ -4,3 +4,5 @@
 *.keel-lock
 __pycache__/
 *.pyc
+/artifacts/game-captures/
+.DS_Store

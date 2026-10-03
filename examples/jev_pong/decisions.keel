@@ -1,15 +1,16 @@
 fn request_body(observation: read Text) -> Text {
     let prefix = "{\"model\":\"jev-latest\",\"state\":"
-    let questions = ",\"questions\":{\"move\":{\"type\":\"choice\",\"instructions\":\"Choose a Pong paddle action. Coordinates increase downward. Move to intercept the ball; anticipate wall bounces and the held-action duration. Choose only for your own player.\",\"criteria\":{\"up\":\"Move paddle upward\",\"down\":\"Move paddle downward\",\"stay\":\"Keep paddle stationary\"}}}}"
+    let questions = ",\"questions\":{\"target\":{\"type\":\"choice\",\"instructions\":\"Select your paddle center target for this incoming Pong ball flight. Choose the candidate y coordinate closest to predicted_impact_y to intercept the ball. predicted_impact_y is geometric sensor data accounting for wall reflections, not a selected action. Coordinates increase downward. Keel moves your paddle toward your chosen target and stops there.\",\"criteria\":{\"55\":\"Target y=55 (top)\",\"104\":\"Target y=104\",\"153\":\"Target y=153\",\"202\":\"Target y=202\",\"251\":\"Target y=251\",\"300\":\"Target y=300 (center)\",\"349\":\"Target y=349\",\"398\":\"Target y=398\",\"447\":\"Target y=447\",\"496\":\"Target y=496\",\"545\":\"Target y=545 (bottom)\"}}}}"
     return text.concat(text.concat(prefix, json.quote(observation)), questions)
 }
 fn decode_choice(body: read Text) -> Result<Int, Text> {
-    match json.text(body, "/answers/move/choice") {
+    match json.text(body, "/answers/target/choice") {
         Ok(choice) => {
-            if choice == "up" { return result.ok(-1) }
-            if choice == "stay" { return result.ok(0) }
-            if choice == "down" { return result.ok(1) }
-            return result.err("Unsupported Jev choice")
+            match text.parse_int(choice) {
+                Ok(target) => { if legal_target(target) { return result.ok(target) } }
+                Err(_error) => {}
+            }
+            return result.err("Unsupported Jev target")
         }
         Err(_error) => { return result.err("Malformed Jev response") }
     }

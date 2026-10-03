@@ -6,6 +6,16 @@ fn main() effects { net.listen, fs.read, fs.write, process.exec, clock.read, env
         }
         Err(_error) => { }
     }
-    initialize()
+    var maximum=10
+    match env.get("ARENA_MAX_ATTEMPTS") {
+        Ok(value) => {
+            match parse_attempt_limit(value) {
+                Ok(number) => { maximum=number }
+                Err(_error) => { assert false }
+            }
+        }
+        Err(_error) => { }
+    }
+    initialize(maximum)
     http.serve_app(port,"public",route)
 }

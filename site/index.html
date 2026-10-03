@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#202d32">
-  <meta name="description" content="Meet Keel, an experimental native language with compiler-provided context, explicit ownership, and built-in testing for coding agents.">
-  <title>Keel — A small language. A better-informed agent.</title>
+  <meta name="description" content="Explore Keel, an experimental native language for AI coding agents, with native HTTP servers, a self-evolving game, Jev-powered Pong, and built-in testing.">
+  <title>Keel — Native language for AI coding agents · Games &amp; examples</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%20role%3D%22img%22%20aria-labelledby%3D%22title%20desc%22%3E%0A%20%20%3Ctitle%20id%3D%22title%22%3EKeel%20icon%3C%2Ftitle%3E%0A%20%20%3Cdesc%20id%3D%22desc%22%3EA%20cream%20and%20orange%20pixel%20K%20above%20a%20teal%20line%2C%20on%20a%20dark%20rounded%20square.%3C%2Fdesc%3E%0A%20%20%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2220%22%20fill%3D%22%23202D32%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M34%2018h12v84H34z%22%20fill%3D%22%23F5EBD8%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M82%2018h12v12H82zM70%2030h12v12H70zM58%2042h12v12H58zM46%2054h12v12H46zM58%2066h12v12H58zM70%2078h12v12H70zM82%2090h12v12H82z%22%20fill%3D%22%23F28B50%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M34%20110h60v4H34z%22%20fill%3D%22%2380B5A4%22%2F%3E%0A%3C%2Fsvg%3E%0A">
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
@@ -22,7 +22,7 @@
   <path d="M34 110h60v4H34z" fill="#80B5A4"/>
 </svg>
 <span>KEEL</span></a>
-  <nav aria-label="Main navigation"><a href="#agent">For agents</a><a href="#numbers">The numbers</a><a href="https://github.com/jakecyr/keel">GitHub</a><a class="button small" href="#start">Get started</a></nav>
+  <nav aria-label="Main navigation"><a href="#agent">For agents</a><a href="#numbers">The numbers</a><a href="#examples">Examples</a><a class="nav-github" href="https://github.com/jakecyr/keel">GitHub</a><a class="button small" href="#start">Get started</a></nav>
 </header>
 <main id="main">
 <section class="hero wrap">
@@ -69,9 +69,37 @@ Dependencies + callers + contracts + holes</code></pre><p id="workflow-note">The
   <article><span class="feature-number">[ B ]</span><h3>Native from the start.</h3><p>Compile through C to a standalone executable. Your finished program needs neither a Keel installation nor Rust to run.</p><a href="https://github.com/jakecyr/keel/blob/master/docs/architecture.md">See how it compiles</a></article>
   <article><span class="feature-number">[ C ]</span><h3>Checks in the loop.</h3><p>Explicit ownership and effects. Runtime contracts. Property tests, shrinking, and replay. JSON diagnostics for the next repair.</p><a href="https://github.com/jakecyr/keel/blob/master/docs/features.md">Explore the features</a></article>
 </section>
+<section id="examples" class="section wrap game-examples" aria-labelledby="examples-heading">
+  <div class="section-head"><p class="eyebrow">02 / EXAMPLES IN MOTION</p><h2 id="examples-heading">Agents write the code.<br>Then the game changes.</h2><p>Explore two open-source game examples: AI coding agents evolving their abilities, and Jev making decisions for competing Pong players. Both use native Keel servers with browser interfaces.</p></div>
+  <div class="showcase-grid">
+    <article class="showcase" aria-labelledby="arena-heading">
+      <div class="showcase-heading"><span class="eyebrow">AI CODE GENERATION</span><span class="showcase-index" aria-hidden="true">01</span><h3 id="arena-heading">The self-evolving arena</h3><p>Two coding agents rewrite their own advantage.</p></div>
+      <figure>
+        <video controls playsinline preload="metadata" width="1440" height="1400" poster="assets/examples/evolving-arena-live.jpg" aria-labelledby="arena-heading" aria-describedby="arena-video-description">
+          <source src="assets/examples/evolving-arena-live.mp4" type="video/mp4">
+          <a href="assets/examples/evolving-arena-live.mp4">Download the evolving arena recording.</a>
+        </video>
+        <figcaption id="arena-video-description">Silent recording of a live OpenAI session: two generated Keel abilities passed sampled tests and activated during the match. The interface shows active source, stats, and validation feedback.</figcaption>
+      </figure>
+      <div class="showcase-body"><p>OpenAI coding agents generate Keel ability functions using separate player state and memory. Native workers compile and test each proposal; accepted code activates at the next round boundary.</p><p class="showcase-detail">The evolving code chooses power, reach, armor, and speed within a fixed budget. Keel's referee owns the rules and checks the actual output during play.</p><div class="showcase-links"><a href="https://github.com/jakecyr/keel/blob/master/examples/evolving_arena/README.md">Run the arena <span aria-hidden="true">↗</span></a><a href="https://github.com/jakecyr/keel/tree/master/examples/evolving_arena">Explore the source</a></div></div>
+    </article>
+    <article class="showcase" aria-labelledby="pong-heading">
+      <div class="showcase-heading"><span class="eyebrow">AI DECISION-MAKING</span><span class="showcase-index" aria-hidden="true">02</span><h3 id="pong-heading">Jev-powered Pong</h3><p>Two players. Independent observations. One court.</p></div>
+      <figure>
+        <video controls playsinline preload="metadata" width="1440" height="1400" poster="assets/examples/jev-pong-live.jpg" aria-labelledby="pong-heading" aria-describedby="pong-video-description">
+          <source src="assets/examples/jev-pong-live.mp4" type="video/mp4">
+          <a href="assets/examples/jev-pong-live.mp4">Download the Jev Pong recording.</a>
+        </video>
+        <figcaption id="pong-video-description">Silent replay of one recorded live Jev session: 20 consecutive paddle returns, 0 misses, and 20 API calls (10 per player) over 74.5 seconds. Playback uses the saved run and makes no API calls.</figcaption>
+      </figure>
+      <div class="showcase-body"><p>Each player asks Jev where to move its paddle, using its own observation and decision history. Separate native Keel workers request decisions while the game continues between responses.</p><p class="showcase-detail">Keel runs the physics, collisions, scoring, and API endpoints. The browser renders the court and lets you inspect a rally with replay controls.</p><div class="showcase-links"><a href="https://github.com/jakecyr/keel/blob/master/examples/jev_pong/README.md">Run Jev Pong <span aria-hidden="true">↗</span></a><a href="https://github.com/jakecyr/keel/tree/master/examples/jev_pong">Explore the source</a></div></div>
+    </article>
+  </div>
+  <div class="showcase-footnote"><p><strong>A Keel backend, from requests to files.</strong> Both examples serve their HTML, CSS, JavaScript, and game APIs through <code>http.serve_app</code>. Their server logic and AI workers are written in Keel.</p><p>Run locally in offline demo mode, or use your own API credentials for live agents. These experimental examples demonstrate behavior; they are not agent-efficiency benchmarks.</p><a href="https://github.com/jakecyr/keel/tree/master/examples/http_app">Start with the static-file and JSON API example →</a></div>
+</section>
 <section id="numbers" class="numbers-section">
 <div class="wrap section">
-  <div class="section-head"><p class="eyebrow">02 / OPEN NUMBERS, OPEN QUESTIONS</p><h2>Fast feedback.<br>See the evidence.</h2><p>Explore the recorded Keel, C, and Rust results. These are local measurements on a narrow fixture, not a claim that Keel is faster for every program.</p></div>
+  <div class="section-head"><p class="eyebrow">03 / OPEN NUMBERS, OPEN QUESTIONS</p><h2>Fast feedback.<br>See the evidence.</h2><p>Explore the recorded Keel, C, and Rust results. These are local measurements on a narrow fixture, not a claim that Keel is faster for every program.</p></div>
   <div class="benchmark-controls"><div><label for="metric">Compare a measurement</label><select id="metric"><option value="check">CLI check</option><option value="build">Edited build</option><option value="runtime">Native execution</option><option value="size">Minimal binary size</option></select></div><fieldset id="percentiles"><legend>Timing statistic</legend><label><input type="radio" name="percentile" value="p50" checked> Median (P50)</label><label><input type="radio" name="percentile" value="p95"> P95</label></fieldset></div>
   <div class="chart-meta"><h3 id="chart-title">CLI check</h3><span id="chart-unit">Milliseconds · lower is better</span></div>
   <table class="benchmark-table"><caption class="sr-only">Recorded benchmark comparison</caption><thead><tr><th scope="col">Language</th><th scope="col">Relative measurement</th><th id="value-heading" scope="col">Median (ms)</th></tr></thead><tbody id="chart-rows"><tr><th scope="row">Keel</th><td><div class="bar-track" aria-hidden="true"><div class="bar keel" style="width:6.581%"></div></div></td><td class="chart-value">12.03</td></tr>
@@ -99,12 +127,12 @@ Dependencies + callers + contracts + holes</code></pre><p id="workflow-note">The
 </div>
 </section>
 <section id="possibilities" class="section wrap">
-  <div class="section-head"><p class="eyebrow">03 / SOMETHING REAL TO TRY</p><h2>Start small.<br>Make it work.</h2><p>Keel is ready to experiment with. Explore the examples, inspect the code, and give your agent a concrete first task.</p></div>
+  <div class="section-head"><p class="eyebrow">04 / SOMETHING REAL TO TRY</p><h2>Start small.<br>Make it work.</h2><p>Keel is ready to experiment with. Explore the examples, inspect the code, and give your agent a concrete first task.</p></div>
   <div class="example-grid"><a href="https://github.com/jakecyr/keel#2-create-your-project" class="example"><span class="eyebrow">01 / PROGRAMS</span><h3>Your first native CLI</h3><p>Start with a greeting. Build an executable. Keep runtime permissions explicit.</p><span class="example-link">Open the example</span></a><a href="https://github.com/jakecyr/keel/blob/master/examples/collections.keel" class="example"><span class="eyebrow">02 / DATA &amp; OWNERSHIP</span><h3>Lists without guesswork</h3><p>Borrow, edit, and move integer lists. Handle optional values with exhaustive matching.</p><span class="example-link">Open the example</span></a><a href="https://github.com/jakecyr/keel/tree/master/examples/web" class="example"><span class="eyebrow">03 / LOCAL HTTP</span><h3>A tiny web server</h3><p>Explore routes and independent acceptance tests in a sequential localhost demo.</p><span class="example-link">Open the example</span></a></div>
   <details class="scope"><summary>What is supported today?</summary><div><p>Functions, checked 64-bit integers, booleans, text, specialized integer lists, Option/Result, exhaustive matching, explicit ownership, effects, runtime contracts, and native/reference tests.</p><p>Keel is experimental and not feature-complete. General records, unions, generics, imports, async, and a package manager remain future work. The web example is a small demonstration, not a production framework.</p><a href="https://github.com/jakecyr/keel/blob/master/docs/release-gaps.md">Read the release gaps</a></div></details>
 </section>
 <section id="start" class="start-section"><div class="wrap section">
-  <div class="section-head"><p class="eyebrow">04 / FROM ZERO TO HELLO</p><h2>Your next project<br>starts here.</h2><p>Install the compiler, create a project, and give your agent its starting context. No Keel-specific agent plugin required.</p></div>
+  <div class="section-head"><p class="eyebrow">05 / FROM ZERO TO HELLO</p><h2>Your next project<br>starts here.</h2><p>Install the compiler, create a project, and give your agent its starting context. No Keel-specific agent plugin required.</p></div>
   <div class="setup-step"><div class="setup-heading"><span>01</span><h3>Install Keel</h3></div><div class="setup-body"><div class="install-tabs" role="tablist" aria-label="Installation method"><button id="install-macos" role="tab" aria-selected="true" aria-controls="install-panel" data-install="macos">macOS</button><button id="install-linux" role="tab" aria-selected="false" aria-controls="install-panel" tabindex="-1" data-install="linux">Linux</button><button id="install-source" role="tab" aria-selected="false" aria-controls="install-panel" tabindex="-1" data-install="source">From source</button></div><div id="install-panel" role="tabpanel" aria-labelledby="install-macos"><div class="copy-block"><pre><code id="install-code">curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/jakecyr/keel/master/scripts/install.sh | bash
 export PATH="$HOME/.local/bin:$PATH"
 keel doctor</code></pre><button class="copy" data-copy="install-code" aria-label="Copy installation commands">Copy</button></div><p id="install-note">Requires macOS 15+ and a C compiler. Run <code>xcode-select --install</code> if needed. Add the PATH line to <code>~/.zshrc</code> for new terminals.</p></div><a href="https://github.com/jakecyr/keel/blob/master/docs/installation.md">All installation options</a> · <a href="https://github.com/jakecyr/keel/blob/master/scripts/install.sh">Review the installer</a></div></div>

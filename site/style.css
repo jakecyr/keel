@@ -740,6 +740,118 @@ input[type="radio"] {
   border-bottom: 1px solid var(--line);
   margin-top: 35px;
 }
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+.showcase {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff8e9;
+}
+.showcase-heading {
+  position: relative;
+  padding: 28px 28px 24px;
+}
+.showcase-heading .eyebrow {
+  display: block;
+  color: var(--green);
+  margin-bottom: 20px;
+  padding-right: 40px;
+}
+.showcase-index {
+  position: absolute;
+  top: 25px;
+  right: 28px;
+  font: 26px/1.4 var(--mono);
+  color: var(--green);
+}
+.showcase h3 {
+  font-size: clamp(24px, 2.5vw, 31px);
+  margin: 0 0 8px;
+}
+.showcase-heading > p {
+  margin: 0;
+  font-size: 15px;
+  color: #485456;
+}
+.showcase figure {
+  margin: 0;
+}
+.showcase video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 36 / 35;
+  object-fit: contain;
+  background: #091013;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+.showcase video:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: -4px;
+}
+.showcase figcaption {
+  padding: 16px 28px 0;
+  font: 12px/1.7 var(--mono);
+  color: #485456;
+}
+.showcase-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 28px 28px;
+}
+.showcase-body > p {
+  font-size: 16px;
+  margin: 20px 0 0;
+}
+.showcase-body .showcase-detail {
+  font-size: 14px;
+  color: #485456;
+  margin-bottom: 24px;
+}
+.showcase-links {
+  display: flex;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.showcase-links a:first-child {
+  font-weight: 700;
+}
+.showcase-footnote {
+  border-left: 3px solid var(--green);
+  margin-top: 32px;
+  padding-left: 24px;
+  max-width: 850px;
+  font-size: 15px;
+}
+.showcase-footnote p {
+  margin: 0 0 12px;
+}
+@media (max-width: 900px) {
+  .nav nav { gap: 16px; }
+  .showcase-grid { gap: 20px; }
+  .showcase-heading { padding: 24px 20px 20px; }
+  .showcase-index { right: 20px; top: 21px; }
+  .showcase figcaption { padding: 16px 20px 0; }
+  .showcase-body { padding: 0 20px 24px; }
+}
+@media (max-width: 680px) {
+  .nav .nav-github { display: none; }
+  .showcase-grid { grid-template-columns: 1fr; gap: 28px; }
+  .showcase h3 { font-size: 27px; }
+}
 .scope summary {
   cursor: pointer;
   padding: 18px 0;

@@ -46,12 +46,17 @@ fn worker(input: read Text, output: read Text) effects { fs.read, fs.write, env.
     match fs.write_text(output, encode_state(accumulated)) { Ok(_written) => {} Err(_error) => {} }
 }
 // Persistent layout: nine physics fields, running, clock; two ten-field player
-// records; then two eight-entry histories of [action, tick, status].
+// records; then two eight-entry histories of [target_y, tick, status].
+// Fields79..83: returns, current rally, longest rally, flight id, stop reason.
 fn boot_state(now: Int) -> List<Int> {
     var state = initial_state()
     list.push(edit state, 0)
     list.push(edit state, now)
-    while list.len(state) < 79 { list.push(edit state, 0) }
+    while list.len(state) < 84 { list.push(edit state, 0) }
+    list.set(edit state, 15, -1)
+    list.set(edit state, 25, -1)
+    list.set(edit state, 19, 300)
+    list.set(edit state, 29, 300)
     return state
 }
 fn decode_array(document: read Text, count: Int) -> List<Int> {
@@ -83,7 +88,8 @@ fn remember(state: edit List<Int>, side: Int, action: Int, status: Int, latency:
     list.set(edit state, history + 21, action)
     list.set(edit state, history + 22, tick)
     list.set(edit state, history + 23, status)
-    list.set(edit state, base, action)
+    list.set(edit state, base, 0)
+    list.set(edit state, base + 8, action)
     list.set(edit state, base + 1, status)
     list.set(edit state, base + 5, now + ttl)
     list.set(edit state, base + 7, latency)
@@ -96,7 +102,7 @@ fn history_json(state: read List<Int>, side: Int) -> Text {
     while index < 8 {
         if index > 8 - count { accumulated = text.concat(accumulated, ",") }
         let base = 31 + side * 24 + index * 3
-        var entry = text.concat("{\"action\":", text.from_int(list.at(state, base)))
+        var entry = text.concat("{\"target_y\":", text.from_int(list.at(state, base)))
         entry = text.concat(entry, text.concat(",\"tick\":", text.from_int(list.at(state, base + 1))))
         entry = text.concat(entry, text.concat(",\"status\":", text.from_int(list.at(state, base + 2))))
         accumulated = text.concat(accumulated, text.concat(entry, "}"))
@@ -104,7 +110,7 @@ fn history_json(state: read List<Int>, side: Int) -> Text {
     }
     return text.concat(accumulated, "]")
 }
-fn observation(state: read List<Int>, side: Int, interval: Int, ttl: Int) -> Text {
+fn observation(state: read List<Int>, side: Int, _interval: Int, _ttl: Int) -> Text {
     var label = "left"
     if side == 1 { label = "right" }
     var accumulated = text.concat("{\"player\":", json.quote(label))
@@ -118,14 +124,15 @@ fn observation(state: read List<Int>, side: Int, interval: Int, ttl: Int) -> Tex
     accumulated = text.concat(accumulated, text.concat(",\"opponent_score\":", text.from_int(list.at(state, 7 - side))))
     accumulated = text.concat(accumulated, text.concat(",\"tick\":", text.from_int(list.at(state, 8))))
     accumulated = text.concat(accumulated, text.concat(",\"held_action\":", text.from_int(list.at(state, 11 + side * 10))))
-    accumulated = text.concat(accumulated, text.concat(",\"decision_interval_ms\":", text.from_int(interval)))
-    accumulated = text.concat(accumulated, text.concat(",\"action_expiry_ms\":", text.from_int(ttl)))
-    accumulated = text.concat(accumulated, ",\"rules\":\"1000x600 arena; y increases down. Paddle centers 55..545, speed 9/tick, half-height55. Ball radius8. 30 ticks/sec. Actions -1 up,0 stay,1 down.\",\"history\":")
+    accumulated = text.concat(accumulated, text.concat(",\"predicted_impact_y\":", text.from_int(predicted_impact(state, side))))
+    accumulated = text.concat(accumulated, text.concat(",\"ticks_until_own_paddle\":", text.from_int(impact_ticks(state, side))))
+    accumulated = text.concat(accumulated, ",\"candidate_targets_y\":[55,104,153,202,251,300,349,398,447,496,545],\"rules\":\"1000x600 arena; y increases down. Paddle center55..545, speed9/tick, half-height55; ball radius8.30ticks/sec. One Jev target selection per incoming flight; motor stops at chosen target.\",\"history\":")
     return text.concat(text.concat(accumulated, history_json(state, side)), "}")
 }
 fn player_json(state: read List<Int>, side: Int) -> Text {
     let base = 11 + side * 10
     var accumulated = text.concat("{\"action\":", text.from_int(list.at(state, base)))
+    accumulated = text.concat(accumulated, text.concat(",\"target_y\":", text.from_int(list.at(state, base + 8))))
     accumulated = text.concat(accumulated, text.concat(",\"status\":", text.from_int(list.at(state, base + 1))))
     accumulated = text.concat(accumulated, text.concat(",\"requests\":", text.from_int(list.at(state, base + 6))))
     accumulated = text.concat(accumulated, text.concat(",\"latency_ms\":", text.from_int(list.at(state, base + 7))))
@@ -143,8 +150,12 @@ fn snapshot(state: read List<Int>) -> Text effects { env.read } {
     var accumulated = text.concat("{\"state\":", encode_state(physics_state(state)))
     accumulated = text.concat(accumulated, text.concat(",\"mode\":", json.quote(mode)))
     accumulated = text.concat(accumulated, text.concat(",\"running\":", running))
-    accumulated = text.concat(accumulated, text.concat(",\"interval_ms\":", text.from_int(configuration("PONG_INTERVAL", 600))))
-    accumulated = text.concat(accumulated, text.concat(",\"max_decisions\":", text.from_int(configuration("PONG_MAX_DECISIONS", 30))))
+    accumulated = text.concat(accumulated, text.concat(",\"max_decisions\":", text.from_int(configuration("PONG_MAX_DECISIONS", 12))))
+    accumulated = text.concat(accumulated, text.concat(",\"returns\":", text.from_int(list.at(state, 79))))
+    accumulated = text.concat(accumulated, text.concat(",\"rally\":", text.from_int(list.at(state, 80))))
+    accumulated = text.concat(accumulated, text.concat(",\"longest_rally\":", text.from_int(list.at(state, 81))))
+    accumulated = text.concat(accumulated, text.concat(",\"stop_reason\":", text.from_int(list.at(state, 83))))
+    accumulated = text.concat(accumulated, text.concat(",\"max_returns\":", text.from_int(configuration("PONG_MAX_RETURNS", 20))))
     accumulated = text.concat(accumulated, text.concat(",\"players\":[", player_json(state, 0)))
     accumulated = text.concat(accumulated, text.concat(",", player_json(state, 1)))
     return text.concat(accumulated, "]}")
@@ -161,7 +172,7 @@ fn worker_paths(side: Int, part: Int) -> Text {
 }
 fn poll_player(state: edit List<Int>, side: Int, now: Int) effects { process.exec, fs.read, fs.write, env.read } {
     let base = 11 + side * 10
-    let ttl = configuration("PONG_TTL", 1500)
+    let ttl = 0
     let timeout = configuration("PONG_TIMEOUT", 3000)
     let handle = list.at(state, base + 2)
     if handle > 0 {
@@ -175,7 +186,8 @@ fn poll_player(state: edit List<Int>, side: Int, now: Int) effects { process.exe
         if age >= timeout {
             if !finished { match process.terminate(handle) { Ok(_code) => {} Err(_error) => {} } }
             list.set(edit state, base + 2, 0)
-            remember(edit state, side, 0, 3, age, now, ttl)
+            let held = list.at(state, 4 + side)
+            remember(edit state, side, held, 3, age, now, ttl)
         } else {
             if finished {
                 list.set(edit state, base + 2, 0)
@@ -185,29 +197,26 @@ fn poll_player(state: edit List<Int>, side: Int, now: Int) effects { process.exe
                 if succeeded {
                     match fs.read_text(worker_paths(side, 1)) {
                         Ok(body) => {
-                            match json.int(body, "/0") { Ok(value) => { if value >= -1 && value <= 1 { action = value valid_action = true } } Err(_error) => {} }
+                            match json.int(body, "/0") { Ok(value) => { if legal_target(value) { action = value valid_action = true } } Err(_error) => {} }
                             match json.int(body, "/1") { Ok(value) => { if value == 2 { status = 2 } } Err(_error) => {} }
                         }
                         Err(_error) => {}
                     }
                 }
                 if !valid_action { status = 4 }
-                if status != 2 { action = 0 }
+                if status != 2 { action = list.at(state, 4 + side) }
                 remember(edit state, side, action, status, age, now, ttl)
             }
         }
     }
-    if now >= list.at(state, base + 5) {
-        list.set(edit state, base, 0)
-        if list.at(state, base + 1) == 2 { list.set(edit state, base + 1, 6) }
-    }
-    let maximum = configuration("PONG_MAX_DECISIONS", 30)
-    if list.at(state, base + 2) == 0 && now >= list.at(state, base + 4) {
+    let maximum = configuration("PONG_MAX_DECISIONS", 12)
+    if list.at(state, base + 2) == 0 && incoming(state, side) && list.at(state, base + 4) != list.at(state, 82) {
         if list.at(state, base + 6) >= maximum {
-            if now >= list.at(state, base + 5) { list.set(edit state, base + 1, 5) }
+            list.set(edit state, base + 1, 5)
+            stop_match(edit state, 2)
             return;
         }
-        let interval = configuration("PONG_INTERVAL", 600)
+        let interval = 0
         let input = observation(state, side, interval, ttl)
         match fs.write_text(worker_paths(side, 0), input) { Ok(_written) => {} Err(_error) => { return; } }
         // Clear the accumulated first so a failed child can never reuse an old decision.
@@ -218,17 +227,56 @@ fn poll_player(state: edit List<Int>, side: Int, now: Int) effects { process.exe
         args = text.concat(args, "]")
         let requests = list.at(state, base + 6) + 1
         list.set(edit state, base + 6, requests)
-        list.set(edit state, base + 4, now + interval)
+        let flight = list.at(state, 82)
+        list.set(edit state, base + 4, flight)
         match process.spawn(worker_paths(side, 2), args) {
             Ok(child) => { list.set(edit state, base + 2, child) list.set(edit state, base + 3, now) }
-            Err(_error) => { remember(edit state, side, 0, 4, 0, now, ttl) }
+            Err(_error) => { let held = list.at(state, 4 + side) remember(edit state, side, held, 4, 0, now, ttl) }
         }
     }
+}
+fn stop_match(state: edit List<Int>, reason: Int) effects { process.exec } {
+    list.set(edit state, 9, 0)
+    list.set(edit state, 83, reason)
+    var side = 0
+    while side < 2 {
+        let base = 11 + side * 10
+        let handle = list.at(state, base + 2)
+        if handle > 0 { match process.terminate(handle) { Ok(_code) => {} Err(_error) => {} } }
+        list.set(edit state, base + 2, 0)
+        list.set(edit state, base, 0)
+        side = side + 1
+    }
+}
+fn record_physics(state: edit List<Int>, next: read List<Int>) {
+    let scored = list.at(next, 6) != list.at(state, 6) || list.at(next, 7) != list.at(state, 7)
+    let hit = !scored && list.at(next, 2) != list.at(state, 2)
+    if scored || hit {
+        let flight = list.at(state, 82) + 1
+        list.set(edit state, 82, flight)
+    }
+    if scored { list.set(edit state, 80, 0) }
+    if hit {
+        let returns = list.at(state, 79) + 1
+        let rally = list.at(state, 80) + 1
+        list.set(edit state, 79, returns)
+        list.set(edit state, 80, rally)
+        if rally > list.at(state, 81) { list.set(edit state, 81, rally) }
+    }
+    var index = 0
+    while index < 9 { list.set(edit state, index, list.at(next, index)) index = index + 1 }
 }
 fn advance(state: edit List<Int>, now: Int) effects { process.exec, fs.read, fs.write, env.read } {
     if list.at(state, 9) == 0 { list.set(edit state, 10, now) return; }
     let live = live_mode()
-    if live { poll_player(edit state, 0, now) poll_player(edit state, 1, now) }
+    let maximum = configuration("PONG_MAX_RETURNS", 20)
+    if list.at(state, 79) >= maximum { stop_match(edit state, 1) return; }
+    if live {
+        poll_player(edit state, 0, now)
+        if list.at(state, 9) == 0 { return; }
+        poll_player(edit state, 1, now)
+        if list.at(state, 9) == 0 { return; }
+    }
     let elapsed = now - list.at(state, 10)
     let ticks = clamp(elapsed / 33, 0, 5)
     let clock = now - elapsed % 33
@@ -237,18 +285,25 @@ fn advance(state: edit List<Int>, now: Int) effects { process.exec, fs.read, fs.
     while count < ticks {
         let physics = physics_state(state)
         if !live {
-            let interval = configuration("PONG_INTERVAL", 600)
-            let cadence = clamp(interval / 33, 1, 3000)
-            if list.at(state, 8) % cadence == 0 {
-                let left = offline_action(physics, 0)
-                let right = offline_action(physics, 1)
-                remember(edit state, 0, left, 1, 0, now, 1500)
-                remember(edit state, 1, right, 1, 0, now, 1500)
+            var side = 0
+            while side < 2 {
+                let base = 11 + side * 10
+                if incoming(physics, side) && list.at(state, base + 4) != list.at(state, 82) {
+                    let target = offline_target(physics, side)
+                    let flight = list.at(state, 82)
+                    list.set(edit state, base + 4, flight)
+                    remember(edit state, side, target, 1, 0, now, 0)
+                }
+                side = side + 1
             }
         }
-        let next = step(physics, list.at(state, 11), list.at(state, 21))
-        var index = 0
-        while index < 9 { list.set(edit state, index, list.at(next, index)) index = index + 1 }
+        let left = target_action(list.at(state, 4), list.at(state, 19))
+        let right = target_action(list.at(state, 5), list.at(state, 29))
+        list.set(edit state, 11, left)
+        list.set(edit state, 21, right)
+        let next = step(physics, left, right)
+        record_physics(edit state, next)
+        if list.at(state, 79) >= maximum { stop_match(edit state, 1) return; }
         count = count + 1
     }
 }
@@ -261,27 +316,23 @@ fn route(method: read Text, path: read Text, body: read Text) -> Text effects { 
     if path == "/api/control" && method != "POST" { return http.response(405, "POST required") }
     match fs.read_text("build/state.json") {
         Ok(document) => {
-            var state = decode_array(document, 79)
+            var state = decode_array(document, 84)
             let now = clock.millis()
             if path == "/api/control" {
                 match json.get(body, "/running") {
                     Ok(value) => {
-                        if value == "true" { list.set(edit state, 9, 1) }
+                        if value == "true" { if list.at(state, 83) != 0 { return api_response(409, "{\"error\":\"session limit reached; restart required\"}") } list.set(edit state, 9, 1) }
                         else { if value == "false" { list.set(edit state, 9, 0) } else { return api_response(400, "{\"error\":\"running must be boolean\"}") } }
                         list.set(edit state, 10, now)
                     }
                     Err(_error) => { return api_response(400, "{\"error\":\"invalid control\"}") }
                 }
                 if list.at(state, 9) == 0 {
-                    var side = 0
-                    while side < 2 {
-                        let base = 11 + side * 10
-                        let handle = list.at(state, base + 2)
-                        if handle > 0 { match process.terminate(handle) { Ok(_code) => {} Err(_error) => {} } }
-                        list.set(edit state, base + 2, 0)
-                        list.set(edit state, base, 0)
-                        side = side + 1
-                    }
+                    let reason = list.at(state, 83)
+                    stop_match(edit state, reason)
+                    // Resume may request again for the interrupted incoming flight.
+                    list.set(edit state, 15, -1)
+                    list.set(edit state, 25, -1)
                 }
             }
             advance(edit state, now)

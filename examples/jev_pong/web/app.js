@@ -8,17 +8,19 @@ function show(data) {
   $('left-score').textContent = data.state[6]; $('right-score').textContent = data.state[7];
   $('clock').textContent = `TICK ${String(data.state[8]).padStart(5, '0')}`;
   $('mode').textContent = data.mode === 'jev' ? '● LIVE JEV DECISIONS' : '◌ OFFLINE DEMO · NO API CALLS';
-  $('toggle').textContent = data.running ? 'Pause match' : 'Start match ↗';
+  $('toggle').textContent = data.stop_reason ? 'Session complete' : data.running ? 'Pause match' : 'Start match ↗';
+  $('toggle').disabled = Boolean(data.stop_reason);
+  if (data.stop_reason) $('overlay').textContent = data.stop_reason === 1 ? 'RETURN LIMIT REACHED · API STOPPED' : 'REQUEST LIMIT REACHED · API STOPPED';
   $('overlay').style.display = data.running || replay ? 'none' : 'flex';
   data.players.forEach((p, i) => {
-    $(`action-${i}`).textContent = moves[p.action];
+    $(`action-${i}`).textContent = `Target ${p.target_y} · ${moves[p.action]}`;
     $(`thinking-${i}`).textContent = p.thinking ? 'DECIDING…' : (names[p.status] || 'UNKNOWN');
     $(`latency-${i}`).textContent = p.status === 1 || !p.history.length ? '—' : `${p.latency_ms} ms`;
     $(`requests-${i}`).textContent = `${p.requests} / ${data.max_decisions}`;
     const history = $(`history-${i}`); history.replaceChildren();
-    p.history.forEach(entry => { const cell = document.createElement('span'); cell.textContent = moves[entry.action].split(' ')[0]; cell.title = `Tick ${entry.tick}: ${names[entry.status]}`; history.append(cell); });
+    p.history.forEach(entry => { const cell = document.createElement('span'); cell.textContent = entry.target_y; cell.title = `Tick ${entry.tick}: ${names[entry.status]}`; history.append(cell); });
   });
-  $('details').textContent = `Decision cadence ≥ ${data.interval_ms} ms · Actions held between decisions · 30 simulation ticks/sec · ${data.mode === 'jev' ? `Up to ${2 * data.max_decisions} API requests per server session` : 'Deterministic tracking bots; no model decisions'}`;
+  $('details').textContent = `Jev selects a target; Keel moves toward it · Returns ${data.returns}/${data.max_returns} · Rally ${data.rally} · Longest ${data.longest_rally} · ${data.mode === 'jev' ? `At most ${data.max_decisions} requests per player` : 'Offline geometry controller; no API calls'}`;
 }
 async function control(running) {
   const response = await fetch('/api/control', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({running})});
@@ -41,7 +43,7 @@ async function poll() {
       frames.push(data); if (frames.length > 1800) frames.shift(); $('scrub').max = frames.length - 1;
       if (!replay) $('scrub').value = frames.length - 1;
     }
-    $('toggle').disabled = false; $('connection').textContent = '● Connected';
+    $('toggle').disabled = Boolean(data.stop_reason); $('connection').textContent = '● Connected';
     if (!replay) show(data);
   } catch (_) { $('connection').textContent = 'Disconnected · reconnecting'; $('toggle').disabled = true; }
   setTimeout(poll, 50);

@@ -3,8 +3,8 @@ set -eu
 cd "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 case "${1:-offline}" in offline|jev) PONG_MODE="${1:-offline}" ;; *) echo 'Usage: ./run.sh [offline|jev]' >&2; exit 2 ;; esac
 export PONG_MODE
-: "${PONG_PORT:=8766}" "${PONG_INTERVAL:=600}" "${PONG_TIMEOUT:=3000}" "${PONG_TTL:=1500}" "${PONG_MAX_DECISIONS:=30}"
-export PONG_PORT PONG_INTERVAL PONG_TIMEOUT PONG_TTL PONG_MAX_DECISIONS
+: "${PONG_PORT:=8766}" "${PONG_TIMEOUT:=3000}" "${PONG_MAX_DECISIONS:=12}" "${PONG_MAX_RETURNS:=20}"
+export PONG_PORT PONG_TIMEOUT PONG_MAX_DECISIONS PONG_MAX_RETURNS
 mkdir -p build
 cargo build --locked --manifest-path ../../Cargo.toml
 ../../target/debug/keel build . -o build/pong
@@ -21,6 +21,6 @@ exec ./build/pong \
     --allow-write=build/left-job.json --allow-write=build/right-job.json \
     --allow-write=build/left-result.json --allow-write=build/right-result.json \
     --allow-exec=./build/left-worker --allow-exec=./build/right-worker \
-    --allow-env=PONG_MODE --allow-env=PONG_PORT --allow-env=PONG_INTERVAL \
-    --allow-env=PONG_TIMEOUT --allow-env=PONG_TTL --allow-env=PONG_MAX_DECISIONS \
+    --allow-env=PONG_MODE --allow-env=PONG_PORT \
+    --allow-env=PONG_TIMEOUT --allow-env=PONG_MAX_DECISIONS --allow-env=PONG_MAX_RETURNS \
     --allow-clock=monotonic

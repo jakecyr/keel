@@ -25,6 +25,23 @@ minimal binary sizes. Copy buttons fall back to selecting text when clipboard
 access is unavailable. Tabs support arrow keys, Home, and End. Motion respects
 `prefers-reduced-motion`.
 
+The Examples section contains local gameplay recordings for the evolving arena
+and Jev Pong. Public MP4 videos and JPG posters live in `site/assets/examples/`;
+the builder copies `site/assets/` into the Pages artifact and rejects missing
+referenced media. Videos use native playback controls, load metadata only,
+and do not autoplay. The text beside each recording describes its visual
+content and links to the example's run instructions and source. Keep recordings
+and descriptions aligned with actual live behavior; offline scripted footage
+must be labeled as such. Never copy example `.env` files or runtime directories
+into the public assets.
+
+The current silent recordings are 1440×1400. The arena records two live OpenAI
+proposals passing sampled checks and activating in native Keel gameplay. Pong
+replays a saved live Jev session: 20 consecutive paddle returns, zero misses,
+and 20 calls (10 per player) over 74.489 seconds. Replay capture makes no API
+calls. These observations describe those recordings, not general success rates
+or performance guarantees.
+
 The Pages workflow builds on relevant pull requests and deploys relevant pushes
 to `master`. GitHub Pages must use **GitHub Actions** as its publishing source.
 It publishes only `build/site`, never the repository root. See GitHub's

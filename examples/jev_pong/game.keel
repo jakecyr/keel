@@ -55,3 +55,32 @@ fn number(job: read Text, path: read Text) -> Int {
         Err(_error) => { assert false return 0 }
     }
 }
+// Geometry is observation only. In live mode Jev still selects the target.
+fn incoming(state: read List<Int>, side: Int) -> Bool {
+    if side == 0 { return list.at(state, 2) < 0 }
+    return list.at(state, 2) > 0
+}
+fn impact_ticks(state: read List<Int>, side: Int) -> Int {
+    if !incoming(state, side) { return 0 }
+    var distance = 962 - list.at(state, 0)
+    var speed = list.at(state, 2)
+    if side == 0 { distance = list.at(state, 0) - 38 speed = 0 - speed }
+    if distance < 0 { return 0 }
+    return (distance + speed - 1) / speed
+}
+fn predicted_impact(state: read List<Int>, side: Int) -> Int {
+    let raw = list.at(state, 1) + list.at(state, 3) * impact_ticks(state, side) - 8
+    var folded = raw % 1168
+    if folded < 0 { folded = folded + 1168 }
+    if folded > 584 { return 1176 - folded }
+    return 8 + folded
+}
+fn legal_target(target: Int) -> Bool { return target >= 55 && target <= 545 && (target - 55) % 49 == 0 }
+fn offline_target(state: read List<Int>, side: Int) -> Int {
+    return 55 + ((clamp(predicted_impact(state, side), 55, 545) - 55 + 24) / 49) * 49
+}
+fn target_action(paddle: Int, target: Int) -> Int {
+    if target < paddle - 4 { return -1 }
+    if target > paddle + 4 { return 1 }
+    return 0
+}

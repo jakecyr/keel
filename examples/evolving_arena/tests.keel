@@ -29,3 +29,17 @@ property "damage remains positive" (armor in gen.int(min: 1, max: 5)) {
     assert damage(1, armor) == 1
     assert damage(5, armor) >= 1
 }
+
+test "generation limit is positive and independently enforced per player" {
+    match parse_attempt_limit("1") { Ok(value) => { assert value==1 } Err(_error) => { assert false } }
+    match parse_attempt_limit("0") { Ok(_value) => { assert false } Err(_error) => { } }
+    match parse_attempt_limit("-2") { Ok(_value) => { assert false } Err(_error) => { } }
+    match parse_attempt_limit("one") { Ok(_value) => { assert false } Err(_error) => { } }
+    var s=decode("[]",35)
+    list.set(edit s,34,1)
+    assert can_generate(s,0) && can_generate(s,1)
+    list.set(edit s,32,1)
+    assert !can_generate(s,0) && can_generate(s,1)
+    list.set(edit s,33,1)
+    assert !can_generate(s,0) && !can_generate(s,1)
+}

@@ -24,17 +24,17 @@ test "offline decisions use own paddle" {
     assert offline_action(s, 0) == 1
     assert offline_action(s, 1) == -1
 }
-test "Jev choices and rejection" {
-    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"up\"}}}") { Ok(value) => { assert value == -1 } Err(error) => { assert false } }
-    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"down\"}}}") { Ok(value) => { assert value == 1 } Err(error) => { assert false } }
-    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"stay\"}}}") { Ok(value) => { assert value == 0 } Err(error) => { assert false } }
-    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"teleport\"}}}") { Ok(value) => { assert false } Err(error) => { assert text.len(error) > 0 } }
+test "Jev target choices and rejection" {
+    match decode_choice("{\"answers\":{\"target\":{\"choice\":\"55\"}}}") { Ok(value) => { assert value == 55 } Err(error) => { assert false } }
+    match decode_choice("{\"answers\":{\"target\":{\"choice\":\"300\"}}}") { Ok(value) => { assert value == 300 } Err(error) => { assert false } }
+    match decode_choice("{\"answers\":{\"target\":{\"choice\":\"545\"}}}") { Ok(value) => { assert value == 545 } Err(error) => { assert false } }
+    match decode_choice("{\"answers\":{\"target\":{\"choice\":\"301\"}}}") { Ok(value) => { assert false } Err(error) => { assert text.len(error) > 0 } }
     match decode_choice("broken") { Ok(value) => { assert false } Err(error) => { assert text.len(error) > 0 } }
 }
 test "request escapes observation without changing schema" {
     let body = request_body("player says \"hello\"\nstate")
     match json.text(body, "/state") { Ok(value) => { assert value == "player says \"hello\"\nstate" } Err(error) => { assert false } }
-    match json.text(body, "/questions/move/type") { Ok(value) => { assert value == "choice" } Err(error) => { assert false } }
+    match json.text(body, "/questions/target/type") { Ok(value) => { assert value == "choice" } Err(error) => { assert false } }
 }
 property "paddles remain bounded" (position in gen.int(min: 55, max: 545)) {
     let s = step([500, 300, 8, 5, position, position, 0, 0, 0], -1, 1)
@@ -45,16 +45,62 @@ test "players receive their own state and separate bounded history" {
     var state = boot_state(100)
     list.set(edit state, 4, 100)
     list.set(edit state, 5, 500)
-    remember(edit state, 0, 1, 2, 50, 100, 1500)
-    remember(edit state, 1, -1, 2, 70, 100, 1500)
+    remember(edit state, 0, 545, 2, 50, 100, 1500)
+    remember(edit state, 1, 55, 2, 70, 100, 1500)
     let left = observation(state, 0, 600, 1500)
     let right = observation(state, 1, 600, 1500)
     assert number(left, "/own_paddle_y") == 100
     assert number(right, "/own_paddle_y") == 500
-    assert number(left, "/history/0/action") == 1
-    assert number(right, "/history/0/action") == -1
+    assert number(left, "/history/0/target_y") == 545
+    assert number(right, "/history/0/target_y") == 55
     var count = 0
     while count < 12 { remember(edit state, 0, 0, 1, 0, 100, 1500) count = count + 1 }
     assert list.at(state, 20) == 8
     assert list.at(state, 30) == 1
+}
+
+test "reflected impact observation and target actuator" {
+    assert impact_ticks(initial_state(), 1) == 58
+    assert predicted_impact(initial_state(), 1) == 590
+    assert predicted_impact([500, 100, -8, -5, 300, 300, 0, 0, 0], 0) == 206
+    assert offline_target(initial_state(), 1) == 545
+    assert target_action(300, 545) == 1
+    assert target_action(300, 55) == -1
+    assert target_action(542, 545) == 0
+    assert target_action(548, 545) == 0
+}
+test "rally counters distinguish hits from points" {
+    var state = boot_state(0)
+    list.set(edit state, 0, 960)
+    list.set(edit state, 3, 0)
+    let hit = step(physics_state(state), 0, 0)
+    record_physics(edit state, hit)
+    assert list.at(state, 79) == 1 && list.at(state, 80) == 1 && list.at(state, 81) == 1
+    list.set(edit state, 0, -5)
+    list.set(edit state, 1, 100)
+    let miss = step(physics_state(state), 0, 0)
+    record_physics(edit state, miss)
+    assert list.at(state, 79) == 1 && list.at(state, 80) == 0 && list.at(state, 81) == 1
+}
+test "target actuator sustains a sampled offline rally" {
+    var physics = initial_state()
+    var left_target = 300
+    var right_target = 300
+    var last_direction = 0
+    var hits = 0
+    var ticks = 0
+    while ticks < 600 {
+        let direction = list.at(physics, 2)
+        if direction != last_direction {
+            if direction < 0 { left_target = offline_target(physics, 0) }
+            else { right_target = offline_target(physics, 1) }
+            last_direction = direction
+        }
+        let next = step(physics, target_action(list.at(physics, 4), left_target), target_action(list.at(physics, 5), right_target))
+        if list.at(next, 2) != direction { hits = hits + 1 }
+        assert list.at(next, 6) == 0 && list.at(next, 7) == 0
+        physics = list.clone(next)
+        ticks = ticks + 1
+    }
+    assert hits >= 5
 }
