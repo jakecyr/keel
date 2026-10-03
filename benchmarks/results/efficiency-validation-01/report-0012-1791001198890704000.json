@@ -1,0 +1,173 @@
+{
+  "status": "COMPLETE",
+  "plan_sha256": "e102ec5479b0bd53b3dc492b77d70e628ba238355ad7050906c0be94413a5ed1",
+  "split": "validation",
+  "missing_trials": [],
+  "variants": {
+    "protocol": {
+      "attempts": 4,
+      "accepted": 0,
+      "correct_before_policy": 4,
+      "acceptance_rate": 0.0,
+      "total_tokens_including_failures": 335357,
+      "tokens_per_accepted_change": null,
+      "cached_input_tokens": 296448,
+      "output_tokens": 2836,
+      "elapsed_seconds": 160.0833972079854,
+      "tool_calls": 21,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 1620
+    },
+    "compact_combined": {
+      "attempts": 4,
+      "accepted": 0,
+      "correct_before_policy": 4,
+      "acceptance_rate": 0.0,
+      "total_tokens_including_failures": 163238,
+      "tokens_per_accepted_change": null,
+      "cached_input_tokens": 142464,
+      "output_tokens": 2256,
+      "elapsed_seconds": 136.1735396250151,
+      "tool_calls": 7,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 2387.5
+    },
+    "compact_guided": {
+      "attempts": 4,
+      "accepted": 2,
+      "correct_before_policy": 4,
+      "acceptance_rate": 0.5,
+      "total_tokens_including_failures": 128009,
+      "tokens_per_accepted_change": 64004.5,
+      "cached_input_tokens": 109824,
+      "output_tokens": 2329,
+      "elapsed_seconds": 121.04015949899622,
+      "tool_calls": 5,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 2590
+    }
+  },
+  "per_task": {
+    "positive_sum": {
+      "protocol": {
+        "attempts": 2,
+        "accepted": 0,
+        "correct_before_policy": 2,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 167763,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 148096,
+        "output_tokens": 776,
+        "elapsed_seconds": 54.04078495799331,
+        "tool_calls": 11,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1657
+      },
+      "compact_combined": {
+        "attempts": 2,
+        "accepted": 0,
+        "correct_before_policy": 2,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 98212,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 87680,
+        "output_tokens": 511,
+        "elapsed_seconds": 41.444886042008875,
+        "tool_calls": 4,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2394
+      },
+      "compact_guided": {
+        "attempts": 2,
+        "accepted": 2,
+        "correct_before_policy": 2,
+        "acceptance_rate": 1.0,
+        "total_tokens_including_failures": 62486,
+        "tokens_per_accepted_change": 31243.0,
+        "cached_input_tokens": 55040,
+        "output_tokens": 367,
+        "elapsed_seconds": 28.857815665993257,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2779
+      }
+    },
+    "fresh_tests": {
+      "protocol": {
+        "attempts": 2,
+        "accepted": 0,
+        "correct_before_policy": 2,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 167594,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 148352,
+        "output_tokens": 2060,
+        "elapsed_seconds": 106.04261224999209,
+        "tool_calls": 10,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1583
+      },
+      "compact_combined": {
+        "attempts": 2,
+        "accepted": 0,
+        "correct_before_policy": 2,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 65026,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 54784,
+        "output_tokens": 1745,
+        "elapsed_seconds": 94.72865358300623,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2381
+      },
+      "compact_guided": {
+        "attempts": 2,
+        "accepted": 0,
+        "correct_before_policy": 2,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 65523,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 54784,
+        "output_tokens": 1962,
+        "elapsed_seconds": 92.18234383300296,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2401
+      }
+    }
+  },
+  "comparisons": {
+    "compact_combined": {
+      "baseline": "protocol",
+      "token_reduction_per_accepted_change": null,
+      "paired_acceptance_regressions": [],
+      "exploratory_total_token_reduction_95pct_task_bootstrap": [
+        0.4145788999958274,
+        0.6120028163299402
+      ],
+      "candidate_for_validation": false
+    },
+    "compact_guided": {
+      "baseline": "protocol",
+      "token_reduction_per_accepted_change": null,
+      "paired_acceptance_regressions": [],
+      "exploratory_total_token_reduction_95pct_task_bootstrap": [
+        0.6090373163717078,
+        0.6275340808163898
+      ],
+      "candidate_for_validation": false
+    }
+  },
+  "economic_advantage": "UNKNOWN",
+  "condition_isolation_verified": false,
+  "limitations": [
+    "Keel-only workflow comparison, not a C comparison or the economic release gate.",
+    "Tool conditions are instructed, not enforced. CLI exposes aggregate turn usage, not per-request attribution.",
+    "Cached tokens remain in total input; missing usage and dollar costs remain unknown.",
+    "Budgets are checked after completion. Failed attempts remain in totals.",
+    "Public small task suite; validation split is held out from tuning, not secret or contamination-resistant.",
+    "Task bootstrap is exploratory, especially with few tasks/repetitions; it is not an acceptance-adjusted cost interval.",
+    "Checksums detect corruption, not malicious ledger rewriting. Replay independent acceptance for external evidence."
+  ]
+}

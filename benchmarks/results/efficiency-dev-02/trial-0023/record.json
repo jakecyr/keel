@@ -1,0 +1,1992 @@
+{
+  "trial_id": "clamp_tests:0:protocol",
+  "task_id": "clamp_tests",
+  "repeat": 0,
+  "variant": "protocol",
+  "plan_sha256": "fde85282a9b6c7415a750b6a3db1810ca5850ec181ccc1792de034b119db95df",
+  "model": "gpt-6-astra",
+  "compiler_sha256": "e451cc4e06d8ee981a15079f6e3f5ffbc3ee5d7e6710d9f857785eba9fdfb88d",
+  "prompt": "Write deterministic regression tests for clamp(value, low, high) in generated_tests.keel. Callers guarantee low <= high. Return low below low, high above high, otherwise value, for signed 64-bit integers. Tests must pass correct implementations and detect boundary/branch bugs. Do not change implementation or existing tests; add test blocks only.\nEdit only: generated_tests.keel. Preserve other files, interfaces, contracts, and existing tests. An independent evaluator checks your result after you exit. Do not read outside the workspace, use network access, or delegate. The workspace contains all public task files and ./keel. Complete the change and validate it.\nKeel: fn f(x: Int) -> Int { return x }; let immutable, var mutable; if/while/for use braces. Int is checked signed 64-bit. Lists: [1, 2], []; no implicit conversions. Owned Text/List parameters use read/edit/take; mutation calls use edit, and owned copies require explicit clone. Compute reads before an exclusive edit borrow. Match both Ok(value)/Err(message) or Some(value)/None arms. Tests: test \"name\" { assert expression }. No shadowing. `result` is reserved for postconditions, even without contracts; name locals/parameters `output` or another identifier. For exact syntax use ./keel agent spec language or collections; for signatures ./keel api NAME --json. TESTED means sampled cases, never proof.\nWrite test blocks using ordinary text edits. Validate with `python3 workflow.py validate`. Do not add functions, properties, or implementation code.\nFirst inspect `./keel inspect . --symbol clamp --json`; read relevant public files as needed.\n",
+  "prompt_sha256": "2a93b4165e12778ab43bd7ccfef66f8b00aa299a638f55963ad37b2e1f076978",
+  "prompt_bytes": 1618,
+  "preparation_seconds": 1.879199407994747e-05,
+  "artifacts": {
+    "generated_tests.keel": "// Add regression tests here.\n\ntest \"positive interval boundaries and branches\" {\n    assert clamp(-100, 3, 9) == 3\n    assert clamp(2, 3, 9) == 3\n    assert clamp(3, 3, 9) == 3\n    assert clamp(4, 3, 9) == 4\n    assert clamp(6, 3, 9) == 6\n    assert clamp(8, 3, 9) == 8\n    assert clamp(9, 3, 9) == 9\n    assert clamp(10, 3, 9) == 9\n    assert clamp(100, 3, 9) == 9\n}\n\ntest \"negative interval boundaries and branches\" {\n    assert clamp(-100, -12, -4) == -12\n    assert clamp(-13, -12, -4) == -12\n    assert clamp(-12, -12, -4) == -12\n    assert clamp(-11, -12, -4) == -11\n    assert clamp(-8, -12, -4) == -8\n    assert clamp(-5, -12, -4) == -5\n    assert clamp(-4, -12, -4) == -4\n    assert clamp(-3, -12, -4) == -4\n    assert clamp(0, -12, -4) == -4\n    assert clamp(100, -12, -4) == -4\n}\n\ntest \"interval crossing zero\" {\n    assert clamp(-8, -7, 11) == -7\n    assert clamp(-7, -7, 11) == -7\n    assert clamp(-6, -7, 11) == -6\n    assert clamp(-1, -7, 11) == -1\n    assert clamp(0, -7, 11) == 0\n    assert clamp(1, -7, 11) == 1\n    assert clamp(10, -7, 11) == 10\n    assert clamp(11, -7, 11) == 11\n    assert clamp(12, -7, 11) == 11\n}\n\ntest \"zero endpoints and adjacent bounds\" {\n    assert clamp(-1, 0, 1) == 0\n    assert clamp(0, 0, 1) == 0\n    assert clamp(1, 0, 1) == 1\n    assert clamp(2, 0, 1) == 1\n    assert clamp(-2, -1, 0) == -1\n    assert clamp(-1, -1, 0) == -1\n    assert clamp(0, -1, 0) == 0\n    assert clamp(1, -1, 0) == 0\n}\n\ntest \"singleton intervals\" {\n    assert clamp(-1, 0, 0) == 0\n    assert clamp(0, 0, 0) == 0\n    assert clamp(1, 0, 0) == 0\n    assert clamp(6, 7, 7) == 7\n    assert clamp(7, 7, 7) == 7\n    assert clamp(8, 7, 7) == 7\n    assert clamp(-8, -7, -7) == -7\n    assert clamp(-7, -7, -7) == -7\n    assert clamp(-6, -7, -7) == -7\n}\n\ntest \"full signed integer interval preserves values\" {\n    let minimum = -9223372036854775807 - 1\n    let maximum = 9223372036854775807\n    assert clamp(minimum, minimum, maximum) == minimum\n    assert clamp(minimum + 1, minimum, maximum) == minimum + 1\n    assert clamp(-4294967296, minimum, maximum) == -4294967296\n    assert clamp(-1, minimum, maximum) == -1\n    assert clamp(0, minimum, maximum) == 0\n    assert clamp(1, minimum, maximum) == 1\n    assert clamp(4294967296, minimum, maximum) == 4294967296\n    assert clamp(maximum - 1, minimum, maximum) == maximum - 1\n    assert clamp(maximum, minimum, maximum) == maximum\n}\n\ntest \"extreme inputs clamp without overflowing\" {\n    let minimum = -9223372036854775807 - 1\n    let maximum = 9223372036854775807\n    assert clamp(minimum, -7, 11) == -7\n    assert clamp(maximum, -7, 11) == 11\n    assert clamp(minimum, 3, 9) == 3\n    assert clamp(maximum, -12, -4) == -4\n    assert clamp(minimum, minimum + 1, maximum - 1) == minimum + 1\n    assert clamp(maximum, minimum + 1, maximum - 1) == maximum - 1\n    assert clamp(0, minimum + 1, maximum - 1) == 0\n    assert clamp(minimum, maximum, maximum) == maximum\n    assert clamp(maximum, maximum, maximum) == maximum\n    assert clamp(maximum, minimum, minimum) == minimum\n    assert clamp(minimum, minimum, minimum) == minimum\n}\n\ntest \"narrow intervals near integer limits\" {\n    let minimum = -9223372036854775807 - 1\n    let maximum = 9223372036854775807\n    assert clamp(minimum, minimum, minimum + 2) == minimum\n    assert clamp(minimum + 1, minimum, minimum + 2) == minimum + 1\n    assert clamp(minimum + 2, minimum, minimum + 2) == minimum + 2\n    assert clamp(minimum + 3, minimum, minimum + 2) == minimum + 2\n    assert clamp(maximum, minimum, minimum + 2) == minimum + 2\n    assert clamp(maximum - 3, maximum - 2, maximum) == maximum - 2\n    assert clamp(maximum - 2, maximum - 2, maximum) == maximum - 2\n    assert clamp(maximum - 1, maximum - 2, maximum) == maximum - 1\n    assert clamp(maximum, maximum - 2, maximum) == maximum\n    assert clamp(minimum, maximum - 2, maximum) == maximum - 2\n}\n\ntest \"bounds beyond signed 32 bit range\" {\n    assert clamp(4294967295, 4294967296, 4294967300) == 4294967296\n    assert clamp(4294967296, 4294967296, 4294967300) == 4294967296\n    assert clamp(4294967297, 4294967296, 4294967300) == 4294967297\n    assert clamp(4294967300, 4294967296, 4294967300) == 4294967300\n    assert clamp(4294967301, 4294967296, 4294967300) == 4294967300\n    assert clamp(-4294967301, -4294967300, -4294967296) == -4294967300\n    assert clamp(-4294967300, -4294967300, -4294967296) == -4294967300\n    assert clamp(-4294967297, -4294967300, -4294967296) == -4294967297\n    assert clamp(-4294967296, -4294967300, -4294967296) == -4294967296\n    assert clamp(-4294967295, -4294967300, -4294967296) == -4294967296\n}\n"
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--json",
+    "--ignore-user-config",
+    "--ephemeral",
+    "--sandbox",
+    "workspace-write",
+    "--skip-git-repo-check",
+    "-C",
+    "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-rc9rv8dd",
+    "--model",
+    "gpt-6-astra",
+    "-c",
+    "approval_policy=\"never\"",
+    "-"
+  ],
+  "events": [
+    {
+      "type": "thread.started",
+      "thread_id": "01a0fff2-c55f-77a0-a26c-1669a1390a16"
+    },
+    {
+      "type": "turn.started"
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_0",
+        "type": "agent_message",
+        "text": "I\u2019ll inspect `clamp`, add deterministic boundary and branch tests, then run the required validation.\n"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_1",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc './keel inspect . --symbol clamp --json'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc './keel inspect . --symbol clamp --json'",
+        "aggregated_output": "{\n  \"functions\": [\n    {\n      \"callers\": [\n        \"test:public\"\n      ],\n      \"contracts\": {\n        \"assurance\": \"ENFORCED when executed\",\n        \"ensures\": 0,\n        \"requires\": 0\n      },\n      \"dependencies\": [],\n      \"effects\": [],\n      \"name\": \"clamp\",\n      \"parameters\": [\n        {\n          \"mode\": \"Value\",\n          \"name\": \"value\",\n          \"ty\": \"Int\"\n        },\n        {\n          \"mode\": \"Value\",\n          \"name\": \"low\",\n          \"ty\": \"Int\"\n        },\n        {\n          \"mode\": \"Value\",\n          \"name\": \"high\",\n          \"ty\": \"Int\"\n        }\n      ],\n      \"public\": true,\n      \"result\": \"Int\",\n      \"source\": \"pub fn clamp(value: Int, low: Int, high: Int) -> Int { if value < low { return low } if value > high { return high } return value }\",\n      \"target\": \"fn:clamp\"\n    }\n  ],\n  \"holes\": [],\n  \"incomplete\": false,\n  \"resource_behavior\": {\n    \"allocation\": \"Text operations, list construction/growth/cloning, and owned error values may allocate; transitive costs and bounds are not analyzed\",\n    \"deep_copies\": \"only explicit library operations\",\n    \"external_behavior\": \"HTTP adapter is trusted native code\"\n  },\n  \"revision\": \"r37ed51375c080930\",\n  \"source_character_budget\": 12000,\n  \"tests\": [\n    \"public\"\n  ]\n}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc \"rg --files -g '\"'!keel'\"' -g '\"'!**/.git/**'\"'\"",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc \"rg --files -g '\"'!keel'\"' -g '\"'!**/.git/**'\"'\"",
+        "aggregated_output": "AGENTS.md\nworkflow.py\npublic_tests.keel\nkeel.json\ngenerated_tests.keel\nsolution.keel\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_3",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'cat generated_tests.keel public_tests.keel workflow.py keel.json'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_3",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'cat generated_tests.keel public_tests.keel workflow.py keel.json'",
+        "aggregated_output": "// Add regression tests here.\ntest \"public\" { assert clamp(4, 0, 10) == 4 }\n#!/usr/bin/env python3\n\"\"\"Public trial helper. No evaluator fixtures, model calls, or acceptance answers.\"\"\"\nimport json\nfrom pathlib import Path\nimport subprocess\nimport sys\n\n\ndef main():\n    action = sys.argv[1] if len(sys.argv) > 1 else \"validate\"\n    if action == \"validate\" and len(sys.argv) == 2:\n        command = [\"./keel\", \"test\", \".\", \"--json\"]\n    elif action == \"edit\" and len(sys.argv) == 3:\n        command = [\"./keel\", \"edit\", \".\", \"--request\", sys.argv[2], \"--json\"]\n    else:\n        raise SystemExit(\"usage: python3 workflow.py validate | edit REQUEST.json\")\n    process = subprocess.run(command, capture_output=True, text=True, timeout=45)\n    try:\n        result = json.loads(process.stdout)\n    except ValueError:\n        print(json.dumps({\"status\": \"FAILED\", \"stdout\": process.stdout, \"stderr\": process.stderr}))\n        return 1\n    # Return compact successful evidence; preserve full diagnostics on failure.\n    if process.returncode == 0 and result.get(\"status\") in (\"APPLIED\", \"TESTED\"):\n        evidence = result.get(\"evidence\") or result\n        result = {\"status\": result[\"status\"], \"revision\": result.get(\"revision\"),\n                  \"validation\": evidence.get(\"status\"),\n                  \"tests\": [{\"name\": t[\"name\"], \"status\": t[\"status\"], \"cases\": t.get(\"cases\")}\n                            for t in evidence.get(\"tests\", [])],\n                  \"assurance\": \"Public cases only; independent acceptance runs after you finish.\"}\n    print(json.dumps(result, separators=(\",\", \":\")))\n    return process.returncode\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n{\n  \"schema\": 1,\n  \"name\": \"clamp_tests\",\n  \"entry\": \"solution.keel\",\n  \"sources\": [],\n  \"tests\": [\n    \"public_tests.keel\",\n    \"generated_tests.keel\"\n  ]\n}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_4",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-rc9rv8dd/generated_tests.keel",
+            "kind": "update"
+          }
+        ],
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_4",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-rc9rv8dd/generated_tests.keel",
+            "kind": "update"
+          }
+        ],
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_5",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_5",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "{\"status\":\"TESTED\",\"revision\":\"rbc6736ad39f51f34\",\"validation\":\"TESTED\",\"tests\":[{\"name\":\"public\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"positive interval boundaries and branches\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"negative interval boundaries and branches\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"interval crossing zero\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"zero endpoints and adjacent bounds\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"singleton intervals\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"full signed integer interval preserves values\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"extreme inputs clamp without overflowing\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"narrow intervals near integer limits\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"bounds beyond signed 32 bit range\",\"status\":\"TESTED\",\"cases\":1}],\"assurance\":\"Public cases only; independent acceptance runs after you finish.\"}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_6",
+        "type": "agent_message",
+        "text": "Added nine deterministic test blocks in `generated_tests.keel`, covering branches, exact boundaries, singleton intervals, negative values, zero, and signed 64-bit extremes.\n\n`python3 workflow.py validate` passed all tests. Only the designated file was edited; implementation and existing tests were preserved."
+      }
+    },
+    {
+      "type": "turn.completed",
+      "usage": {
+        "input_tokens": 81211,
+        "cached_input_tokens": 74112,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2208,
+        "reasoning_output_tokens": 52
+      }
+    }
+  ],
+  "events_sha256": "b6259a943e97ad5b622be74570cf7e23b60eeb4499cbc899575d5de71f1e4c1d",
+  "stderr": "",
+  "error": null,
+  "elapsed_seconds": 45.05572708399268,
+  "timed_out": false,
+  "returncode": 0,
+  "protected_files_changed": [],
+  "input_tokens": 81211,
+  "cached_input_tokens": 74112,
+  "output_tokens": 2208,
+  "metrics": {
+    "completed_turns": 1,
+    "model_requests": null,
+    "model_requests_note": "CLI events do not expose every inference request",
+    "tool_calls": 5,
+    "command_calls": 4,
+    "file_change_calls": 1,
+    "failed_commands": 0,
+    "tool_output_bytes": 4056
+  },
+  "acceptance": {
+    "evaluator": "keel_workflow_oracle_v1",
+    "task_sha256": "1e57356df115f725c19cd607fa1654000c897cb3fbce884d08b549c28a42875b",
+    "artifact_sha256": "eef217d0c52fbc16f11e68ef80d39c3ed2bf044b1d407c37c94240f9e25bd094",
+    "passed": true,
+    "runs": [
+      {
+        "kind": "correct",
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r86a2e333e445ef8e",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "positive interval boundaries and branches",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "negative interval boundaries and branches",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "zero endpoints and adjacent bounds",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "singleton intervals",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "full signed integer interval preserves values",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "extreme inputs clamp without overflowing",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "narrow intervals near integer limits",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "bounds beyond signed 32 bit range",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r86a2e333e445ef8e",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "positive interval boundaries and branches",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "negative interval boundaries and branches",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "zero endpoints and adjacent bounds",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "singleton intervals",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "full signed integer interval preserves values",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "extreme inputs clamp without overflowing",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "narrow intervals near integer limits",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "bounds beyond signed 32 bit range",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.2113840420061024
+      },
+      {
+        "kind": "correct",
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r5a58cc20e7154633",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "positive interval boundaries and branches",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "negative interval boundaries and branches",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "zero endpoints and adjacent bounds",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "singleton intervals",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "full signed integer interval preserves values",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "extreme inputs clamp without overflowing",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "narrow intervals near integer limits",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "bounds beyond signed 32 bit range",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r5a58cc20e7154633",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "positive interval boundaries and branches",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "negative interval boundaries and branches",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "zero endpoints and adjacent bounds",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "singleton intervals",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "full signed integer interval preserves values",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "extreme inputs clamp without overflowing",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "narrow intervals near integer limits",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "bounds beyond signed 32 bit range",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.20640687500417698
+      },
+      {
+        "kind": "mutant",
+        "name": "wrong_lower",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r4faf60837ae8c350",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 93,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 4,
+                    "offset": 227,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 432,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 16,
+                    "offset": 566,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 836,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 29,
+                    "offset": 970,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 1194,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 41,
+                    "offset": 1328,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "zero endpoints and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "singleton intervals",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "full signed integer interval preserves values",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 2539,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 80,
+                    "offset": 2673,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "extreme inputs clamp without overflowing",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 3555,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 101,
+                    "offset": 3689,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "narrow intervals near integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 3924,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 109,
+                    "offset": 4058,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds beyond signed 32 bit range",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r4faf60837ae8c350",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 93,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 4,
+                "offset": 227,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 432,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 16,
+                "offset": 566,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 836,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 29,
+                "offset": 970,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 1194,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 41,
+                "offset": 1328,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "zero endpoints and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "singleton intervals",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "full signed integer interval preserves values",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 2539,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 80,
+                "offset": 2673,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "extreme inputs clamp without overflowing",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 3555,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 101,
+                "offset": 3689,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "narrow intervals near integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 3924,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 109,
+                "offset": 4058,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds beyond signed 32 bit range",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.20731650000379886
+      },
+      {
+        "kind": "mutant",
+        "name": "wrong_upper",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r319a70c295cb7680",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 313,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 11,
+                    "offset": 445,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 693,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 23,
+                    "offset": 825,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 1112,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 37,
+                    "offset": 1244,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 1288,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 44,
+                    "offset": 1420,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "zero endpoints and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "singleton intervals",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "full signed integer interval preserves values",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 2579,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 81,
+                    "offset": 2711,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "extreme inputs clamp without overflowing",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 3425,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 99,
+                    "offset": 3557,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "narrow intervals near integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 4192,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 113,
+                    "offset": 4324,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds beyond signed 32 bit range",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r319a70c295cb7680",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 313,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 11,
+                "offset": 445,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 693,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 23,
+                "offset": 825,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 1112,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 37,
+                "offset": 1244,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 1288,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 44,
+                "offset": 1420,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "zero endpoints and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "singleton intervals",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "full signed integer interval preserves values",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 2579,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 81,
+                "offset": 2711,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "extreme inputs clamp without overflowing",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 3425,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 99,
+                "offset": 3557,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "narrow intervals near integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 4192,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 113,
+                "offset": 4324,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds beyond signed 32 bit range",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.21258845800184645
+      },
+      {
+        "kind": "mutant",
+        "name": "always_low",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "rb959bb9f92062b19",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 189,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 7,
+                    "offset": 258,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 547,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 19,
+                    "offset": 616,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 906,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 31,
+                    "offset": 975,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 1257,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 43,
+                    "offset": 1326,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "zero endpoints and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "singleton intervals",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 1969,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 67,
+                    "offset": 2038,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "full signed integer interval preserves values",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 2579,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 81,
+                    "offset": 2648,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "extreme inputs clamp without overflowing",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 3291,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 97,
+                    "offset": 3360,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "narrow intervals near integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 4058,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 111,
+                    "offset": 4127,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds beyond signed 32 bit range",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "rb959bb9f92062b19",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 189,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 7,
+                "offset": 258,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 547,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 19,
+                "offset": 616,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 906,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 31,
+                "offset": 975,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 1257,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 43,
+                "offset": 1326,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "zero endpoints and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "singleton intervals",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 1969,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 67,
+                "offset": 2038,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "full signed integer interval preserves values",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 2579,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 81,
+                "offset": 2648,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "extreme inputs clamp without overflowing",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 3291,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 97,
+                "offset": 3360,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "narrow intervals near integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 4058,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 111,
+                "offset": 4127,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds beyond signed 32 bit range",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.19845475000329316
+      },
+      {
+        "kind": "mutant",
+        "name": "zero_lower",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "refa9ce88c367cec4",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 93,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 4,
+                    "offset": 224,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 432,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 16,
+                    "offset": 563,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative interval boundaries and branches",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 836,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 29,
+                    "offset": 967,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 1319,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 45,
+                    "offset": 1450,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "zero endpoints and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 1577,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 55,
+                    "offset": 1708,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "singleton intervals",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "full signed integer interval preserves values",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 2539,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 80,
+                    "offset": 2670,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "extreme inputs clamp without overflowing",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 3555,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 101,
+                    "offset": 3686,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "narrow intervals near integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                    "file_offset": 3924,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 109,
+                    "offset": 4055,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds beyond signed 32 bit range",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "refa9ce88c367cec4",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 93,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 4,
+                "offset": 224,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 432,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 16,
+                "offset": 563,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative interval boundaries and branches",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 836,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 29,
+                "offset": 967,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 1319,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 45,
+                "offset": 1450,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "zero endpoints and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 1577,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 55,
+                "offset": 1708,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "singleton intervals",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "full signed integer interval preserves values",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 2539,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 80,
+                "offset": 2670,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "extreme inputs clamp without overflowing",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 3555,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 101,
+                "offset": 3686,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "narrow intervals near integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-82v84c8c/generated_tests.keel",
+                "file_offset": 3924,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 109,
+                "offset": 4055,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds beyond signed 32 bit range",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.21034770799451508
+      }
+    ],
+    "correct_implementations_passed": true,
+    "mutants_killed": [
+      "wrong_lower",
+      "wrong_upper",
+      "always_low",
+      "zero_lower"
+    ],
+    "mutants_total": 4
+  },
+  "condition_isolation_verified": false,
+  "costs": {
+    "inference_usd": null,
+    "tool_usd": null
+  },
+  "policy_rejections": [
+    "token budget exceeded"
+  ],
+  "accepted": false,
+  "integrity_sha256": "d897d83dde82c5cddb2862f95a75d854418291f197d2accac1f113efd16150cf"
+}

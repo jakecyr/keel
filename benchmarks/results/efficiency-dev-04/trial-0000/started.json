@@ -1,0 +1,6 @@
+{
+  "trial_id": "unique:1:compact_guided",
+  "task_id": "unique",
+  "repeat": 1,
+  "variant": "compact_guided"
+}

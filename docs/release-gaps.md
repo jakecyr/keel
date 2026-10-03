@@ -92,3 +92,14 @@ targets on the specified synthetic 10,000-line fixture. Cold-cache build and
 first-affected-test targets remain UNKNOWN. This does not establish the same
 results for representative applications: include generic instantiations when
 supported, actual linked libraries, invalidation work, and failed runs.
+
+## Workflow optimization evidence
+
+A [48-trial Keel workflow study](../benchmarks/results/efficiency.md) tested compact
+context, focused syntax guidance, and combined edit/validation. Reported tokens
+fell 50.8% in the six-task development comparison and 61.8% on two reserved tasks,
+relative to the Keel protocol baseline. All artifacts passed independent
+correctness checks, but many still exceeded the registered token budget. These
+small Keel-only comparisons do not establish an agent-token or dollar-cost
+advantage over C, Rust, or other languages, and do not pass the economic release
+gate. The original cross-language pilot remains unchanged.

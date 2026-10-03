@@ -1,0 +1,263 @@
+{
+  "trial_id": "checkout:0:protocol",
+  "task_id": "checkout",
+  "repeat": 0,
+  "variant": "protocol",
+  "plan_sha256": "fde85282a9b6c7415a750b6a3db1810ca5850ec181ccc1792de034b119db95df",
+  "model": "gpt-6-astra",
+  "compiler_sha256": "e451cc4e06d8ee981a15079f6e3f5ffbc3ee5d7e6710d9f857785eba9fdfb88d",
+  "prompt": "Repair checkout(price, quantity, member): compute subtotal with the existing line_total helper, then apply the existing discount helper once to that subtotal. Inputs: 0 <= price <= 10000, 0 <= quantity <= 100. Preserve helpers and interface.\nEdit only: solution.keel. Preserve other files, interfaces, contracts, and existing tests. An independent evaluator checks your result after you exit. Do not read outside the workspace, use network access, or delegate. The workspace contains all public task files and ./keel. Complete the change and validate it.\nKeel: fn f(x: Int) -> Int { return x }; let immutable, var mutable; if/while/for use braces. Int is checked signed 64-bit. Lists: [1, 2], []; no implicit conversions. Owned Text/List parameters use read/edit/take; mutation calls use edit, and owned copies require explicit clone. Compute reads before an exclusive edit borrow. Match both Ok(value)/Err(message) or Some(value)/None arms. Tests: test \"name\" { assert expression }. No shadowing. `result` is reserved for postconditions, even without contracts; name locals/parameters `output` or another identifier. For exact syntax use ./keel agent spec language or collections; for signatures ./keel api NAME --json. TESTED means sampled cases, never proof.\nUse revision-bound structural edits: write request.json with {\"base_revision\": \"COPY_CURRENT_REVISION\", \"target\": \"fn:checkout\", \"operation\": \"replace_body\", \"source\": \"{ replacement body }\", \"run\": \"check\"}.\nRun `./keel edit . --request request.json --json`, then `python3 workflow.py validate`. The edit already checks types; no extra check is needed.\nFirst inspect `./keel inspect . --symbol checkout --json`; read relevant public files as needed.\n",
+  "prompt_sha256": "aaac5037357317ec6d79619ab80c39c693cb1b3be750c38b65f546239bc7c977",
+  "prompt_bytes": 1713,
+  "preparation_seconds": 3.2500000088475645e-05,
+  "artifacts": {
+    "solution.keel": "pub fn checkout(price: Int, quantity: Int, member: Bool) -> Int { let subtotal = line_total(price, quantity); return discount(subtotal, member) }\n"
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--json",
+    "--ignore-user-config",
+    "--ephemeral",
+    "--sandbox",
+    "workspace-write",
+    "--skip-git-repo-check",
+    "-C",
+    "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-86ikdjh6",
+    "--model",
+    "gpt-6-astra",
+    "-c",
+    "approval_policy=\"never\"",
+    "-"
+  ],
+  "events": [
+    {
+      "type": "thread.started",
+      "thread_id": "01a0ffec-a5a3-7761-9eae-cd0d56ee23bc"
+    },
+    {
+      "type": "turn.started"
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_0",
+        "type": "agent_message",
+        "text": "I\u2019ll inspect `checkout`, update its body to call the two helpers in order, then run the required validation.\n"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_1",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc './keel inspect . --symbol checkout --json'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc './keel inspect . --symbol checkout --json'",
+        "aggregated_output": "{\n  \"functions\": [\n    {\n      \"callers\": [\n        \"test:public\"\n      ],\n      \"contracts\": {\n        \"assurance\": \"ENFORCED when executed\",\n        \"ensures\": 0,\n        \"requires\": 0\n      },\n      \"dependencies\": [\n        {\n          \"effects\": [],\n          \"interface\": \"fn discount(total: Int, member: Bool) -> Int\",\n          \"name\": \"discount\"\n        },\n        {\n          \"effects\": [],\n          \"interface\": \"fn line_total(price: Int, quantity: Int) -> Int\",\n          \"name\": \"line_total\"\n        }\n      ],\n      \"effects\": [],\n      \"name\": \"checkout\",\n      \"parameters\": [\n        {\n          \"mode\": \"Value\",\n          \"name\": \"price\",\n          \"ty\": \"Int\"\n        },\n        {\n          \"mode\": \"Value\",\n          \"name\": \"quantity\",\n          \"ty\": \"Int\"\n        },\n        {\n          \"mode\": \"Value\",\n          \"name\": \"member\",\n          \"ty\": \"Bool\"\n        }\n      ],\n      \"public\": true,\n      \"result\": \"Int\",\n      \"source\": \"pub fn checkout(price: Int, quantity: Int, member: Bool) -> Int { return line_total(discount(price, member), quantity) }\",\n      \"target\": \"fn:checkout\"\n    }\n  ],\n  \"holes\": [],\n  \"incomplete\": false,\n  \"resource_behavior\": {\n    \"allocation\": \"Text operations, list construction/growth/cloning, and owned error values may allocate; transitive costs and bounds are not analyzed\",\n    \"deep_copies\": \"only explicit library operations\",\n    \"external_behavior\": \"HTTP adapter is trusted native code\"\n  },\n  \"revision\": \"ra4b3aa5ec298f95a\",\n  \"source_character_budget\": 12000,\n  \"tests\": [\n    \"public\"\n  ]\n}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'cat solution.keel'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'cat solution.keel'",
+        "aggregated_output": "pub fn checkout(price: Int, quantity: Int, member: Bool) -> Int { return line_total(discount(price, member), quantity) }\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_3",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc \"python3 - <<'PY'\nimport json\nrequest = {\\\"base_revision\\\": \\\"ra4b3aa5ec298f95a\\\", \\\"target\\\": \\\"fn:checkout\\\", \\\"operation\\\": \\\"replace_body\\\", \\\"source\\\": \\\"{ let subtotal = line_total(price, quantity); return discount(subtotal, member) }\\\", \\\"run\\\": \\\"check\\\"}\nwith open('request.json', 'w') as f:\n    json.dump(request, f)\nPY\n./keel edit . --request request.json --json\"",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_3",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc \"python3 - <<'PY'\nimport json\nrequest = {\\\"base_revision\\\": \\\"ra4b3aa5ec298f95a\\\", \\\"target\\\": \\\"fn:checkout\\\", \\\"operation\\\": \\\"replace_body\\\", \\\"source\\\": \\\"{ let subtotal = line_total(price, quantity); return discount(subtotal, member) }\\\", \\\"run\\\": \\\"check\\\"}\nwith open('request.json', 'w') as f:\n    json.dump(request, f)\nPY\n./keel edit . --request request.json --json\"",
+        "aggregated_output": "{\n  \"base_revision\": \"ra4b3aa5ec298f95a\",\n  \"evidence\": null,\n  \"file\": \"/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-86ikdjh6/solution.keel\",\n  \"message\": \"Function bodies replaced atomically; interfaces, contracts, and test source preserved.\",\n  \"revision\": \"r65ac25d453e0dbd3\",\n  \"status\": \"APPLIED\",\n  \"target\": \"fn:checkout\",\n  \"targets\": [\n    \"checkout\"\n  ]\n}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_4",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_4",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "{\"status\":\"TESTED\",\"revision\":\"r65ac25d453e0dbd3\",\"validation\":\"TESTED\",\"tests\":[{\"name\":\"public\",\"status\":\"TESTED\",\"cases\":1}],\"assurance\":\"Public cases only; independent acceptance runs after you finish.\"}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_5",
+        "type": "agent_message",
+        "text": "Updated `solution.keel`: `checkout` computes the subtotal with `line_total`, then calls `discount` once on that subtotal. Helpers and interface are preserved.\n\nType checking passed. Validation passed the public test (1 sampled case); independent evaluation remains pending."
+      }
+    },
+    {
+      "type": "turn.completed",
+      "usage": {
+        "input_tokens": 78844,
+        "cached_input_tokens": 74240,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 320,
+        "reasoning_output_tokens": 0
+      }
+    }
+  ],
+  "events_sha256": "c9a4a200e0a4a12af342ccaf8f2d3451ba3b4aa43889d26dbe27e6c19f3fe7e3",
+  "stderr": "",
+  "error": null,
+  "elapsed_seconds": 23.390678874988225,
+  "timed_out": false,
+  "returncode": 0,
+  "protected_files_changed": [],
+  "input_tokens": 78844,
+  "cached_input_tokens": 74240,
+  "output_tokens": 320,
+  "metrics": {
+    "completed_turns": 1,
+    "model_requests": null,
+    "model_requests_note": "CLI events do not expose every inference request",
+    "tool_calls": 4,
+    "command_calls": 4,
+    "file_change_calls": 0,
+    "failed_commands": 0,
+    "tool_output_bytes": 2297
+  },
+  "acceptance": {
+    "evaluator": "keel_workflow_oracle_v1",
+    "task_sha256": "6dda4d37c1a166c45ffe9425c335c31fd8953b9fddf4c59b90a2b44ec4621af0",
+    "artifact_sha256": "7e2fa33ea3802809b5ece347163d46b99d70a2ea44195a25f69319665466f705",
+    "passed": true,
+    "runs": [
+      {
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "rfce7ab22287b9e8b",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "public",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "checkout oracle",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "rfce7ab22287b9e8b",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "public",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "checkout oracle",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.16594979100045748
+      }
+    ]
+  },
+  "condition_isolation_verified": false,
+  "costs": {
+    "inference_usd": null,
+    "tool_usd": null
+  },
+  "policy_rejections": [
+    "token budget exceeded"
+  ],
+  "accepted": false,
+  "integrity_sha256": "fe962efa9908ae210d9479c69714d14631de940d431908bf0057ec0b5e277ad2"
+}

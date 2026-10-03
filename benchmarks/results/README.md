@@ -79,3 +79,13 @@ production readiness.
 
 Local timings and this pilot do not establish a 25% reduction in actual
 inference-plus-tool dollar cost per independently accepted change.
+
+## Keel workflow optimization experiments
+
+The [workflow study](efficiency.md) records 48 further live trials with varied code
+and test-generation tasks. Compact context, focused syntax guidance and combined
+validation reduced reported tokens in these Keel-to-Keel comparisons: 50.8% in the
+six-task development comparison and 61.8% on two reserved tasks. These figures do
+not establish an advantage over C or Rust; the original pilot and economic gate
+above remain unchanged. All raw prompts, attempts, budgets and oracle results are
+retained, including over-budget outcomes.

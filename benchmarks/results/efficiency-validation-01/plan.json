@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "kind": "keel_workflow_experiment",
+  "suite_sha256": "6e5cf8c1294cdef11766c033631531d8bebb569f6f1d705768b0a4d71bdf88e8",
+  "harness_sha256": "fb13120b692edb9d8062f44902f2bbc34efe4dbeeff2c462f3a9d5fc0b00e7c4",
+  "compiler_sha256": "d41b7f7a81b3fe583e69b8884f3505c052e6244415d4bb841594d6dcf1d84c7c",
+  "model": "gpt-6-astra",
+  "repeats": 2,
+  "seed": 42,
+  "split": "validation",
+  "task_ids": [
+    "positive_sum",
+    "fresh_tests"
+  ],
+  "variants": [
+    "protocol",
+    "compact_combined",
+    "compact_guided"
+  ],
+  "baseline": "protocol",
+  "budget": {
+    "wall_seconds": 180,
+    "total_tokens": 32000
+  },
+  "trials": [
+    {
+      "trial_id": "fresh_tests:0:compact_combined",
+      "task_id": "fresh_tests",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "positive_sum:1:compact_guided",
+      "task_id": "positive_sum",
+      "repeat": 1,
+      "variant": "compact_guided"
+    },
+    {
+      "trial_id": "positive_sum:0:compact_guided",
+      "task_id": "positive_sum",
+      "repeat": 0,
+      "variant": "compact_guided"
+    },
+    {
+      "trial_id": "fresh_tests:0:compact_guided",
+      "task_id": "fresh_tests",
+      "repeat": 0,
+      "variant": "compact_guided"
+    },
+    {
+      "trial_id": "fresh_tests:1:protocol",
+      "task_id": "fresh_tests",
+      "repeat": 1,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "fresh_tests:0:protocol",
+      "task_id": "fresh_tests",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "fresh_tests:1:compact_guided",
+      "task_id": "fresh_tests",
+      "repeat": 1,
+      "variant": "compact_guided"
+    },
+    {
+      "trial_id": "positive_sum:1:protocol",
+      "task_id": "positive_sum",
+      "repeat": 1,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "positive_sum:1:compact_combined",
+      "task_id": "positive_sum",
+      "repeat": 1,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "positive_sum:0:protocol",
+      "task_id": "positive_sum",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "positive_sum:0:compact_combined",
+      "task_id": "positive_sum",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "fresh_tests:1:compact_combined",
+      "task_id": "fresh_tests",
+      "repeat": 1,
+      "variant": "compact_combined"
+    }
+  ],
+  "integrity_sha256": "e102ec5479b0bd53b3dc492b77d70e628ba238355ad7050906c0be94413a5ed1"
+}

@@ -1,0 +1,457 @@
+{
+  "status": "COMPLETE",
+  "plan_sha256": "fde85282a9b6c7415a750b6a3db1810ca5850ec181ccc1792de034b119db95df",
+  "split": "development",
+  "missing_trials": [],
+  "variants": {
+    "protocol": {
+      "attempts": 6,
+      "accepted": 0,
+      "correct_before_policy": 6,
+      "acceptance_rate": 0.0,
+      "total_tokens_including_failures": 491897,
+      "tokens_per_accepted_change": null,
+      "cached_input_tokens": 436992,
+      "output_tokens": 3985,
+      "elapsed_seconds": 180.9804236269847,
+      "tool_calls": 32,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 1646.1666666666667
+    },
+    "full_context": {
+      "attempts": 6,
+      "accepted": 0,
+      "correct_before_policy": 6,
+      "acceptance_rate": 0.0,
+      "total_tokens_including_failures": 347643,
+      "tokens_per_accepted_change": null,
+      "cached_input_tokens": 287872,
+      "output_tokens": 2657,
+      "elapsed_seconds": 152.23492279199127,
+      "tool_calls": 14,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 13510.666666666666
+    },
+    "compact_context": {
+      "attempts": 6,
+      "accepted": 0,
+      "correct_before_policy": 6,
+      "acceptance_rate": 0.0,
+      "total_tokens_including_failures": 328051,
+      "tokens_per_accepted_change": null,
+      "cached_input_tokens": 279808,
+      "output_tokens": 2841,
+      "elapsed_seconds": 174.33391037401452,
+      "tool_calls": 16,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 2713.5
+    },
+    "compact_combined": {
+      "attempts": 6,
+      "accepted": 3,
+      "correct_before_policy": 6,
+      "acceptance_rate": 0.5,
+      "total_tokens_including_failures": 241915,
+      "tokens_per_accepted_change": 80638.33333333333,
+      "cached_input_tokens": 210816,
+      "output_tokens": 2296,
+      "elapsed_seconds": 123.61490495900216,
+      "tool_calls": 9,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 2747.6666666666665
+    }
+  },
+  "per_task": {
+    "boundary": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 62818,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 54784,
+        "output_tokens": 290,
+        "elapsed_seconds": 23.110080750004272,
+        "tool_calls": 4,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1596
+      },
+      "full_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 54244,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 42112,
+        "output_tokens": 195,
+        "elapsed_seconds": 15.763421750001726,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 13239
+      },
+      "compact_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 46766,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 42752,
+        "output_tokens": 193,
+        "elapsed_seconds": 17.190177333002794,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2328
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 1,
+        "correct_before_policy": 1,
+        "acceptance_rate": 1.0,
+        "total_tokens_including_failures": 30949,
+        "tokens_per_accepted_change": 30949.0,
+        "cached_input_tokens": 27392,
+        "output_tokens": 159,
+        "elapsed_seconds": 12.261410249993787,
+        "tool_calls": 1,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2369
+      }
+    },
+    "parse_default": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 84375,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 72832,
+        "output_tokens": 413,
+        "elapsed_seconds": 32.697243167000124,
+        "tool_calls": 7,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1675
+      },
+      "full_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 72679,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 59904,
+        "output_tokens": 279,
+        "elapsed_seconds": 20.768498332996387,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 13331
+      },
+      "compact_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 66369,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 54912,
+        "output_tokens": 329,
+        "elapsed_seconds": 25.48746375000337,
+        "tool_calls": 4,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2533
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 66154,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 59904,
+        "output_tokens": 297,
+        "elapsed_seconds": 22.220781958996668,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2574
+      }
+    },
+    "unique": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 101293,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 88832,
+        "output_tokens": 420,
+        "elapsed_seconds": 32.27243745900341,
+        "tool_calls": 6,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1630
+      },
+      "full_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 54628,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 42112,
+        "output_tokens": 313,
+        "elapsed_seconds": 20.513731624989305,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 13360
+      },
+      "compact_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 67199,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 56960,
+        "output_tokens": 276,
+        "elapsed_seconds": 20.211246416001813,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2865
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 49224,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 44032,
+        "output_tokens": 279,
+        "elapsed_seconds": 37.64370358300221,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2906
+      }
+    },
+    "copy_append": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 80828,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 72192,
+        "output_tokens": 334,
+        "elapsed_seconds": 24.45425629199599,
+        "tool_calls": 6,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1645
+      },
+      "full_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 54490,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 47744,
+        "output_tokens": 250,
+        "elapsed_seconds": 11.199038999999175,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 13427
+      },
+      "compact_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 66715,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 57984,
+        "output_tokens": 295,
+        "elapsed_seconds": 26.236362166993786,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 3043
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 1,
+        "correct_before_policy": 1,
+        "acceptance_rate": 1.0,
+        "total_tokens_including_failures": 31275,
+        "tokens_per_accepted_change": 31275.0,
+        "cached_input_tokens": 27520,
+        "output_tokens": 181,
+        "elapsed_seconds": 12.63899333300651,
+        "tool_calls": 1,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 3084
+      }
+    },
+    "checkout": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 79164,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 74240,
+        "output_tokens": 320,
+        "elapsed_seconds": 23.390678874988225,
+        "tool_calls": 4,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1713
+      },
+      "full_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 54895,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 48256,
+        "output_tokens": 209,
+        "elapsed_seconds": 19.493345084003522,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 14074
+      },
+      "compact_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 47201,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 39808,
+        "output_tokens": 204,
+        "elapsed_seconds": 17.46625920799852,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2976
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 1,
+        "correct_before_policy": 1,
+        "acceptance_rate": 1.0,
+        "total_tokens_including_failures": 31188,
+        "tokens_per_accepted_change": 31188.0,
+        "cached_input_tokens": 24576,
+        "output_tokens": 173,
+        "elapsed_seconds": 14.902473209003801,
+        "tool_calls": 1,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 3017
+      }
+    },
+    "clamp_tests": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 83419,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 74112,
+        "output_tokens": 2208,
+        "elapsed_seconds": 45.05572708399268,
+        "tool_calls": 5,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1618
+      },
+      "full_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 56707,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 47744,
+        "output_tokens": 1411,
+        "elapsed_seconds": 64.49688700000115,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 13633
+      },
+      "compact_context": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 33801,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 27392,
+        "output_tokens": 1544,
+        "elapsed_seconds": 67.74240150001424,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2536
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 33125,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 27392,
+        "output_tokens": 1207,
+        "elapsed_seconds": 23.947542624999187,
+        "tool_calls": 1,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2536
+      }
+    }
+  },
+  "comparisons": {
+    "full_context": {
+      "baseline": "protocol",
+      "token_reduction_per_accepted_change": null,
+      "paired_acceptance_regressions": [],
+      "exploratory_total_token_reduction_95pct_task_bootstrap": [
+        0.19936125355728884,
+        0.37816624231757257
+      ],
+      "candidate_for_validation": false
+    },
+    "compact_context": {
+      "baseline": "protocol",
+      "token_reduction_per_accepted_change": null,
+      "paired_acceptance_regressions": [],
+      "exploratory_total_token_reduction_95pct_task_bootstrap": [
+        0.2312185644624244,
+        0.4508365259937811
+      ],
+      "candidate_for_validation": false
+    },
+    "compact_combined": {
+      "baseline": "protocol",
+      "token_reduction_per_accepted_change": null,
+      "paired_acceptance_regressions": [],
+      "exploratory_total_token_reduction_95pct_task_bootstrap": [
+        0.3861900920744118,
+        0.5941620826567136
+      ],
+      "candidate_for_validation": false
+    }
+  },
+  "economic_advantage": "UNKNOWN",
+  "condition_isolation_verified": false,
+  "limitations": [
+    "Keel-only workflow comparison, not a C comparison or the economic release gate.",
+    "Tool conditions are instructed, not enforced. CLI exposes aggregate turn usage, not per-request attribution.",
+    "Cached tokens remain in total input; missing usage and dollar costs remain unknown.",
+    "Budgets are checked after completion. Failed attempts remain in totals.",
+    "Public small task suite; validation split is held out from tuning, not secret or contamination-resistant.",
+    "Task bootstrap is exploratory, especially with few tasks/repetitions; it is not an acceptance-adjusted cost interval.",
+    "Checksums detect corruption, not malicious ledger rewriting. Replay independent acceptance for external evidence."
+  ]
+}

@@ -11,10 +11,13 @@ python3 -m http.server 4173 --directory build/site
 ```
 
 Open `http://localhost:4173`. The builder refreshes the homepage's benchmark data
-from `benchmarks/results/local.json` and `pilot-trials.gate.json`; it checks all
+from `benchmarks/results/local.json`, `pilot-trials.gate.json`, and the registered
+workflow experiment summaries/records; it checks all
 internal anchor targets. The checked-in page retains a snapshot for direct-file
-previews. Keep that snapshot aligned by copying `build/site/index.html` back to
-`site/index.html` after changing benchmark evidence.
+previews. Run `python3 scripts/build_site.py --sync` after changing benchmark evidence to
+refresh both the checked-in homepage and README metric banner. Ordinary builds
+reject a stale README banner. Workflow totals are reconciled with every sealed
+registered trial before being advertised.
 
 The context/edit/check walkthrough is illustrative, not a browser-based Keel
 compiler. The chart uses the recorded measurements, including P50/P95 and the
@@ -28,5 +31,7 @@ It publishes only `build/site`, never the repository root. See GitHub's
 [custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 Keep claims tied to the recorded evidence. Local compiler timings do not prove
-agent token savings. The current pilot does not establish an agent-cost benefit,
-and Keel remains experimental and feature-incomplete.
+agent token savings. The original C-comparison pilot does not establish an agent-cost benefit.
+The newer Keel workflow experiments establish reductions only within their small
+registered Keel samples. Keep that comparison explicit; do not relabel workflow
+improvements as an advantage over C or Rust. Keel remains experimental.

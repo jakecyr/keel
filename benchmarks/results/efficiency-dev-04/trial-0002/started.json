@@ -1,0 +1,6 @@
+{
+  "trial_id": "copy_append:1:compact_combined",
+  "task_id": "copy_append",
+  "repeat": 1,
+  "variant": "compact_combined"
+}

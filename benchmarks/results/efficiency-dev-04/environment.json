@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-10-03T04:10:09.247580+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.2",
+  "codex": "codex-cli 0.160.0",
+  "git_status": " M .github/workflows/ci.yml\n M AGENTS.md\n M Cargo.lock\n M Cargo.toml\n M LANGUAGE.md\n M README.md\n M benchmarks/README.md\n M docs/agent-language.md\n M docs/architecture.md\n M docs/design-status.json\n M docs/features.md\n M docs/language.md\n M docs/release-gaps.md\n M src/agent.rs\n M src/check.rs\n M src/cli.rs\n M src/eval.rs\n M src/lint.rs\n M src/main.rs\n M src/native.rs\n M src/project.rs\n M src/runtime.c\n M src/syntax.rs\n M src/tests.rs\n M src/tooling_tests.rs\n?? benchmarks/efficiency.py\n?? benchmarks/efficiency_tasks.py\n?? benchmarks/efficiency_workflow.py\n?? benchmarks/results/efficiency-dev-01-plan.json\n?? benchmarks/results/efficiency-dev-01/\n?? benchmarks/results/efficiency-dev-02-plan.json\n?? benchmarks/results/efficiency-dev-02/\n?? benchmarks/results/efficiency-dev-03-plan.json\n?? benchmarks/results/efficiency-dev-04-plan.json\n?? benchmarks/results/efficiency-dev-04/\n?? benchmarks/test_efficiency.py\n?? docs/stdlib-validation.md\n?? docs/stdlib.md\n?? examples/evolving_arena/\n?? examples/http_app/\n?? examples/jev/\n?? examples/jev_pong/\n?? examples/stdlib.keel\n?? src/http_app.c\n?? src/http_app_tests.rs\n?? src/stdlib.c\n?? src/stdlib.rs\n?? src/stdlib_tests.rs\n?? tests/fixtures/\n",
+  "tracked_diff_sha256": "f72189593990063c76ac11e7feaf63dc825447ec21c6a70df73f1df15df223eb",
+  "harness_sha256": "fb13120b692edb9d8062f44902f2bbc34efe4dbeeff2c462f3a9d5fc0b00e7c4"
+}

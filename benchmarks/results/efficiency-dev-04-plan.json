@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "kind": "keel_workflow_experiment",
+  "suite_sha256": "6e5cf8c1294cdef11766c033631531d8bebb569f6f1d705768b0a4d71bdf88e8",
+  "harness_sha256": "fb13120b692edb9d8062f44902f2bbc34efe4dbeeff2c462f3a9d5fc0b00e7c4",
+  "compiler_sha256": "d41b7f7a81b3fe583e69b8884f3505c052e6244415d4bb841594d6dcf1d84c7c",
+  "model": "gpt-6-astra",
+  "repeats": 2,
+  "seed": 42,
+  "split": "development",
+  "task_ids": [
+    "unique",
+    "copy_append"
+  ],
+  "variants": [
+    "compact_combined",
+    "compact_guided"
+  ],
+  "baseline": "compact_combined",
+  "budget": {
+    "wall_seconds": 180,
+    "total_tokens": 32000
+  },
+  "trials": [
+    {
+      "trial_id": "unique:1:compact_guided",
+      "task_id": "unique",
+      "repeat": 1,
+      "variant": "compact_guided"
+    },
+    {
+      "trial_id": "copy_append:0:compact_combined",
+      "task_id": "copy_append",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "copy_append:1:compact_combined",
+      "task_id": "copy_append",
+      "repeat": 1,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "copy_append:1:compact_guided",
+      "task_id": "copy_append",
+      "repeat": 1,
+      "variant": "compact_guided"
+    },
+    {
+      "trial_id": "unique:1:compact_combined",
+      "task_id": "unique",
+      "repeat": 1,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "copy_append:0:compact_guided",
+      "task_id": "copy_append",
+      "repeat": 0,
+      "variant": "compact_guided"
+    },
+    {
+      "trial_id": "unique:0:compact_combined",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "unique:0:compact_guided",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "compact_guided"
+    }
+  ],
+  "integrity_sha256": "b0fe312d134a01533ce0292243be41696e79493ef5b4e2944e807a60563ec78f"
+}

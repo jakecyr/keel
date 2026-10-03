@@ -630,6 +630,31 @@ input[type="radio"] {
   font-size: 14px;
   margin-top: 16px;
 }
+.workflow-results {
+  margin-top: 36px;
+  padding: 28px;
+  border: 1px solid var(--mint);
+  border-radius: 4px;
+  background: rgba(128, 181, 164, 0.06);
+}
+.workflow-results h3 {
+  margin: 12px 0 20px;
+  font-size: clamp(26px, 4vw, 40px);
+}
+.workflow-results h3 strong {
+  color: var(--orange);
+}
+.workflow-results > p {
+  line-height: 1.7;
+}
+.workflow-results .workflow-scope {
+  font-size: 14px;
+  color: #c6cfcb;
+}
+.workflow-results > a {
+  display: inline-block;
+  margin-top: 8px;
+}
 .pilot {
   border: 1px solid #6f807b;
   margin-top: 36px;

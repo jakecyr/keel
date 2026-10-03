@@ -1,0 +1,1524 @@
+{
+  "trial_id": "clamp_tests:0:compact_context",
+  "task_id": "clamp_tests",
+  "repeat": 0,
+  "variant": "compact_context",
+  "plan_sha256": "fde85282a9b6c7415a750b6a3db1810ca5850ec181ccc1792de034b119db95df",
+  "model": "gpt-6-astra",
+  "compiler_sha256": "e451cc4e06d8ee981a15079f6e3f5ffbc3ee5d7e6710d9f857785eba9fdfb88d",
+  "prompt": "Write deterministic regression tests for clamp(value, low, high) in generated_tests.keel. Callers guarantee low <= high. Return low below low, high above high, otherwise value, for signed 64-bit integers. Tests must pass correct implementations and detect boundary/branch bugs. Do not change implementation or existing tests; add test blocks only.\nEdit only: generated_tests.keel. Preserve other files, interfaces, contracts, and existing tests. An independent evaluator checks your result after you exit. Do not read outside the workspace, use network access, or delegate. The workspace contains all public task files and ./keel. Complete the change and validate it.\nKeel: fn f(x: Int) -> Int { return x }; let immutable, var mutable; if/while/for use braces. Int is checked signed 64-bit. Lists: [1, 2], []; no implicit conversions. Owned Text/List parameters use read/edit/take; mutation calls use edit, and owned copies require explicit clone. Compute reads before an exclusive edit borrow. Match both Ok(value)/Err(message) or Some(value)/None arms. Tests: test \"name\" { assert expression }. No shadowing. `result` is reserved for postconditions, even without contracts; name locals/parameters `output` or another identifier. For exact syntax use ./keel agent spec language or collections; for signatures ./keel api NAME --json. TESTED means sampled cases, never proof.\nWrite test blocks using ordinary text edits. Validate with `python3 workflow.py validate`. Do not add functions, properties, or implementation code.\nInitial context below contains current source, revision and public tests. Use it directly; retrieve fresh context only if needed after a change or error.\n{\"schema\":1,\"revision\":\"r37ed51375c080930\",\"incomplete\":false,\"functions\":[{\"target\":\"fn:clamp\",\"source\":\"pub fn clamp(value: Int, low: Int, high: Int) -> Int { if value < low { return low } if value > high { return high } return value }\",\"dependencies\":[],\"contracts\":{\"assurance\":\"ENFORCED when executed\",\"ensures\":0,\"requires\":0},\"effects\":[]}],\"public_files\":{\"solution.keel\":\"pub fn clamp(value: Int, low: Int, high: Int) -> Int { if value < low { return low } if value > high { return high } return value }\\n\",\"public_tests.keel\":\"test \\\"public\\\" { assert clamp(4, 0, 10) == 4 }\\n\",\"generated_tests.keel\":\"// Add regression tests here.\\n\",\"keel.json\":\"{\\n  \\\"schema\\\": 1,\\n  \\\"name\\\": \\\"clamp_tests\\\",\\n  \\\"entry\\\": \\\"solution.keel\\\",\\n  \\\"sources\\\": [],\\n  \\\"tests\\\": [\\n    \\\"public_tests.keel\\\",\\n    \\\"generated_tests.keel\\\"\\n  ]\\n}\\n\"},\"apis\":[]}\n",
+  "prompt_sha256": "dfff8832c6cb2f3816bb7ad0539ae038a64c317524075946bf86814baf98f263",
+  "prompt_bytes": 2536,
+  "preparation_seconds": 0.00585654099995736,
+  "artifacts": {
+    "generated_tests.keel": "// Add regression tests here.\ntest \"positive bounds cover branches and endpoints\" {\n    assert clamp(-9, 3, 11) == 3\n    assert clamp(2, 3, 11) == 3\n    assert clamp(3, 3, 11) == 3\n    assert clamp(4, 3, 11) == 4\n    assert clamp(7, 3, 11) == 7\n    assert clamp(10, 3, 11) == 10\n    assert clamp(11, 3, 11) == 11\n    assert clamp(12, 3, 11) == 11\n}\n\ntest \"negative bounds preserve signed ordering\" {\n    assert clamp(-20, -13, -5) == -13\n    assert clamp(-14, -13, -5) == -13\n    assert clamp(-13, -13, -5) == -13\n    assert clamp(-12, -13, -5) == -12\n    assert clamp(-9, -13, -5) == -9\n    assert clamp(-6, -13, -5) == -6\n    assert clamp(-5, -13, -5) == -5\n    assert clamp(-4, -13, -5) == -5\n    assert clamp(0, -13, -5) == -5\n    assert clamp(8, -13, -5) == -5\n}\n\ntest \"interval crossing zero\" {\n    assert clamp(-8, -7, 4) == -7\n    assert clamp(-7, -7, 4) == -7\n    assert clamp(-6, -7, 4) == -6\n    assert clamp(-1, -7, 4) == -1\n    assert clamp(0, -7, 4) == 0\n    assert clamp(1, -7, 4) == 1\n    assert clamp(3, -7, 4) == 3\n    assert clamp(4, -7, 4) == 4\n    assert clamp(5, -7, 4) == 4\n}\n\ntest \"equal and adjacent bounds\" {\n    assert clamp(-1, 0, 0) == 0\n    assert clamp(0, 0, 0) == 0\n    assert clamp(1, 0, 0) == 0\n    assert clamp(-7, -6, -6) == -6\n    assert clamp(-6, -6, -6) == -6\n    assert clamp(-5, -6, -6) == -6\n    assert clamp(5, 6, 6) == 6\n    assert clamp(6, 6, 6) == 6\n    assert clamp(7, 6, 6) == 6\n    assert clamp(-2, -1, 0) == -1\n    assert clamp(-1, -1, 0) == -1\n    assert clamp(0, -1, 0) == 0\n    assert clamp(1, -1, 0) == 0\n    assert clamp(-1, 0, 1) == 0\n    assert clamp(0, 0, 1) == 0\n    assert clamp(1, 0, 1) == 1\n    assert clamp(2, 0, 1) == 1\n}\n\ntest \"full signed integer range\" {\n    let minimum = -9223372036854775807 - 1\n    let maximum = 9223372036854775807\n    assert clamp(minimum, minimum, maximum) == minimum\n    assert clamp(minimum + 1, minimum, maximum) == minimum + 1\n    assert clamp(-1, minimum, maximum) == -1\n    assert clamp(0, minimum, maximum) == 0\n    assert clamp(1, minimum, maximum) == 1\n    assert clamp(maximum - 1, minimum, maximum) == maximum - 1\n    assert clamp(maximum, minimum, maximum) == maximum\n    assert clamp(minimum, -7, 4) == -7\n    assert clamp(maximum, -7, 4) == 4\n    assert clamp(minimum, 3, maximum) == 3\n    assert clamp(maximum, minimum, -5) == -5\n}\n\ntest \"bounds near signed integer limits\" {\n    let minimum = -9223372036854775807 - 1\n    let maximum = 9223372036854775807\n    assert clamp(minimum, minimum + 1, maximum - 1) == minimum + 1\n    assert clamp(maximum, minimum + 1, maximum - 1) == maximum - 1\n    assert clamp(minimum, minimum, minimum + 2) == minimum\n    assert clamp(minimum + 1, minimum, minimum + 2) == minimum + 1\n    assert clamp(minimum + 2, minimum, minimum + 2) == minimum + 2\n    assert clamp(minimum + 3, minimum, minimum + 2) == minimum + 2\n    assert clamp(maximum - 3, maximum - 2, maximum) == maximum - 2\n    assert clamp(maximum - 2, maximum - 2, maximum) == maximum - 2\n    assert clamp(maximum - 1, maximum - 2, maximum) == maximum - 1\n    assert clamp(maximum, maximum - 2, maximum) == maximum\n    assert clamp(minimum, minimum, minimum) == minimum\n    assert clamp(maximum, minimum, minimum) == minimum\n    assert clamp(minimum, maximum, maximum) == maximum\n    assert clamp(maximum, maximum, maximum) == maximum\n}\n"
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--json",
+    "--ignore-user-config",
+    "--ephemeral",
+    "--sandbox",
+    "workspace-write",
+    "--skip-git-repo-check",
+    "-C",
+    "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-k81x4qpi",
+    "--model",
+    "gpt-6-astra",
+    "-c",
+    "approval_policy=\"never\"",
+    "-"
+  ],
+  "events": [
+    {
+      "type": "thread.started",
+      "thread_id": "01a0ffef-9a19-7391-a0bb-6ce11dfa2079"
+    },
+    {
+      "type": "turn.started"
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_0",
+        "type": "agent_message",
+        "text": "I\u2019ll add deterministic tests for each branch, endpoint equality, equal bounds, and signed 64-bit extremes, then run the required validation.\n"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_1",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-k81x4qpi/generated_tests.keel",
+            "kind": "update"
+          }
+        ],
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-k81x4qpi/generated_tests.keel",
+            "kind": "update"
+          }
+        ],
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "{\"status\":\"TESTED\",\"revision\":\"r671777433432d0ab\",\"validation\":\"TESTED\",\"tests\":[{\"name\":\"public\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"positive bounds cover branches and endpoints\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"negative bounds preserve signed ordering\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"interval crossing zero\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"equal and adjacent bounds\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"full signed integer range\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"bounds near signed integer limits\",\"status\":\"TESTED\",\"cases\":1}],\"assurance\":\"Public cases only; independent acceptance runs after you finish.\"}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_3",
+        "type": "agent_message",
+        "text": "Added six deterministic test blocks to `generated_tests.keel`, covering branches, endpoints, negative values, equal and adjacent bounds, and signed 64-bit extremes.\n\n`python3 workflow.py validate` passed all tests with status `TESTED`; independent acceptance remains pending."
+      }
+    },
+    {
+      "type": "turn.completed",
+      "usage": {
+        "input_tokens": 32257,
+        "cached_input_tokens": 27392,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1544,
+        "reasoning_output_tokens": 0
+      }
+    }
+  ],
+  "events_sha256": "9cc6e21cc4db28d1a70f98d6d37d1b46ac4967cbb5c372fd3505e1774da9ff52",
+  "stderr": "",
+  "error": null,
+  "elapsed_seconds": 67.74240150001424,
+  "timed_out": false,
+  "returncode": 0,
+  "protected_files_changed": [],
+  "input_tokens": 32257,
+  "cached_input_tokens": 27392,
+  "output_tokens": 1544,
+  "metrics": {
+    "completed_turns": 1,
+    "model_requests": null,
+    "model_requests_note": "CLI events do not expose every inference request",
+    "tool_calls": 2,
+    "command_calls": 1,
+    "file_change_calls": 1,
+    "failed_commands": 0,
+    "tool_output_bytes": 637
+  },
+  "acceptance": {
+    "evaluator": "keel_workflow_oracle_v1",
+    "task_sha256": "1e57356df115f725c19cd607fa1654000c897cb3fbce884d08b549c28a42875b",
+    "artifact_sha256": "6838b990d0afb19d41db1b74df276626f4114aa160e3e2ff2c3417c13658d9af",
+    "passed": true,
+    "runs": [
+      {
+        "kind": "correct",
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "rc89320b4ddb29f99",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "positive bounds cover branches and endpoints",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "negative bounds preserve signed ordering",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "equal and adjacent bounds",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "full signed integer range",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "bounds near signed integer limits",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "rc89320b4ddb29f99",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "positive bounds cover branches and endpoints",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "negative bounds preserve signed ordering",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "equal and adjacent bounds",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "full signed integer range",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "bounds near signed integer limits",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.19580800000403542
+      },
+      {
+        "kind": "correct",
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r2c47f19696f74da6",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "positive bounds cover branches and endpoints",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "negative bounds preserve signed ordering",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "equal and adjacent bounds",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "full signed integer range",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "bounds near signed integer limits",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r2c47f19696f74da6",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "positive bounds cover branches and endpoints",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "negative bounds preserve signed ordering",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "equal and adjacent bounds",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "full signed integer range",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "bounds near signed integer limits",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.19180845899973065
+      },
+      {
+        "kind": "mutant",
+        "name": "wrong_lower",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r61b6fb89d831387f",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 95,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 3,
+                    "offset": 229,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive bounds cover branches and endpoints",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 411,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 14,
+                    "offset": 545,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative bounds preserve signed ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 812,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 27,
+                    "offset": 946,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 1438,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 48,
+                    "offset": 1572,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "equal and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 2181,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 68,
+                    "offset": 2315,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "full signed integer range",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 2473,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 77,
+                    "offset": 2607,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds near signed integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r61b6fb89d831387f",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 95,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 3,
+                "offset": 229,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive bounds cover branches and endpoints",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 411,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 14,
+                "offset": 545,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative bounds preserve signed ordering",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 812,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 27,
+                "offset": 946,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 1438,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 48,
+                "offset": 1572,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "equal and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 2181,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 68,
+                "offset": 2315,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "full signed integer range",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 2473,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 77,
+                "offset": 2607,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds near signed integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.1885169580054935
+      },
+      {
+        "kind": "mutant",
+        "name": "wrong_upper",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "rbd98dbbaeb36ac4f",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 324,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 10,
+                    "offset": 456,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive bounds cover branches and endpoints",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 671,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 21,
+                    "offset": 803,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative bounds preserve signed ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 1076,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 35,
+                    "offset": 1208,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 1538,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 51,
+                    "offset": 1670,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "equal and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 2220,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 69,
+                    "offset": 2352,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "full signed integer range",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 2540,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 78,
+                    "offset": 2672,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds near signed integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "rbd98dbbaeb36ac4f",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 324,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 10,
+                "offset": 456,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive bounds cover branches and endpoints",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 671,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 21,
+                "offset": 803,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative bounds preserve signed ordering",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 1076,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 35,
+                "offset": 1208,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 1538,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 51,
+                "offset": 1670,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "equal and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 2220,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 69,
+                "offset": 2352,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "full signed integer range",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 2540,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 78,
+                "offset": 2672,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds near signed integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.19982670799072366
+      },
+      {
+        "kind": "mutant",
+        "name": "always_low",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "rcee12519162bd2d8",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 192,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 6,
+                    "offset": 261,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive bounds cover branches and endpoints",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 525,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 17,
+                    "offset": 594,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative bounds preserve signed ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 880,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 29,
+                    "offset": 949,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 1506,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 50,
+                    "offset": 1575,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "equal and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 1869,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 62,
+                    "offset": 1938,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "full signed integer range",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 2540,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 78,
+                    "offset": 2609,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds near signed integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "rcee12519162bd2d8",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 192,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 6,
+                "offset": 261,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive bounds cover branches and endpoints",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 525,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 17,
+                "offset": 594,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative bounds preserve signed ordering",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 880,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 29,
+                "offset": 949,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 1506,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 50,
+                "offset": 1575,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "equal and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 1869,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 62,
+                "offset": 1938,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "full signed integer range",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 2540,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 78,
+                "offset": 2609,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds near signed integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.20173754201096017
+      },
+      {
+        "kind": "mutant",
+        "name": "zero_lower",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r73e211691ebca81b",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 95,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 3,
+                    "offset": 226,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "positive bounds cover branches and endpoints",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 411,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 14,
+                    "offset": 542,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "negative bounds preserve signed ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 812,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 27,
+                    "offset": 943,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "interval crossing zero",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 1240,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 42,
+                    "offset": 1371,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "equal and adjacent bounds",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 2181,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 68,
+                    "offset": 2312,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "full signed integer range",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                    "file_offset": 2473,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 77,
+                    "offset": 2604,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "bounds near signed integer limits",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r73e211691ebca81b",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 95,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 3,
+                "offset": 226,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "positive bounds cover branches and endpoints",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 411,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 14,
+                "offset": 542,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "negative bounds preserve signed ordering",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 812,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 27,
+                "offset": 943,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "interval crossing zero",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 1240,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 42,
+                "offset": 1371,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "equal and adjacent bounds",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 2181,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 68,
+                "offset": 2312,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "full signed integer range",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-z4kum3_5/generated_tests.keel",
+                "file_offset": 2473,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 77,
+                "offset": 2604,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "bounds near signed integer limits",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.19783849999657832
+      }
+    ],
+    "correct_implementations_passed": true,
+    "mutants_killed": [
+      "wrong_lower",
+      "wrong_upper",
+      "always_low",
+      "zero_lower"
+    ],
+    "mutants_total": 4
+  },
+  "condition_isolation_verified": false,
+  "costs": {
+    "inference_usd": null,
+    "tool_usd": null
+  },
+  "policy_rejections": [
+    "token budget exceeded"
+  ],
+  "accepted": false,
+  "integrity_sha256": "3d003a3d2863c3ea406615bc5b0eda745692c70b706d11ce1c114d628924ee06"
+}

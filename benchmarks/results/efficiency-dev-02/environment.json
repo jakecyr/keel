@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-10-03T03:58:20.501056+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.2",
+  "codex": "codex-cli 0.160.0",
+  "git_status": " M .github/workflows/ci.yml\n M AGENTS.md\n M Cargo.lock\n M Cargo.toml\n M LANGUAGE.md\n M README.md\n M benchmarks/README.md\n M docs/agent-language.md\n M docs/architecture.md\n M docs/design-status.json\n M docs/features.md\n M docs/language.md\n M docs/release-gaps.md\n M src/agent.rs\n M src/check.rs\n M src/cli.rs\n M src/eval.rs\n M src/main.rs\n M src/native.rs\n M src/project.rs\n M src/runtime.c\n M src/syntax.rs\n M src/tests.rs\n M src/tooling_tests.rs\n?? benchmarks/efficiency.py\n?? benchmarks/efficiency_tasks.py\n?? benchmarks/efficiency_workflow.py\n?? benchmarks/results/efficiency-dev-01-plan.json\n?? benchmarks/results/efficiency-dev-01/\n?? benchmarks/results/efficiency-dev-02-plan.json\n?? benchmarks/results/efficiency-dev-02/\n?? benchmarks/test_efficiency.py\n?? docs/stdlib.md\n?? examples/evolving_arena/\n?? examples/jev/\n?? examples/jev_pong/\n?? examples/stdlib.keel\n?? src/stdlib.c\n?? src/stdlib.rs\n?? src/stdlib_tests.rs\n?? tests/fixtures/\n",
+  "tracked_diff_sha256": "18edbd37d0ec9db8a06e1a785f0bd3b8310899db2b6b3df1e07d2f54de54ce3e",
+  "harness_sha256": "bd5ed592888ab2eb7430e86be27a96d7b612f4c56f30621be84b2ce42966eb39"
+}

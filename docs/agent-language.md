@@ -30,7 +30,7 @@ property "nonnegative" (n in gen.int(min: -1000, max: 1000)) {
 }
 ```
 
-Functions have explicitly typed parameters; an omitted return type means Unit. Blocks use braces. `let` is immutable; `var` allows assignment. `if`/`else`, `while`, `for value in list`, `return`, `assert`, and exhaustive `match` are supported. No shadowing. Newlines are whitespace; optional semicolons can disambiguate. `//` comments are preserved by formatting and edits outside the replaced body.
+Functions have explicitly typed parameters; an omitted return type means Unit. Blocks use braces. `let` is immutable; `var` allows assignment. `if`/`else`, `while`, `for value in list`, `return`, `assert`, and exhaustive `match` are supported. No shadowing. `result` is reserved for postconditions: use a name such as `output` for local variables and parameters, even in functions without contracts. Newlines are whitespace; optional semicolons can disambiguate. `//` comments are preserved by formatting and edits outside the replaced body.
 
 Supported types: `Int` (signed 64-bit), `Bool`, `Text`, `List<Int>`, `Option<Int>`, `Result<Int, Text>`, and `Unit`. Lists/options/results are specific built-in types, not arbitrary generics. There are no user-defined records/unions, imports, closures, async functions, or automatic package installation yet. Project `keel.json` explicitly composes complete files into one namespace; it is not a module system.
 

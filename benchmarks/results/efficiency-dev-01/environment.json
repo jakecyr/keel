@@ -1,0 +1,9 @@
+{
+  "created_at": "2026-10-03T03:54:25.880228+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.2",
+  "codex": "codex-cli 0.160.0",
+  "git_status": " M .github/workflows/ci.yml\n M AGENTS.md\n M Cargo.lock\n M Cargo.toml\n M LANGUAGE.md\n M docs/agent-language.md\n M docs/architecture.md\n M docs/design-status.json\n M docs/features.md\n M docs/language.md\n M docs/release-gaps.md\n M src/agent.rs\n M src/check.rs\n M src/cli.rs\n M src/eval.rs\n M src/main.rs\n M src/native.rs\n M src/project.rs\n M src/runtime.c\n M src/syntax.rs\n M src/tests.rs\n M src/tooling_tests.rs\n?? benchmarks/efficiency.py\n?? benchmarks/efficiency_tasks.py\n?? benchmarks/efficiency_workflow.py\n?? benchmarks/results/efficiency-dev-01-plan.json\n?? benchmarks/results/efficiency-dev-01/\n?? benchmarks/test_efficiency.py\n?? docs/stdlib.md\n?? examples/evolving_arena/\n?? examples/jev/\n?? examples/jev_pong/\n?? examples/stdlib.keel\n?? src/stdlib.c\n?? src/stdlib.rs\n?? src/stdlib_tests.rs\n?? tests/fixtures/\n",
+  "tracked_diff_sha256": "a187e6bc04226d673fed2eedc8def1947552efe1c4475473d806b1806d960b91",
+  "harness_sha256": "e5d2eb974e2e35476fc2948eabfe180f65a1e432edbb4a4440a3377bec6825f6"
+}

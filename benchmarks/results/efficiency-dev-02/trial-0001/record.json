@@ -1,0 +1,241 @@
+{
+  "trial_id": "parse_default:0:full_context",
+  "task_id": "parse_default",
+  "repeat": 0,
+  "variant": "full_context",
+  "plan_sha256": "fde85282a9b6c7415a750b6a3db1810ca5850ec181ccc1792de034b119db95df",
+  "model": "gpt-6-astra",
+  "compiler_sha256": "e451cc4e06d8ee981a15079f6e3f5ffbc3ee5d7e6710d9f857785eba9fdfb88d",
+  "prompt": "Implement parse_default(raw, fallback): return the signed integer parsed from raw, or fallback for invalid/out-of-range text. Use the documented text.parse_int behavior. Preserve the interface.\nEdit only: solution.keel. Preserve other files, interfaces, contracts, and existing tests. An independent evaluator checks your result after you exit. Do not read outside the workspace, use network access, or delegate. The workspace contains all public task files and ./keel. Complete the change and validate it.\nKeel: fn f(x: Int) -> Int { return x }; let immutable, var mutable; if/while/for use braces. Int is checked signed 64-bit. Lists: [1, 2], []; no implicit conversions. Owned Text/List parameters use read/edit/take; mutation calls use edit, and owned copies require explicit clone. Compute reads before an exclusive edit borrow. Match both Ok(value)/Err(message) or Some(value)/None arms. Tests: test \"name\" { assert expression }. No shadowing. `result` is reserved for postconditions, even without contracts; name locals/parameters `output` or another identifier. For exact syntax use ./keel agent spec language or collections; for signatures ./keel api NAME --json. TESTED means sampled cases, never proof.\nUse revision-bound structural edits: write request.json with {\"base_revision\": \"COPY_CURRENT_REVISION\", \"target\": \"fn:parse_default\", \"operation\": \"replace_body\", \"source\": \"{ replacement body }\", \"run\": \"check\"}.\nRun `./keel edit . --request request.json --json`, then `python3 workflow.py validate`. The edit already checks types; no extra check is needed.\nInitial context below contains current source, revision and public tests. Use it directly; retrieve fresh context only if needed after a change or error.\n{\"context\":{\"commands\":[{\"command\":\"keel init PATH\",\"purpose\":\"Initialize project; preserve existing instructions\"},{\"command\":\"keel agent context [PROJECT] [--symbol NAME] --json\",\"purpose\":\"Get supported syntax, APIs, tools and task context\"},{\"command\":\"keel agent spec language|collections|stdlib|protocol\",\"purpose\":\"Read versioned offline reference\"},{\"command\":\"keel api BUILTIN --json\",\"purpose\":\"Retrieve exact built-in signature\"},{\"command\":\"keel check PROJECT --json\",\"purpose\":\"Check syntax/types/ownership/effects\"},{\"command\":\"keel lint PROJECT [--deny-warnings] --json\",\"purpose\":\"Report unused bindings and effects\"},{\"command\":\"keel fmt PROJECT [--check]\",\"purpose\":\"Format indentation without changing string bytes\"},{\"command\":\"keel test PROJECT --engine native|reference|both --json\",\"purpose\":\"Execute examples/properties with explicit evidence\"},{\"command\":\"keel build PROJECT -o build/app\",\"purpose\":\"Compile a standalone native executable\"},{\"command\":\"keel run PROJECT --policy keel.policy.json\",\"purpose\":\"Build and run with separately supplied authority\"},{\"command\":\"keel edit PROJECT --request edit.json --json\",\"purpose\":\"Validate and atomically replace implementation bodies\"},{\"command\":\"keel review PROJECT --against BASELINE --json\",\"purpose\":\"Compare interfaces/effects/test changes\"},{\"command\":\"keel explain PROJECT --offset N --json\",\"purpose\":\"Expand source-linked diagnostics\"},{\"command\":\"keel serve --max-cache-mib 64\",\"purpose\":\"Persistent JSON-lines checking and inspection\"},{\"command\":\"keel doctor --json\",\"purpose\":\"Check native compiler and platform capabilities\"}],\"context\":{\"functions\":[{\"callers\":[\"test:public\"],\"contracts\":{\"assurance\":\"ENFORCED when executed\",\"ensures\":0,\"requires\":0},\"dependencies\":[],\"effects\":[],\"name\":\"parse_default\",\"parameters\":[{\"mode\":\"Read\",\"name\":\"raw\",\"ty\":\"Text\"},{\"mode\":\"Value\",\"name\":\"fallback\",\"ty\":\"Int\"}],\"public\":true,\"result\":\"Int\",\"source\":\"pub fn parse_default(raw: read Text, fallback: Int) -> Int { return fallback }\",\"target\":\"fn:parse_default\"}],\"holes\":[],\"incomplete\":false,\"resource_behavior\":{\"allocation\":\"Text operations, list construction/growth/cloning, and owned error values may allocate; transitive costs and bounds are not analyzed\",\"deep_copies\":\"only explicit library operations\",\"external_behavior\":\"HTTP adapter is trusted native code\"},\"revision\":\"r4e0c4d74c5e1af0c\",\"source_character_budget\":12000,\"tests\":[\"public\"]},\"incomplete\":false,\"language_reference\":\"# Keel agent language reference\\n\\nFor a repository-based syntax tour, read root `LANGUAGE.md`; its runnable examples are regression-tested. Project commands such as `keel check`, `keel test`, and `keel build` default to the current directory. Use `keel COMMAND --help` for focused options and examples. `keel agent context` without a path deliberately returns only bootstrap guidance; include `.` to inspect the project.\\n\\nThis guide is embedded in the installed compiler. It describes supported syntax, not future design promises. Start with `keel agent context . --json` and request a symbol with `--symbol NAME` to keep implementation context small. Use `keel agent spec collections` or `keel api BUILTIN --json` for exact interfaces. Use `keel agent spec stdlib` for JSON, files, fetching, protocols, and scoped threading.\\n\\n## Workflow\\n\\n1. Read the project's AGENTS.md/CLAUDE.md and approved acceptance criteria.\\n2. Run `keel agent context . --symbol NAME --json`; inspect the returned revision, source, dependencies, contracts, and permissions.\\n3. Make a small implementation edit. Prefer `keel edit . --request edit.json --json` with the current revision. Ordinary text edits are also supported.\\n4. Run `keel fmt . --check`, `keel check . --json`, `keel lint . --json`, and `keel test . --json`.\\n5. For semantic changes, use `keel test . --engine both --json` to compare native execution with the bounded reference evaluator. Review the diff and report remaining uncertainty.\\n\\nNever weaken acceptance assertions, specification helpers, expected outcomes, or generator domains to obtain a pass. Manifest `tests` files are protected from structural edits, including helper functions. Filesystem access is not sandboxed by that policy. Holes, permission failures, timeouts, and incomplete evidence are not successful tests.\\n\\n## Syntax\\n\\n```text\\npub fn square(value: Int) -> Int\\n    requires value >= -1000 && value <= 1000\\n    ensures result >= 0\\n{\\n    return value * value\\n}\\n\\ntest \\\"square\\\" { assert square(12) == 144 }\\nproperty \\\"nonnegative\\\" (n in gen.int(min: -1000, max: 1000)) {\\n    assert square(n) >= 0\\n}\\n```\\n\\nFunctions have explicitly typed parameters; an omitted return type means Unit. Blocks use braces. `let` is immutable; `var` allows assignment. `if`/`else`, `while`, `for value in list`, `return`, `assert`, and exhaustive `match` are supported. No shadowing. `result` is reserved for postconditions: use a name such as `output` for local variables and parameters, even in functions without contracts. Newlines are whitespace; optional semicolons can disambiguate. `//` comments are preserved by formatting and edits outside the replaced body.\\n\\nSupported types: `Int` (signed 64-bit), `Bool`, `Text`, `List<Int>`, `Option<Int>`, `Result<Int, Text>`, `Result<Text, Text>`, and `Unit`. Lists/options/results are specific built-in types, not arbitrary generics. There are no user-defined records/unions, imports, closures, async functions, or automatic package installation yet. Project `keel.json` explicitly composes complete files into one namespace; it is not a module system.\\n\\nArithmetic overflow and invalid indexing trap consistently. Evaluation is left to right; `&&`/`||` short-circuit. No implicit numeric/text conversions. `text.len` counts UTF-8 bytes. Use `text.from_int`, `text.concat`, and explicit `text.clone`.\\n\\n## Ownership and errors\\n\\nOwned Text/List/Result parameters require `read`, `edit`, or `take`. `read` borrows for a call. `edit` borrows a mutable binding exclusively and must be explicit at the call site. `take` transfers ownership and invalidates the old binding. Returning an owned local transfers it. To retain two owners, explicitly clone. Borrowed values cannot escape or be returned as owned.\\n\\n```text\\nfn append(values: edit List<Int>, value: Int) { list.push(edit values, value) }\\nfn length(values: read List<Int>) -> Int { return list.len(values) }\\nfn identity(values: take List<Int>) -> List<Int> { return values }\\n\\nfn parsed_or_zero(raw: read Text) -> Int {\\n    match text.parse_int(raw) {\\n        Ok(value) => { return value }\\n        Err(message) => { assert text.len(message) > 0 return 0 }\\n    }\\n}\\n```\\n\\nList literals are `[1, 2]` or `[]`. `list.at` traps on invalid indices; `list.get` returns `Option<Int>` and must be matched with `Some(value)` / `None`. Matches require both variants. Error Text payloads are borrowed inside their match arm; clone to retain them.\\n\\nRead/edit argument loans last through later argument evaluation. Compute `let n = list.len(values)` before `list.push(edit values, n)`; nested reads during an exclusive argument borrow are rejected. A for-loop holds a read borrow on its input. Restore moved outer values on every loop iteration.\\n\\n## Effects, contracts, evidence\\n\\nFunctions are externally pure unless declaring `io.stdout`, `net.listen`, `net.connect`, `fs.read`, or `env.read` effects. Effects propagate through calls. Runtime authority is separate: use a launcher-controlled policy with `keel run . --policy keel.policy.json` or explicit CLI permission flags. Do not broaden policy without the user's authorization.\\n\\n`requires` and `ensures` are pure Boolean runtime checks; `result` denotes the return value. They are ENFORCED when executed, never PROVEN. Specifications should be independent of the implementation being tested. Invalid external input should use typed errors where available.\\n\\n`hole(\\\"name\\\")` needs an expected type (return position, annotated binding, or typed argument). Inspect returns its expected type/bindings/effects. `check` returns INCOMPLETE; builds reject holes; reached holes return BLOCKED.\\n\\nTests return TESTED, FAILED, BLOCKED, or UNKNOWN. TESTED means recorded cases passed, not universal correctness. Reference/native parity is additional sampled evidence, not a soundness proof. Replay using the returned revision and `keel test . --filter 'exact property name' --value N --json`. Timeouts and resource limits must be reported, not hidden by retries.\\n\\n## Structural edit request\\n\\n```json\\n{\\n  \\\"base_revision\\\": \\\"COPY_FROM_CONTEXT\\\",\\n  \\\"target\\\": \\\"fn:square\\\",\\n  \\\"operation\\\": \\\"replace_body\\\",\\n  \\\"source\\\": \\\"{ return value * value }\\\",\\n  \\\"run\\\": \\\"affected_checks_and_tests\\\"\\n}\\n```\\n\\nEdits preserve interfaces, contracts, and acceptance files. The run mode above checks the entire candidate and conservatively runs all tests. Multiple body replacements can be supplied in an `edits` array; all targets must share one physical file for an atomic transaction. Stale revisions are rejected; retrieve fresh context and reconsider the change instead of blindly retrying.\\n\\n`keel serve` exposes a local JSON-lines protocol for repeated check/inspect/test/lint/format requests. It caches whole-source snapshots with an estimated budget, not declaration-level incrementality. See `keel agent spec protocol`. No installed tool reaches the internet to resolve an unknown API.\\n\\n## Everyday built-ins\\n\\nUse `json.text(body, \\\"/answers/team/choice\\\")` for decoded strings and `json.get`\\nfor JSON fragments (including exact decimal spelling). Match `Ok(value)` and\\n`Err(error)`; both are borrowed Text. `Result<Text, Text>` also carries file and\\nnetwork results. Clone payloads when returning them. `http.post_json(url, body,\\ntoken)` returns a response: inspect `http.status` before parsing `http.body`.\\n`json.quote` safely escapes strings for request construction.\\n\\n`csv.get`, `xml.text`, `sse.data`, and `dotenv.get` cover common data extraction.\\n`fs.read_text` and `env.get` require declared effects and separate exact runtime\\ngrants. `parallel.map(list, worker)` joins up to four pure `fn(Int) -> Int`\\nworkers and preserves output order; it has no shared mutable state or escaping\\nthreads. HTTP clients and XML require system libcurl/libxml2 development libraries;\\nWebSocket availability depends on libcurl's build. Read `keel agent spec stdlib`\\nfor all signatures, bounded protocol behavior, permissions, and remaining gaps.\\n\",\"project\":{\"files\":[{\"acceptance_protected\":false,\"path\":\"/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-qm1131_3/solution.keel\"},{\"acceptance_protected\":true,\"path\":\"/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-qm1131_3/public_tests.keel\"}],\"manifest\":\"./keel.json\",\"name\":\"parse_default\",\"source_bytes\":135,\"source_limit_bytes\":4194304},\"schema\":1,\"unsupported\":[\"arbitrary generics and nominal records/unions\",\"async, general structured tasks and channels\",\"Cranelift and declaration-level incremental compilation\",\"host capability objects and distributed simulation\",\"formal proof and production certification\"],\"version\":\"0.1.0\"},\"public_files\":{\"solution.keel\":\"pub fn parse_default(raw: read Text, fallback: Int) -> Int { return fallback }\\n\",\"public_tests.keel\":\"test \\\"public\\\" { assert parse_default(\\\"bad\\\", 7) == 7 }\\n\",\"keel.json\":\"{\\n  \\\"schema\\\": 1,\\n  \\\"name\\\": \\\"parse_default\\\",\\n  \\\"entry\\\": \\\"solution.keel\\\",\\n  \\\"sources\\\": [],\\n  \\\"tests\\\": [\\n    \\\"public_tests.keel\\\"\\n  ]\\n}\\n\"}}\n",
+  "prompt_sha256": "99d79f2be20c67966a1d673f033c6f8f23617e203e1cea2fab7962f4fda75048",
+  "prompt_bytes": 13331,
+  "preparation_seconds": 0.007702749993768521,
+  "artifacts": {
+    "solution.keel": "pub fn parse_default(raw: read Text, fallback: Int) -> Int {\n    match text.parse_int(raw) {\n        Ok(value) => { return value }\n        Err(message) => { return fallback }\n    }\n}\n"
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--json",
+    "--ignore-user-config",
+    "--ephemeral",
+    "--sandbox",
+    "workspace-write",
+    "--skip-git-repo-check",
+    "-C",
+    "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-qm1131_3",
+    "--model",
+    "gpt-6-astra",
+    "-c",
+    "approval_policy=\"never\"",
+    "-"
+  ],
+  "events": [
+    {
+      "type": "thread.started",
+      "thread_id": "01a0ffe9-e611-7ad3-9edc-a8e6d2aac25d"
+    },
+    {
+      "type": "turn.started"
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_0",
+        "type": "agent_message",
+        "text": "I\u2019ll check the documented `text.parse_int` behavior, update `parse_default` with the required structural edit, and run validation.\n"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_1",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc './keel api text.parse_int --json'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc './keel api text.parse_int --json'",
+        "aggregated_output": "{\n  \"effects\": [],\n  \"name\": \"text.parse_int\",\n  \"parameters\": [\n    [\n      \"Text\",\n      \"Read\"\n    ]\n  ],\n  \"result\": \"ResultIntText\",\n  \"trusted_host_adapter\": true\n}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"r4e0c4d74c5e1af0c\\\",\\\"target\\\":\\\"fn:parse_default\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    match text.parse_int(raw) {\\\\n        Ok(value) => { return value }\\\\n        Err(message) => { return fallback }\\\\n    }\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit . --request request.json --json\"",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"r4e0c4d74c5e1af0c\\\",\\\"target\\\":\\\"fn:parse_default\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    match text.parse_int(raw) {\\\\n        Ok(value) => { return value }\\\\n        Err(message) => { return fallback }\\\\n    }\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit . --request request.json --json\"",
+        "aggregated_output": "{\n  \"base_revision\": \"r4e0c4d74c5e1af0c\",\n  \"evidence\": null,\n  \"file\": \"/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-qm1131_3/solution.keel\",\n  \"message\": \"Function bodies replaced atomically; interfaces, contracts, and test source preserved.\",\n  \"revision\": \"r2021ae9f8a98ba9c\",\n  \"status\": \"APPLIED\",\n  \"target\": \"fn:parse_default\",\n  \"targets\": [\n    \"parse_default\"\n  ]\n}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_3",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_3",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "{\"status\":\"TESTED\",\"revision\":\"r2021ae9f8a98ba9c\",\"validation\":\"TESTED\",\"tests\":[{\"name\":\"public\",\"status\":\"TESTED\",\"cases\":1}],\"assurance\":\"Public cases only; independent acceptance runs after you finish.\"}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_4",
+        "type": "agent_message",
+        "text": "Implemented `parse_default` using `text.parse_int`: returns the parsed integer on `Ok`, or `fallback` on `Err`. Interface preserved.\n\nValidation passed the public test (`TESTED`); independent acceptance remains pending."
+      }
+    },
+    {
+      "type": "turn.completed",
+      "usage": {
+        "input_tokens": 72400,
+        "cached_input_tokens": 59904,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 279,
+        "reasoning_output_tokens": 0
+      }
+    }
+  ],
+  "events_sha256": "9cc03118de04544e61f7b3234b639d3788837f22b42448245788716bc285204f",
+  "stderr": "",
+  "error": null,
+  "elapsed_seconds": 20.768498332996387,
+  "timed_out": false,
+  "returncode": 0,
+  "protected_files_changed": [],
+  "input_tokens": 72400,
+  "cached_input_tokens": 59904,
+  "output_tokens": 279,
+  "metrics": {
+    "completed_turns": 1,
+    "model_requests": null,
+    "model_requests_note": "CLI events do not expose every inference request",
+    "tool_calls": 3,
+    "command_calls": 3,
+    "file_change_calls": 0,
+    "failed_commands": 0,
+    "tool_output_bytes": 790
+  },
+  "acceptance": {
+    "evaluator": "keel_workflow_oracle_v1",
+    "task_sha256": "fa6b7a93d5744917918ef14152953d176e4bbc055fed9aeea0081ee700be898f",
+    "artifact_sha256": "0320e96976e5f44a5cfbf88d789c131a122fc223ff00c1de62350821cf30e641",
+    "passed": true,
+    "runs": [
+      {
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r9b7d9a5d90848558",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "public",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "parse oracle",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r9b7d9a5d90848558",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "public",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "parse oracle",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.21027783399040345
+      }
+    ]
+  },
+  "condition_isolation_verified": false,
+  "costs": {
+    "inference_usd": null,
+    "tool_usd": null
+  },
+  "policy_rejections": [
+    "token budget exceeded"
+  ],
+  "accepted": false,
+  "integrity_sha256": "8f7d9ed4931d1d145fad49b9a4b8790a1e35e8d432f681f02b4ebaa78a99d760"
+}

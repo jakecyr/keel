@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "kind": "keel_workflow_experiment",
+  "suite_sha256": "6e5cf8c1294cdef11766c033631531d8bebb569f6f1d705768b0a4d71bdf88e8",
+  "harness_sha256": "e5d2eb974e2e35476fc2948eabfe180f65a1e432edbb4a4440a3377bec6825f6",
+  "compiler_sha256": "0e8b80a1e98ced07849026d6a1d9c74d7ef8ee17347a7e7eea67e7e591714984",
+  "model": "gpt-6-astra",
+  "repeats": 1,
+  "seed": 42,
+  "split": "development",
+  "task_ids": [
+    "boundary",
+    "unique"
+  ],
+  "variants": [
+    "protocol",
+    "compact_combined"
+  ],
+  "baseline": "protocol",
+  "budget": {
+    "wall_seconds": 180,
+    "total_tokens": 32000
+  },
+  "trials": [
+    {
+      "trial_id": "unique:0:protocol",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "boundary:0:compact_combined",
+      "task_id": "boundary",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "unique:0:compact_combined",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "boundary:0:protocol",
+      "task_id": "boundary",
+      "repeat": 0,
+      "variant": "protocol"
+    }
+  ],
+  "integrity_sha256": "1c8088c81f8d201205a208c482702e214069c8bad6274dc69164d68e658d9525"
+}

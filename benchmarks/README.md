@@ -126,3 +126,147 @@ statistical population claim or a claim that the language is production ready.
 
 Tests use explicitly synthetic ledgers to verify this arithmetic and rejection
 behavior. They never count as evidence that real agents are more efficient.
+
+## Iterate on Keel agent efficiency
+
+`efficiency.py` is a separate **Keel-only workflow experiment**, not a replacement
+for the original four-language/tool-condition pilot or its economic gate. It tests:
+
+| Variant | Initial context | Editing and validation |
+| --- | --- | --- |
+| `protocol` | Agent retrieves focused inspection | Structural edit/check, then public tests |
+| `full_context` | Full `keel agent context` plus public files supplied upfront | Same separate validation |
+| `compact_context` | Focused source/revision/dependencies, public files, exact relevant APIs | Same separate validation |
+| `compact_combined` | Same compact packet | Structural edit with public-test validation in one invocation |
+
+An opt-in fifth variant, `compact_guided`, adds a short collection or parsing syntax
+example selected from the public input types/APIs to `compact_combined`. It was
+introduced after development traces showed agents retrieving the entire collections
+reference despite having API signatures. Compare it directly before promoting it:
+
+```sh
+python3 benchmarks/efficiency.py plan --model MODEL_ID --repeats 2 \
+  --tasks unique copy_append --variants compact_combined compact_guided \
+  --output build/efficiency-guidance-plan.json
+```
+
+All arms receive the same short syntax primer, requirements, public fixtures,
+compiler and available tools. These arms isolate workflow *bundles*: compact versus
+full also changes API presentation, and combined changes both call count and
+successful output verbosity. They do not isolate every individual mechanism.
+Test-generation tasks use text edits in every arm because body replacement cannot
+add test blocks. For those tasks, the combined arm has the same workflow as compact
+context and serves as a repeat/noise check. Conditions remain instructed rather than
+enforced; inspect raw commands before interpreting results.
+
+The compact packet is currently a **benchmark adapter**, not a new compiler CLI
+mode. Its complete serialized contents must fit 12 KB; it fails rather than silently
+omitting source. Prompt bytes are measured as bytes, never mislabeled as tokens.
+Full context comes from the compiler being tested. Both upfront arms include the
+same public project files. The preparation time is recorded separately from agent
+wall time; its tool dollar cost remains unknown.
+
+Development tasks cover scalar repair, implementation from a requirement, collections,
+ownership/copy independence, an integration across source files, and regression-test
+generation. Validation tasks cover a different collection operation and a different
+test target. Keep validation tasks out of prompt tuning. These are small public
+fixtures, not contamination-resistant or representative production repositories.
+
+Code acceptance uses independent assertions and **both native and reference engines**.
+Test generation is scored using agent-written tests alone: they must pass two correct
+implementations and fail every registered mutant through executed assertions in
+both engines. Compiler errors, timeouts, empty tests, and tests that reject correct
+implementations cannot earn acceptance. Public tests do not earn mutation credit.
+Evaluator fixtures, mutants and reference solutions are never copied into the agent
+workspace or prompts. The temporary directory is not an adversarial read boundary.
+
+### Offline verification (no inference)
+
+```sh
+cargo build --locked
+python3 -m unittest discover -s benchmarks -p 'test_*.py' -v
+python3 benchmarks/efficiency.py preflight \
+  --output build/efficiency-preflight.json
+```
+
+Preflight validates every reference solution and verifies that the starter fails
+independent acceptance. It also checks mutation scoring. This is plumbing evidence,
+not an agent-efficiency measurement. CI runs the methodology tests without model calls.
+
+### Register a bounded experiment, then run it explicitly
+
+```sh
+python3 benchmarks/efficiency.py plan --model MODEL_ID --repeats 3 \
+  --seconds 180 --tokens 32000 --split development \
+  --output build/efficiency-dev-plan.json
+# LIVE: consumes the configured Codex account's quota.
+python3 benchmarks/efficiency.py run --plan build/efficiency-dev-plan.json \
+  --output-dir build/efficiency-dev
+python3 benchmarks/efficiency.py report --run-dir build/efficiency-dev \
+  --output build/efficiency-dev-report.json
+```
+
+The default plan contains 72 trials (six tasks × four variants × three repetitions).
+For a small pilot, register fewer tasks and variants **before** running:
+
+```sh
+python3 benchmarks/efficiency.py plan --model MODEL_ID --repeats 1 \
+  --tasks boundary unique --variants protocol compact_combined \
+  --output build/efficiency-smoke-plan.json
+python3 benchmarks/efficiency.py run --plan build/efficiency-smoke-plan.json \
+  --output-dir build/efficiency-smoke --max-trials 2
+python3 benchmarks/efficiency.py run --plan build/efficiency-smoke-plan.json \
+  --output-dir build/efficiency-smoke --resume
+```
+
+A plan freezes task selection, split, model argument, compiler hash, harness hash,
+paired repetitions, budgets and randomized ordering. Changed tasks, compiler or
+harness require a new plan and output directory. Existing completed failures are
+never retried on resume. Raw events and stderr are saved during execution, with one
+immutable record per attempt. If a process crashes before a record is written,
+resume refuses to replace that attempt: retain its raw evidence and mark the run
+incomplete. Missing token usage stops further live trials instead of spending quota
+on repeated authentication/environment failures. Plans, records, and reports are
+created exclusively, never overwritten. `run`/`report` exit 2 for incomplete studies
+and 3 for invalid reports; COMPLETE means complete accounting, **not an advantage**.
+
+### Read the evidence and iterate
+
+1. Inspect failures and command traces on development tasks. Change one context or
+   workflow mechanism at a time; preserve all assertions and generator domains.
+2. Register a new plan after changes. Keep previous plans, prompts, compiler hashes,
+   failed attempts, raw event ledgers and reports. Do not retrofit the original pilot.
+3. Compare tokens **per independently accepted change**, counting all failed and
+   over-budget attempts in the numerator. Report correctness before budget policy,
+   acceptance rate, and paired regressions separately. Missing usage and a zero
+   acceptance denominator yield null, not zero or a win.
+4. Reports show total/cached/output tokens, tool calls, failed commands, prompt bytes,
+   time, and per-task outcomes. Completed CLI turns are not model-request counts:
+   request-level token attribution remains unavailable. Cached input is already part
+   of input usage; do not add it again or remove it from the registered budget.
+5. A development candidate must reduce reported tokens per accepted change without
+   losing any paired baseline acceptance. The exploratory task-cluster bootstrap
+   interval concerns total token reduction, not acceptance-adjusted dollar costs;
+   small samples require more repetitions and tasks.
+6. Freeze the candidate and evaluate the reserved split, without tuning on its results:
+
+   ```sh
+   python3 benchmarks/efficiency.py plan --model MODEL_ID --repeats 3 \
+     --split validation --variants protocol compact_combined \
+     --output build/efficiency-validation-plan.json
+   python3 benchmarks/efficiency.py run --plan build/efficiency-validation-plan.json \
+     --output-dir build/efficiency-validation
+   ```
+
+Token caps are checked after a turn because the CLI exposes aggregate completion
+usage, not a reliable live aggregate cap. The runner retains usage from failures.
+Do not raise a completed experiment's budget or discard failed tasks to create a
+win. Any new diagnostic budget must be preregistered and reported separately.
+Dollar costs and enforced condition isolation remain UNKNOWN. Even a successful
+Keel workflow comparison does not establish superiority over improved C; that still
+requires the separate four-condition study, billing evidence and broader tasks.
+
+The runner uses the documented [Codex non-interactive JSON event interface](https://learn.chatgpt.com/docs/non-interactive-mode)
+with workspace-write sandboxing, ephemeral sessions, ignored user configuration and
+no approval escalation. Model selection is pinned by argument; backend identity and
+provider defaults are not independently attested.

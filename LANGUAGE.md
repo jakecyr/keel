@@ -44,6 +44,8 @@ backslashes, newline, carriage-return, and tab escapes.
 ## Values and control flow
 
 - `let` creates an immutable binding; `var` permits assignment. Shadowing is rejected.
+  `result` is reserved for postconditions; use `output` or another name for locals
+  and parameters, including in functions without contracts.
 - Types: `Int`, `Bool`, `Text`, `List<Int>`, `Option<Int>`, `Result<Int, Text>`, `Unit`.
   These container types are built-in specializations, not general generics.
 - Use `if`/`else`, `while`, `for value in list`, exhaustive `match`, and `return`.

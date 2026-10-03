@@ -50,7 +50,9 @@ These are specific built-in types, not arbitrary generic instantiations. There
 are no user-defined records/unions, null, closures, or implicit type conversions.
 
 `let` creates an immutable binding. `var` permits rebinding and explicit exclusive
-borrowing through `edit`. Optional local type annotations constrain inference:
+borrowing through `edit`. Shadowing is rejected. `result` is reserved for
+postconditions and cannot name a local or parameter, even without contracts;
+use a name such as `output` instead. Optional local type annotations constrain inference:
 
 ```text
 let limit: Int = 100

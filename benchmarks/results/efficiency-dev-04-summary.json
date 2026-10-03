@@ -1,0 +1,121 @@
+{
+  "status": "COMPLETE",
+  "plan_sha256": "b0fe312d134a01533ce0292243be41696e79493ef5b4e2944e807a60563ec78f",
+  "split": "development",
+  "missing_trials": [],
+  "variants": {
+    "compact_combined": {
+      "attempts": 4,
+      "accepted": 1,
+      "correct_before_policy": 4,
+      "acceptance_rate": 0.25,
+      "total_tokens_including_failures": 179852,
+      "tokens_per_accepted_change": 179852.0,
+      "cached_input_tokens": 156928,
+      "output_tokens": 985,
+      "elapsed_seconds": 64.14196587399056,
+      "tool_calls": 7,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 2995
+    },
+    "compact_guided": {
+      "attempts": 4,
+      "accepted": 4,
+      "correct_before_policy": 4,
+      "acceptance_rate": 1.0,
+      "total_tokens_including_failures": 126093,
+      "tokens_per_accepted_change": 31523.25,
+      "cached_input_tokens": 107520,
+      "output_tokens": 756,
+      "elapsed_seconds": 55.52292841601593,
+      "tool_calls": 4,
+      "failed_commands": 0,
+      "mean_prompt_bytes": 3380
+    }
+  },
+  "per_task": {
+    "unique": {
+      "compact_combined": {
+        "attempts": 2,
+        "accepted": 0,
+        "correct_before_policy": 2,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 98918,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 88064,
+        "output_tokens": 555,
+        "elapsed_seconds": 38.22455324999464,
+        "tool_calls": 4,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2906
+      },
+      "compact_guided": {
+        "attempts": 2,
+        "accepted": 2,
+        "correct_before_policy": 2,
+        "acceptance_rate": 1.0,
+        "total_tokens_including_failures": 63000,
+        "tokens_per_accepted_change": 31500.0,
+        "cached_input_tokens": 52224,
+        "output_tokens": 390,
+        "elapsed_seconds": 28.33779937500367,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 3291
+      }
+    },
+    "copy_append": {
+      "compact_combined": {
+        "attempts": 2,
+        "accepted": 1,
+        "correct_before_policy": 2,
+        "acceptance_rate": 0.5,
+        "total_tokens_including_failures": 80934,
+        "tokens_per_accepted_change": 80934.0,
+        "cached_input_tokens": 68864,
+        "output_tokens": 430,
+        "elapsed_seconds": 25.917412623995915,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 3084
+      },
+      "compact_guided": {
+        "attempts": 2,
+        "accepted": 2,
+        "correct_before_policy": 2,
+        "acceptance_rate": 1.0,
+        "total_tokens_including_failures": 63093,
+        "tokens_per_accepted_change": 31546.5,
+        "cached_input_tokens": 55296,
+        "output_tokens": 366,
+        "elapsed_seconds": 27.18512904101226,
+        "tool_calls": 2,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 3469
+      }
+    }
+  },
+  "comparisons": {
+    "compact_guided": {
+      "baseline": "compact_combined",
+      "token_reduction_per_accepted_change": 0.8247267197473478,
+      "paired_acceptance_regressions": [],
+      "exploratory_total_token_reduction_95pct_task_bootstrap": [
+        0.220438876121284,
+        0.36310883762308177
+      ],
+      "candidate_for_validation": true
+    }
+  },
+  "economic_advantage": "UNKNOWN",
+  "condition_isolation_verified": false,
+  "limitations": [
+    "Keel-only workflow comparison, not a C comparison or the economic release gate.",
+    "Tool conditions are instructed, not enforced. CLI exposes aggregate turn usage, not per-request attribution.",
+    "Cached tokens remain in total input; missing usage and dollar costs remain unknown.",
+    "Budgets are checked after completion. Failed attempts remain in totals.",
+    "Public small task suite; validation split is held out from tuning, not secret or contamination-resistant.",
+    "Task bootstrap is exploratory, especially with few tasks/repetitions; it is not an acceptance-adjusted cost interval.",
+    "Checksums detect corruption, not malicious ledger rewriting. Replay independent acceptance for external evidence."
+  ]
+}

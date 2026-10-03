@@ -1,0 +1,6 @@
+{
+  "trial_id": "positive_sum:1:protocol",
+  "task_id": "positive_sum",
+  "repeat": 1,
+  "variant": "protocol"
+}

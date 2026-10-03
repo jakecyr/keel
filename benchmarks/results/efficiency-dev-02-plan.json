@@ -1,0 +1,177 @@
+{
+  "schema": 1,
+  "kind": "keel_workflow_experiment",
+  "suite_sha256": "6e5cf8c1294cdef11766c033631531d8bebb569f6f1d705768b0a4d71bdf88e8",
+  "harness_sha256": "bd5ed592888ab2eb7430e86be27a96d7b612f4c56f30621be84b2ce42966eb39",
+  "compiler_sha256": "e451cc4e06d8ee981a15079f6e3f5ffbc3ee5d7e6710d9f857785eba9fdfb88d",
+  "model": "gpt-6-astra",
+  "repeats": 1,
+  "seed": 42,
+  "split": "development",
+  "task_ids": [
+    "boundary",
+    "parse_default",
+    "unique",
+    "copy_append",
+    "checkout",
+    "clamp_tests"
+  ],
+  "variants": [
+    "protocol",
+    "full_context",
+    "compact_context",
+    "compact_combined"
+  ],
+  "baseline": "protocol",
+  "budget": {
+    "wall_seconds": 180,
+    "total_tokens": 32000
+  },
+  "trials": [
+    {
+      "trial_id": "copy_append:0:compact_combined",
+      "task_id": "copy_append",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "parse_default:0:full_context",
+      "task_id": "parse_default",
+      "repeat": 0,
+      "variant": "full_context"
+    },
+    {
+      "trial_id": "checkout:0:compact_context",
+      "task_id": "checkout",
+      "repeat": 0,
+      "variant": "compact_context"
+    },
+    {
+      "trial_id": "clamp_tests:0:compact_combined",
+      "task_id": "clamp_tests",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "copy_append:0:full_context",
+      "task_id": "copy_append",
+      "repeat": 0,
+      "variant": "full_context"
+    },
+    {
+      "trial_id": "unique:0:compact_context",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "compact_context"
+    },
+    {
+      "trial_id": "checkout:0:full_context",
+      "task_id": "checkout",
+      "repeat": 0,
+      "variant": "full_context"
+    },
+    {
+      "trial_id": "unique:0:compact_combined",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "copy_append:0:compact_context",
+      "task_id": "copy_append",
+      "repeat": 0,
+      "variant": "compact_context"
+    },
+    {
+      "trial_id": "checkout:0:protocol",
+      "task_id": "checkout",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "boundary:0:full_context",
+      "task_id": "boundary",
+      "repeat": 0,
+      "variant": "full_context"
+    },
+    {
+      "trial_id": "copy_append:0:protocol",
+      "task_id": "copy_append",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "clamp_tests:0:full_context",
+      "task_id": "clamp_tests",
+      "repeat": 0,
+      "variant": "full_context"
+    },
+    {
+      "trial_id": "parse_default:0:compact_context",
+      "task_id": "parse_default",
+      "repeat": 0,
+      "variant": "compact_context"
+    },
+    {
+      "trial_id": "unique:0:full_context",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "full_context"
+    },
+    {
+      "trial_id": "boundary:0:compact_context",
+      "task_id": "boundary",
+      "repeat": 0,
+      "variant": "compact_context"
+    },
+    {
+      "trial_id": "clamp_tests:0:compact_context",
+      "task_id": "clamp_tests",
+      "repeat": 0,
+      "variant": "compact_context"
+    },
+    {
+      "trial_id": "parse_default:0:protocol",
+      "task_id": "parse_default",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "checkout:0:compact_combined",
+      "task_id": "checkout",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "parse_default:0:compact_combined",
+      "task_id": "parse_default",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "unique:0:protocol",
+      "task_id": "unique",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "boundary:0:protocol",
+      "task_id": "boundary",
+      "repeat": 0,
+      "variant": "protocol"
+    },
+    {
+      "trial_id": "boundary:0:compact_combined",
+      "task_id": "boundary",
+      "repeat": 0,
+      "variant": "compact_combined"
+    },
+    {
+      "trial_id": "clamp_tests:0:protocol",
+      "task_id": "clamp_tests",
+      "repeat": 0,
+      "variant": "protocol"
+    }
+  ],
+  "integrity_sha256": "fde85282a9b6c7415a750b6a3db1810ca5850ec181ccc1792de034b119db95df"
+}

@@ -1,0 +1,881 @@
+{
+  "trial_id": "fresh_tests:0:compact_combined",
+  "task_id": "fresh_tests",
+  "repeat": 0,
+  "variant": "compact_combined",
+  "plan_sha256": "e102ec5479b0bd53b3dc492b77d70e628ba238355ad7050906c0be94413a5ed1",
+  "model": "gpt-6-astra",
+  "compiler_sha256": "d41b7f7a81b3fe583e69b8884f3505c052e6244415d4bb841594d6dcf1d84c7c",
+  "prompt": "Write deterministic regression tests in generated_tests.keel for is_fresh(now, deadline), true precisely when now < deadline across signed 64-bit timestamps. Tests must pass correct implementations and detect boundary/ordering bugs. Add test blocks only, without changing the implementation or existing tests.\nEdit only: generated_tests.keel. Preserve other files, interfaces, contracts, and existing tests. An independent evaluator checks your result after you exit. Do not read outside the workspace, use network access, or delegate. The workspace contains all public task files and ./keel. Complete the change and validate it.\nKeel: fn f(x: Int) -> Int { return x }; let immutable, var mutable; if/while/for use braces. Int is checked signed 64-bit. Lists: [1, 2], []; no implicit conversions. Owned Text/List parameters use read/edit/take; mutation calls use edit, and owned copies require explicit clone. Compute reads before an exclusive edit borrow. Match both Ok(value)/Err(message) or Some(value)/None arms. Tests: test \"name\" { assert expression }. No shadowing. `result` is reserved for postconditions, even without contracts; name locals/parameters `output` or another identifier. For exact syntax use ./keel agent spec language or collections; for signatures ./keel api NAME --json. TESTED means sampled cases, never proof.\nWrite test blocks using ordinary text edits. Validate with `python3 workflow.py validate`. Do not add functions, properties, or implementation code.\nInitial context below contains current source, revision and public tests. Use it directly; retrieve fresh context only if needed after a change or error.\n{\"schema\":1,\"revision\":\"rc6e9f19bc4ac11ec\",\"incomplete\":false,\"functions\":[{\"target\":\"fn:is_fresh\",\"source\":\"pub fn is_fresh(now: Int, deadline: Int) -> Bool { return now < deadline }\",\"dependencies\":[],\"contracts\":{\"assurance\":\"ENFORCED when executed\",\"ensures\":0,\"requires\":0},\"effects\":[]}],\"public_files\":{\"solution.keel\":\"pub fn is_fresh(now: Int, deadline: Int) -> Bool { return now < deadline }\\n\",\"public_tests.keel\":\"test \\\"public\\\" { assert is_fresh(1, 2) }\\n\",\"generated_tests.keel\":\"// Add regression tests here.\\n\",\"keel.json\":\"{\\n  \\\"schema\\\": 1,\\n  \\\"name\\\": \\\"fresh_tests\\\",\\n  \\\"entry\\\": \\\"solution.keel\\\",\\n  \\\"sources\\\": [],\\n  \\\"tests\\\": [\\n    \\\"public_tests.keel\\\",\\n    \\\"generated_tests.keel\\\"\\n  ]\\n}\\n\"},\"apis\":[]}\n",
+  "prompt_sha256": "db0af862cc3c7558b9ddc20bdddd6f806955d0c36bc3c1d0ee2ef1201da2a9ea",
+  "prompt_bytes": 2381,
+  "preparation_seconds": 0.09696137500577606,
+  "artifacts": {
+    "generated_tests.keel": "// Add regression tests here.\ntest \"equal timestamps are never fresh\" {\n    assert is_fresh(0, 0) == false\n    assert is_fresh(1, 1) == false\n    assert is_fresh(-1, -1) == false\n    assert is_fresh(-9223372036854775807 - 1, -9223372036854775807 - 1) == false\n    assert is_fresh(9223372036854775807, 9223372036854775807) == false\n}\n\ntest \"adjacent timestamps preserve strict ordering\" {\n    assert is_fresh(-2, -1)\n    assert is_fresh(-1, -2) == false\n    assert is_fresh(-1, 0)\n    assert is_fresh(0, -1) == false\n    assert is_fresh(0, 1)\n    assert is_fresh(1, 0) == false\n    assert is_fresh(41, 42)\n    assert is_fresh(42, 41) == false\n}\n\ntest \"signed limits and their neighbors\" {\n    let minimum = -9223372036854775807 - 1\n    let maximum = 9223372036854775807\n    assert is_fresh(minimum, minimum + 1)\n    assert is_fresh(minimum + 1, minimum) == false\n    assert is_fresh(maximum - 1, maximum)\n    assert is_fresh(maximum, maximum - 1) == false\n    assert is_fresh(minimum, maximum)\n    assert is_fresh(maximum, minimum) == false\n    assert is_fresh(minimum, 0)\n    assert is_fresh(0, minimum) == false\n    assert is_fresh(-1, maximum)\n    assert is_fresh(maximum, -1) == false\n}\n\ntest \"wide timestamps retain signed numeric ordering\" {\n    let timestamps = [-9223372036854775807 - 1, -9223372036854775807,\n        -4294967297, -4294967296, -2147483649, -2147483648,\n        -100, -10, -2, -1, 0, 1, 2, 10, 100,\n        2147483647, 2147483648, 4294967295, 4294967296, 4294967297,\n        9223372036854775806, 9223372036854775807]\n    for now in timestamps {\n        for deadline in timestamps {\n            assert is_fresh(now, deadline) == (now < deadline)\n        }\n    }\n}\n"
+  },
+  "command": [
+    "codex",
+    "exec",
+    "--json",
+    "--ignore-user-config",
+    "--ephemeral",
+    "--sandbox",
+    "workspace-write",
+    "--skip-git-repo-check",
+    "-C",
+    "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-_cirjv_h",
+    "--model",
+    "gpt-6-astra",
+    "-c",
+    "approval_policy=\"never\"",
+    "-"
+  ],
+  "events": [
+    {
+      "type": "thread.started",
+      "thread_id": "01a0fff7-0275-7d63-9387-e747b1bdfe6d"
+    },
+    {
+      "type": "turn.started"
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_0",
+        "type": "agent_message",
+        "text": "I\u2019ll add deterministic cases for equality, ordering, and signed 64-bit boundaries, then run the required validator.\n"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_1",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-_cirjv_h/generated_tests.keel",
+            "kind": "update"
+          }
+        ],
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_1",
+        "type": "file_change",
+        "changes": [
+          {
+            "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-agent-_cirjv_h/generated_tests.keel",
+            "kind": "update"
+          }
+        ],
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.started",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "",
+        "exit_code": null,
+        "status": "in_progress"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_2",
+        "type": "command_execution",
+        "command": "/bin/zsh -lc 'python3 workflow.py validate'",
+        "aggregated_output": "{\"status\":\"TESTED\",\"revision\":\"r2c142483ea6926c4\",\"validation\":\"TESTED\",\"tests\":[{\"name\":\"public\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"equal timestamps are never fresh\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"adjacent timestamps preserve strict ordering\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"signed limits and their neighbors\",\"status\":\"TESTED\",\"cases\":1},{\"name\":\"wide timestamps retain signed numeric ordering\",\"status\":\"TESTED\",\"cases\":1}],\"assurance\":\"Public cases only; independent acceptance runs after you finish.\"}\n",
+        "exit_code": 0,
+        "status": "completed"
+      }
+    },
+    {
+      "type": "item.completed",
+      "item": {
+        "id": "item_3",
+        "type": "agent_message",
+        "text": "Added four test blocks to `generated_tests.keel` covering equality, adjacent timestamps, signed 64-bit limits, and 484 ordering comparisons.\n\n`python3 workflow.py validate` passed with `TESTED` status. Implementation and existing tests were preserved."
+      }
+    },
+    {
+      "type": "turn.completed",
+      "usage": {
+        "input_tokens": 31578,
+        "cached_input_tokens": 27392,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 817,
+        "reasoning_output_tokens": 0
+      }
+    }
+  ],
+  "events_sha256": "83003124a0aa3f31ee30431c895f4261f46b76270b1edcc929030bdf66af2f32",
+  "stderr": "",
+  "error": null,
+  "elapsed_seconds": 39.63282020800398,
+  "timed_out": false,
+  "returncode": 0,
+  "protected_files_changed": [],
+  "input_tokens": 31578,
+  "cached_input_tokens": 27392,
+  "output_tokens": 817,
+  "metrics": {
+    "completed_turns": 1,
+    "model_requests": null,
+    "model_requests_note": "CLI events do not expose every inference request",
+    "tool_calls": 2,
+    "command_calls": 1,
+    "file_change_calls": 1,
+    "failed_commands": 0,
+    "tool_output_bytes": 523
+  },
+  "acceptance": {
+    "evaluator": "keel_workflow_oracle_v1",
+    "task_sha256": "884bc93d3bea44ed3542d90ef50c3dfcdb0cf83d39c0a1a694b129c6c278a451",
+    "artifact_sha256": "71345c7756401b11e9a737308c6cbb6e878d49131344ed55b96a8d73eff17d53",
+    "passed": true,
+    "runs": [
+      {
+        "kind": "correct",
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "rc90fc920d716bc60",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "equal timestamps are never fresh",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "adjacent timestamps preserve strict ordering",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "signed limits and their neighbors",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "wide timestamps retain signed numeric ordering",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "rc90fc920d716bc60",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "equal timestamps are never fresh",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "adjacent timestamps preserve strict ordering",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "signed limits and their neighbors",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "wide timestamps retain signed numeric ordering",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.18933295799070038
+      },
+      {
+        "kind": "correct",
+        "returncode": 0,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r1d7bc8c566dd45b1",
+              "status": "TESTED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "equal timestamps are never fresh",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "adjacent timestamps preserve strict ordering",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "signed limits and their neighbors",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "wide timestamps retain signed numeric ordering",
+                  "seed": 1,
+                  "status": "TESTED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r1d7bc8c566dd45b1",
+          "status": "TESTED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "equal timestamps are never fresh",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "adjacent timestamps preserve strict ordering",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "signed limits and their neighbors",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "wide timestamps retain signed numeric ordering",
+              "seed": 1,
+              "status": "TESTED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.18078370801231358
+      },
+      {
+        "kind": "mutant",
+        "name": "inclusive",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r5c2fa37532e8017f",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 83,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 3,
+                    "offset": 160,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "equal timestamps are never fresh",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "adjacent timestamps preserve strict ordering",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "signed limits and their neighbors",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 20,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 1624,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 44,
+                    "offset": 1701,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "wide timestamps retain signed numeric ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r5c2fa37532e8017f",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 83,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 3,
+                "offset": 160,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "equal timestamps are never fresh",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "adjacent timestamps preserve strict ordering",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "signed limits and their neighbors",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 20,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 1624,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 44,
+                "offset": 1701,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "wide timestamps retain signed numeric ordering",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.18088279200310353
+      },
+      {
+        "kind": "mutant",
+        "name": "reversed",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "r6bd575be44589986",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": false,
+                  "cases": 1,
+                  "name": "equal timestamps are never fresh",
+                  "seed": 1,
+                  "status": "TESTED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 399,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 11,
+                    "offset": 475,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "adjacent timestamps preserve strict ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 780,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 24,
+                    "offset": 856,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "signed limits and their neighbors",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 20,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 1624,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 44,
+                    "offset": 1700,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "wide timestamps retain signed numeric ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "r6bd575be44589986",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": false,
+              "cases": 1,
+              "name": "equal timestamps are never fresh",
+              "seed": 1,
+              "status": "TESTED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 399,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 11,
+                "offset": 475,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "adjacent timestamps preserve strict ordering",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 780,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 24,
+                "offset": 856,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "signed limits and their neighbors",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 20,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 1624,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 44,
+                "offset": 1700,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "wide timestamps retain signed numeric ordering",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.19042045799142215
+      },
+      {
+        "kind": "mutant",
+        "name": "always_true",
+        "returncode": 1,
+        "result": {
+          "assurance": "TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN",
+          "differential": {
+            "assurance": "Agreement only on executed cases; not proof of language soundness",
+            "mismatches": [],
+            "reference": {
+              "assurance": "TESTED means recorded cases only; independent evaluator, no native execution",
+              "engine": "reference",
+              "limits": {
+                "cumulative_owned_payload_bytes_per_case": 33554432,
+                "heap_limit_enforced": false,
+                "recursion": 64,
+                "steps_per_case": 1000000,
+                "suite_ms": 30000,
+                "worker_ms": 2000
+              },
+              "revision": "rad18f69da3fd2f64",
+              "status": "FAILED",
+              "tests": [
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 83,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 3,
+                    "offset": 149,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "equal timestamps are never fresh",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 427,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 12,
+                    "offset": 493,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "adjacent timestamps preserve strict ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 12,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 822,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 25,
+                    "offset": 888,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "signed limits and their neighbors",
+                  "seed": 1,
+                  "status": "FAILED"
+                },
+                {
+                  "case_count_is_budget": true,
+                  "cases": 1,
+                  "failure": {
+                    "column": 20,
+                    "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                    "file_offset": 1624,
+                    "has_value": false,
+                    "kind": "assertion_failure",
+                    "line": 44,
+                    "offset": 1690,
+                    "shrink_attempts": 0,
+                    "shrunk": false,
+                    "status": "FAILED",
+                    "value": 0
+                  },
+                  "name": "wide timestamps retain signed numeric ordering",
+                  "seed": 1,
+                  "status": "FAILED"
+                }
+              ]
+            },
+            "status": "TESTED"
+          },
+          "engine": "both",
+          "holes": [],
+          "limits": {
+            "memory_enforced": false,
+            "memory_mib": 256,
+            "suite_ms": 30000,
+            "worker_ms": 2000
+          },
+          "revision": "rad18f69da3fd2f64",
+          "status": "FAILED",
+          "tests": [
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 83,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 3,
+                "offset": 149,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "equal timestamps are never fresh",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 427,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 12,
+                "offset": 493,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "adjacent timestamps preserve strict ordering",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 12,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 822,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 25,
+                "offset": 888,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "signed limits and their neighbors",
+              "seed": 1,
+              "status": "FAILED"
+            },
+            {
+              "case_count_is_budget": true,
+              "cases": 1,
+              "failure": {
+                "column": 20,
+                "file": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-efficiency-oracle-754ooqdp/generated_tests.keel",
+                "file_offset": 1624,
+                "has_value": false,
+                "kind": "assertion_failure",
+                "line": 44,
+                "offset": 1690,
+                "shrink_attempts": 0,
+                "shrunk": false,
+                "value": 0
+              },
+              "name": "wide timestamps retain signed numeric ordering",
+              "seed": 1,
+              "status": "FAILED"
+            }
+          ]
+        },
+        "stderr": "",
+        "elapsed_seconds": 0.18578662499203347
+      }
+    ],
+    "correct_implementations_passed": true,
+    "mutants_killed": [
+      "inclusive",
+      "reversed",
+      "always_true"
+    ],
+    "mutants_total": 3
+  },
+  "condition_isolation_verified": false,
+  "costs": {
+    "inference_usd": null,
+    "tool_usd": null
+  },
+  "policy_rejections": [
+    "token budget exceeded"
+  ],
+  "accepted": false,
+  "integrity_sha256": "97d3bcc48348f0635e520e3502b0bdd118d70cd349626739a9a3fd741b5e128b"
+}

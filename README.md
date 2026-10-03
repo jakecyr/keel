@@ -6,6 +6,12 @@
 
 An experimental language for readable code, native programs, and coding agents.
 
+<!-- efficiency-banner:start -->
+> **Measured progress: 50.8% fewer agent tokens** with compact context and combined validation (six-task Keel workflow experiment). Reserved-task validation: **61.8% fewer tokens**, **2/4 accepted** versus 0/4 for the Keel protocol baseline.
+>
+> **Local compiler feedback:** CLI checks were **4.1× faster than C** and **15.2× faster than Rust** on the recorded synthetic ~10,000-line fixture. A cross-language agent-token or dollar-cost advantage is **not established**. [Workflow evidence](benchmarks/results/efficiency.md) · [Compiler methodology](benchmarks/results/README.md)
+<!-- efficiency-banner:end -->
+
 ## 1. Install
 
 On macOS or Linux:

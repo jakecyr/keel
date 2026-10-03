@@ -1,0 +1,6 @@
+{
+  "trial_id": "positive_sum:1:compact_combined",
+  "task_id": "positive_sum",
+  "repeat": 1,
+  "variant": "compact_combined"
+}

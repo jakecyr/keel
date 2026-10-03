@@ -1,0 +1,121 @@
+{
+  "status": "COMPLETE",
+  "plan_sha256": "1c8088c81f8d201205a208c482702e214069c8bad6274dc69164d68e658d9525",
+  "split": "development",
+  "missing_trials": [],
+  "variants": {
+    "protocol": {
+      "attempts": 2,
+      "accepted": 0,
+      "correct_before_policy": 2,
+      "acceptance_rate": 0.0,
+      "total_tokens_including_failures": 182261,
+      "tokens_per_accepted_change": null,
+      "cached_input_tokens": 166912,
+      "output_tokens": 775,
+      "elapsed_seconds": 53.90928687500127,
+      "tool_calls": 10,
+      "failed_commands": 1,
+      "mean_prompt_bytes": 1493
+    },
+    "compact_combined": {
+      "attempts": 2,
+      "accepted": 1,
+      "correct_before_policy": 2,
+      "acceptance_rate": 0.5,
+      "total_tokens_including_failures": 97413,
+      "tokens_per_accepted_change": 97413.0,
+      "cached_input_tokens": 88064,
+      "output_tokens": 556,
+      "elapsed_seconds": 37.36616808299732,
+      "tool_calls": 4,
+      "failed_commands": 1,
+      "mean_prompt_bytes": 2517.5
+    }
+  },
+  "per_task": {
+    "boundary": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 62602,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 54784,
+        "output_tokens": 264,
+        "elapsed_seconds": 13.756148582993774,
+        "tool_calls": 3,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 1476
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 1,
+        "correct_before_policy": 1,
+        "acceptance_rate": 1.0,
+        "total_tokens_including_failures": 30838,
+        "tokens_per_accepted_change": 30838.0,
+        "cached_input_tokens": 27392,
+        "output_tokens": 165,
+        "elapsed_seconds": 8.983111958004883,
+        "tool_calls": 1,
+        "failed_commands": 0,
+        "mean_prompt_bytes": 2249
+      }
+    },
+    "unique": {
+      "protocol": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 119659,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 112128,
+        "output_tokens": 511,
+        "elapsed_seconds": 40.1531382920075,
+        "tool_calls": 7,
+        "failed_commands": 1,
+        "mean_prompt_bytes": 1510
+      },
+      "compact_combined": {
+        "attempts": 1,
+        "accepted": 0,
+        "correct_before_policy": 1,
+        "acceptance_rate": 0.0,
+        "total_tokens_including_failures": 66575,
+        "tokens_per_accepted_change": null,
+        "cached_input_tokens": 60672,
+        "output_tokens": 391,
+        "elapsed_seconds": 28.383056124992436,
+        "tool_calls": 3,
+        "failed_commands": 1,
+        "mean_prompt_bytes": 2786
+      }
+    }
+  },
+  "comparisons": {
+    "compact_combined": {
+      "baseline": "protocol",
+      "token_reduction_per_accepted_change": null,
+      "paired_acceptance_regressions": [],
+      "exploratory_total_token_reduction_95pct_task_bootstrap": [
+        0.4436273075990941,
+        0.507395929842497
+      ],
+      "candidate_for_validation": false
+    }
+  },
+  "economic_advantage": "UNKNOWN",
+  "condition_isolation_verified": false,
+  "limitations": [
+    "Keel-only workflow comparison, not a C comparison or the economic release gate.",
+    "Tool conditions are instructed, not enforced. CLI exposes aggregate turn usage, not per-request attribution.",
+    "Cached tokens remain in total input; missing usage and dollar costs remain unknown.",
+    "Budgets are checked after completion. Failed attempts remain in totals.",
+    "Public small task suite; validation split is held out from tuning, not secret or contamination-resistant.",
+    "Task bootstrap is exploratory, especially with few tasks/repetitions; it is not an acceptance-adjusted cost interval.",
+    "Checksums detect corruption, not malicious ledger rewriting. Replay independent acceptance for external evidence."
+  ]
+}
