@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "name": "jev_pong",
+  "entry": "main.keel",
+  "sources": [
+    "game.keel",
+    "decisions.keel",
+    "native.keel"
+  ],
+  "tests": [
+    "tests.keel"
+  ]
+}

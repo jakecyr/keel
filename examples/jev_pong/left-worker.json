@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "name": "left-pong-worker",
+  "entry": "left_worker/main.keel",
+  "sources": [
+    "game.keel",
+    "decisions.keel",
+    "native.keel"
+  ],
+  "tests": []
+}

@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "stdout": false,
+  "listen": ["127.0.0.1:8090"],
+  "read": ["public"]
+}

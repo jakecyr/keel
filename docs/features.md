@@ -1,6 +1,6 @@
 # Collections, optional values, and recoverable parsing
 
-The native compiler supports `List<Int>`, `Option<Int>`, and `Result<Int, Text>`.
+The native compiler supports `List<Int>`, `Option<Int>`, `Result<Int, Text>`, and `Result<Text, Text>`.
 These are concrete built-in types. They do not imply support for arbitrary
 generic arguments, user-defined records, or user-defined tagged unions.
 
@@ -99,4 +99,6 @@ the failing call's source offset.
 
 The implemented subset does not yet include generic lists, arbitrary records or
 unions, pattern matching on user-defined types, error propagation syntax,
-list-valued property generators/shrinkers, concurrency, or capability simulation.
+list-valued property generators/shrinkers, general structured tasks/channels, or capability simulation.
+Scoped pure integer `parallel.map` and recoverable text results are implemented;
+see the [standard-library guide](stdlib.md) (`keel agent spec stdlib`).

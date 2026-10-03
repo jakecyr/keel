@@ -1,0 +1,7 @@
+fn main() effects { fs.read, fs.write, env.read, process.exec, clock.read, net.listen } {
+    let state = boot_state(clock.millis())
+    match fs.write_text("build/state.json", encode_state(state)) {
+        Ok(_written) => { http.serve_app(configuration("PONG_PORT", 8766), "web", route) }
+        Err(_error) => {}
+    }
+}

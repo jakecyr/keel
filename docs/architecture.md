@@ -32,6 +32,9 @@ the selected cases; it does not prove semantic equivalence for all programs.
 | `src/check.rs` | Signatures, built-in types, ownership/borrow flow, exhaustive matches, effects, contracts, call graph, hole context |
 | `src/native.rs` | Native lowering through C with explicit temporaries and destruction |
 | `src/runtime.c` | Checked arithmetic, owned Text/List/Result storage, bounds checks, parsing, diagnostics, permission gates, POSIX HTTP host |
+| `src/http_app.c` | Sequential localhost API/static-file host, bounded request framing, root-relative binary asset serving, same-origin checks |
+| `src/process_runtime.c` | Atomic text writes, monotonic clock, exact executable grants, bounded calls and owned background process groups |
+| `src/stdlib.c`, `src/stdlib.rs` | Bounded native adapters and independent pure parsing reference implementations; see [standard library](stdlib.md) |
 | `src/eval.rs` | Bounded reference evaluation, deterministic properties, shrinking, replay, differential regression tests |
 | `src/main.rs` | CLI protocol, compiler invocation, bounded test workers, replay/shrinking, revision-bound edits, inspection/review |
 | `src/project.rs`, `src/files.rs` | Explicit project composition, initialization, acceptance-file policy, bounded reads, path protection, atomic writes and edit locks |
@@ -91,7 +94,7 @@ The interface makes protected changes difficult to make accidentally. It cannot 
 
 ## Memory and runtime boundary
 
-Text, contiguous List<Int>, and Result<Int, Text> are noncopyable owned types.
+Text, contiguous List<Int>, Result<Int, Text>, and Result<Text, Text> are noncopyable owned types.
 Int, Bool, and Option<Int> copy by value. Read/edit loans span an entire call,
 including later argument evaluation; `edit` requires exclusive mutable access.
 For loops hold read loans on their input, and matches borrow owned scrutinees
@@ -100,7 +103,7 @@ function return. Traps terminate the process without unwinding. These concrete
 container types do not establish support for arbitrary generic ownership,
 records, user-defined unions, shared ownership, closures, or suspension.
 
-Host primitives have compiler-known types and effects. The HTTP adapter and libc are trusted native code. Permission checks constrain the provided primitives, not arbitrary native extensions; v0 exposes no FFI to Keel programs. HTTP request memory is borrowed only during the handler call. Returning that borrow is statically forbidden; response construction allocates owned output.
+Host primitives have compiler-known types and effects. The HTTP adapter, libc, and selectively linked libcurl/libxml2 are trusted native code. Permission checks constrain the provided primitives, not arbitrary native extensions; v0 exposes no FFI to Keel programs. HTTP request memory is borrowed only during the handler call. Returning that borrow is statically forbidden; response construction allocates owned output.
 
 Native test declarations run in separate subprocesses. Per-worker and suite
 execution budgets, process groups, and bounded stderr capture prevent common
@@ -119,8 +122,11 @@ outside the suite's execution deadline. Exact defaults are in the
 Bounded file reads reject nonregular inputs. Output protection checks source
 aliases and symlink traversal; atomic staging cleanup does not remove files
 created by another writer. These guardrails are not a hostile multi-tenant
-compilation sandbox. The HTTP adapter still has per-socket timeouts rather than
-a full production server lifecycle, total request deadline, or concurrency model.
+compilation sandbox. The legacy HTTP adapter has per-socket timeouts. The app
+host adds total reception/transmission I/O deadlines, but not a handler deadline,
+production lifecycle, or concurrent request execution. Process execution grants
+authorize the selected program and arguments; they are not an OS sandbox or
+automatic attenuation of child authority.
 
 There is no tracing recorder. Diagnostics record kind, source offset, and integer property input. Runtime source offsets require the matching revision; compiler-generated test reports supply it. Raw executable diagnostics alone do not contain an embedded build revision.
 
@@ -139,7 +145,7 @@ There is no tracing recorder. Diagnostics record kind, source offset, and intege
    selection. Existing manifest composition is a shared namespace, not modules.
 5. Introduce typed capability values, deployment binding, controlled-world clock,
    storage/random/network substitution, state-machine generators, and fault replay.
-6. Define structured concurrency, bounded channels, cancellation, explicit shared
+6. Extend scoped pure integer parallel maps to general structured concurrency, bounded channels, cancellation, explicit shared
    immutable ownership, and resource/telemetry reports that distinguish proven,
    estimated, observed, and unknown behavior.
 7. Add Keel dependency lockfiles, artifact hashes, typed FFI, supported-platform

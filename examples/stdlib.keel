@@ -1,0 +1,78 @@
+fn square(value: Int) -> Int { return value * value }
+fn nested(value: Int) -> Int {
+    let values = parallel.map([value, value], square)
+    return list.at(values, 0)
+}
+fn unwrap(value: take Result<Text, Text>) -> Text {
+    match value {
+        Ok(text) => { return text.clone(text) }
+        Err(error) => { return text.clone(error) }
+    }
+}
+fn main() {}
+test "JSON pointers, escaping, numbers, types, and ownership" {
+    let document = " {\"a/b\":{\"~\":[\"hi\\n\\uD83D\\uDE00\",1.20e+2,null,true]},\"dup\":1,\"dup\":2} "
+    assert unwrap(json.text(document, "/a~1b/~0/0")) == "hi\n😀"
+    assert unwrap(json.get(document, "/a~1b/~0/1")) == "1.20e+2"
+    assert unwrap(json.get(document, "/a~1b/~0/2")) == "null"
+    assert unwrap(json.get(document, "/a~1b/~0/3")) == "true"
+    assert unwrap(json.get(document, "/dup")) == "2"
+    assert unwrap(json.get(document, "/missing")) == "JSON path not found"
+    assert unwrap(json.get(document, "bad")) == "invalid JSON pointer"
+    assert unwrap(json.get(document, "/~2")) == "invalid JSON pointer"
+    assert unwrap(json.text(document, "/dup")) == "expected JSON string"
+    assert unwrap(json.get("[1]", "/01")) == "JSON path not found"
+    assert unwrap(json.parse("01")) == "invalid JSON"
+    assert unwrap(json.parse("[1,]")) == "invalid JSON"
+    assert unwrap(json.parse("\"\\ud800\"")) == "invalid JSON"
+    assert unwrap(json.parse("{\"x\":1} trailing")) == "invalid JSON"
+    assert unwrap(json.parse("1e999")) == "1e999"
+    assert unwrap(json.text(json.quote("quote: \" slash: \\ newline:\n"), "")) == "quote: \" slash: \\ newline:\n"
+    match json.int("{\"n\":9223372036854775807}", "/n") {
+        Ok(n) => { assert n == 9223372036854775807 }
+        Err(error) => { assert false }
+    }
+    var parsed = json.parse("{}")
+    parsed = result.text_ok("replacement")
+    assert unwrap(take parsed) == "replacement"
+}
+test "CSV strict cells and recoverable errors" {
+    let csv = "name,note\r\nAda,\"hello, \"\"world\"\"\nsecond line\"\r\n"
+    assert unwrap(csv.get(csv, 1, 0)) == "Ada"
+    assert unwrap(csv.get(csv, 1, 1)) == "hello, \"world\"\nsecond line"
+    assert unwrap(csv.get("a,", 0, 1)) == ""
+    assert unwrap(csv.get(",\n", 0, 0)) == ""
+    assert unwrap(csv.get("", 0, 0)) == "CSV cell not found"
+    assert unwrap(csv.get("a", -1, 0)) == "CSV cell not found"
+    assert unwrap(csv.get("\"oops", 0, 0)) == "invalid CSV"
+    assert unwrap(csv.get("ok\n\"bad", 0, 0)) == "invalid CSV"
+    assert unwrap(csv.get("\"x\"oops", 0, 0)) == "invalid CSV"
+}
+test "XML content, malformed inputs, disabled DTDs" {
+    assert unwrap(xml.text("<root><name>A &amp; B <b>bold</b>!</name></root>", "/root/name")) == "A & B bold!"
+    assert unwrap(xml.text("<root><empty/></root>", "/root/empty")) == ""
+    assert unwrap(xml.text("<root/>", "/root/missing")) == "XML path not found"
+    assert unwrap(xml.text("<p:root/>", "/p:root")) == "invalid XML"
+    assert unwrap(xml.text("<root>", "/root")) == "invalid XML"
+    assert unwrap(xml.text("<!DOCTYPE root SYSTEM 'file:///etc/passwd'><root/>", "/root")) == "XML DTDs are disabled"
+}
+test "SSE dispatched events and dotenv without shell evaluation" {
+    assert unwrap(sse.data(":comment\r\nevent: answer\r\ndata: first\r\ndata: second\r\n\r\ndata: final\n\n", 0)) == "first\nsecond"
+    assert unwrap(sse.data("data: one\n\ndata:\n\n", 1)) == ""
+    assert unwrap(sse.data("data: not dispatched\n", 0)) == "SSE event not found"
+    assert unwrap(dotenv.get("# ignore\nKEY = 'literal $NOT_EXPANDED'\n", "KEY")) == "literal $NOT_EXPANDED"
+    assert unwrap(dotenv.get("KEY=one\nKEY=two\n", "KEY")) == "two"
+    assert unwrap(dotenv.get("KEY=\"bad", "KEY")) == "invalid dotenv"
+}
+test "parallel map is scoped and ordered, including nested maps" {
+    assert parallel.map([3, -2, 0, 5, 1], square) == [9, 4, 0, 25, 1]
+    assert parallel.map([], square) == []
+    assert parallel.map([2, 4], nested) == [4, 16]
+}
+test "JSON HTTP responses" {
+    let response = unwrap(http.json_response(200, "{\"ok\":true}"))
+    assert http.status(response) == 200
+    assert http.body(response) == "{\"ok\":true}"
+    assert unwrap(http.json_response(99, "{}")) == "invalid HTTP status"
+    assert unwrap(http.json_response(200, "oops")) == "invalid JSON"
+}

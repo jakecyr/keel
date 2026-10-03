@@ -1,0 +1,17 @@
+test "health returns JSON" {
+    let response = route("GET", "/api/health", "")
+    assert http.status(response) == 200
+    assert http.body(response) == "{\"ok\":true}"
+}
+
+test "post echo preserves valid JSON" {
+    let response = route("POST", "/api/echo", "{\"message\":\"hello\"}")
+    assert http.status(response) == 200
+    assert http.body(response) == "{\"message\":\"hello\"}"
+    assert http.status(route("POST", "/api/echo", "not JSON")) == 400
+}
+
+test "unknown route and wrong method fall through" {
+    assert http.status(route("GET", "/", "")) == 404
+    assert http.status(route("DELETE", "/api/echo", "")) == 404
+}

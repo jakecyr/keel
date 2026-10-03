@@ -290,6 +290,18 @@ struct Policy {
     stdout: bool,
     #[serde(default)]
     listen: Vec<String>,
+    #[serde(default)]
+    connect: Vec<String>,
+    #[serde(default)]
+    read: Vec<String>,
+    #[serde(default)]
+    env: Vec<String>,
+    #[serde(default)]
+    write: Vec<String>,
+    #[serde(default)]
+    exec: Vec<String>,
+    #[serde(default)]
+    clock: Vec<String>,
 }
 pub fn policy(path: &Path) -> Result<Vec<String>> {
     let policy: Policy = serde_json::from_str(&files::read(path, 16 * 1024)?)
@@ -308,6 +320,31 @@ pub fn policy(path: &Path) -> Result<Vec<String>> {
             .filter(|p| *p > 0)
             .ok_or("policy listen must be 127.0.0.1:PORT (1..65535)")?;
         args.push(format!("--allow-net=127.0.0.1:{port}"));
+    }
+    if policy.connect.len()
+        + policy.read.len()
+        + policy.env.len()
+        + policy.write.len()
+        + policy.exec.len()
+        + policy.clock.len()
+        > 256
+    {
+        return Err("policy supports at most 256 scoped permissions".into());
+    }
+    for (name, entries) in [
+        ("connect", policy.connect),
+        ("read", policy.read),
+        ("env", policy.env),
+        ("write", policy.write),
+        ("exec", policy.exec),
+        ("clock", policy.clock),
+    ] {
+        for entry in entries {
+            if entry.is_empty() || entry.chars().any(char::is_control) {
+                return Err("invalid scoped permission".into());
+            }
+            args.push(format!("--allow-{name}={entry}"));
+        }
     }
     Ok(args)
 }

@@ -1,0 +1,52 @@
+// Pure helpers are tested offline. main makes one explicitly authorized request.
+fn log_field(body: read Text, path: read Text) effects { io.stdout } {
+    match json.get(body, path) {
+        Ok(value) => { io.println(text.concat(text.concat(path, " = "), value)) }
+        Err(error) => { io.println(text.concat("Response field error: ", error)) }
+    }
+}
+
+fn query(key: read Text, request: read Text) effects { net.connect, io.stdout } {
+    match http.post_json("https://api.typesafe.ai/v1/systemone", request, key) {
+        Ok(response) => {
+            let status = http.status(response)
+            io.println(text.concat("HTTP ", text.from_int(status)))
+            if status != 200 {
+                // Avoid logging arbitrary error bodies, which might echo request data.
+                io.println("Jev request failed; check credentials, request shape, or rate limits.")
+                return;
+            }
+            let body = http.body(response)
+            log_field(body, "/model")
+            log_field(body, "/answers/department/choice")
+            log_field(body, "/answers/refund_requested/noul")
+            log_field(body, "/answers/urgency/score")
+            log_field(body, "/usage")
+            match json.text(body, "/answers/department/choice") {
+                Ok(team) => {
+                    if team == "billing" { io.println("Route this request to billing.") }
+                }
+                Err(error) => { io.println(error) }
+            }
+        }
+        Err(error) => { io.println(error) }
+    }
+}
+
+fn main() effects { fs.read, net.connect, io.stdout } {
+    match fs.read_text(".env") {
+        Ok(config) => {
+            match dotenv.get(config, "JEV_API_KEY") {
+                Ok(key) => {
+                    if text.len(key) == 0 { io.println("JEV_API_KEY is empty.") return; }
+                    match fs.read_text("request.json") {
+                        Ok(request) => { query(key, request) }
+                        Err(error) => { io.println(error) }
+                    }
+                }
+                Err(error) => { io.println(error) }
+            }
+        }
+        Err(error) => { io.println(error) }
+    }
+}

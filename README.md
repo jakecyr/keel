@@ -80,6 +80,9 @@ keel check --json
 
 - [Keel website](https://jakecyr.github.io/keel/) — explore the agent workflow and recorded benchmarks
 - [Language tour](LANGUAGE.md) — learn the syntax with examples
+- [Standard library](docs/stdlib.md) — JSON, files, fetching, protocols, and scoped threading
+- [Native app and game examples](examples/README.md) — static hosting, an evolving arena, and Jev Pong
+- [Jev API example](examples/jev/README.md) — query an API and use its JSON answers
 - [Development workflows](docs/workflows.md) — build, test, use agent tools, and try the web-server example
 - [Installation guide](docs/installation.md) — platform support, upgrades, and editor setup
 - [Contributing](CONTRIBUTING.md) — work on Keel itself

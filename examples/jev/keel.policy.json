@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "stdout": true,
+  "read": [".env", "request.json"],
+  "connect": ["https://api.typesafe.ai"]
+}

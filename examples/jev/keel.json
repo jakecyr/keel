@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "name": "jev",
+  "entry": "main.keel",
+  "sources": [],
+  "tests": ["tests.keel"]
+}

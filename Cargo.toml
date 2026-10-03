@@ -6,9 +6,10 @@ description = "An experimental agent-oriented language and native development pr
 license = "MIT"
 repository = "https://github.com/jakecyr/keel"
 readme = "README.md"
-include = ["src/**", "examples/**", "docs/**", "tests/**", "Cargo.toml", "Cargo.lock", "README.md", "LANGUAGE.md", "LICENSE"]
+include = ["src/**", "examples/**", "!examples/**/.env", "!examples/**/build/**", "!examples/**/logs/**", "!examples/**/runtime/**", "!examples/**/__pycache__/**", "docs/**", "tests/**", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LANGUAGE.md", "/LICENSE"]
 
 [dependencies]
 serde = { version = "=1.0.229", features = ["derive"] }
-serde_json = "=1.0.151"
+serde_json = { version = "=1.0.151", features = ["raw_value"] }
 libc = "=0.2.189"
+roxmltree = "=0.21.1"

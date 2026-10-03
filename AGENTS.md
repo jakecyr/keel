@@ -23,3 +23,15 @@ Root `LANGUAGE.md` is the developer/agent syntax tour; `docs/language.md` is the
 ## Benchmark honesty
 
 Read benchmarks/README.md before changing evaluation. Record raw timings/environment, include failed attempts in cost, compare acceptance separately, and preserve UNKNOWN for absent billing or independent evaluation evidence. A scripted patch benchmark is not an agent benchmark. The 25% cost-improvement target is a gate, not a promised result.
+
+## Reporting gaps, bugs, and inefficiencies
+
+Create a repository issue when you discover a missing language capability, bug, or inefficiency. Search existing issues first; add new evidence to a matching issue instead of creating a duplicate.
+
+- Use a specific title and describe the problem, affected components, and impact on users or development workflows.
+- Include a minimal Keel example where possible, exact reproduction commands, expected versus actual behavior, and relevant diagnostics. Record the commit or toolchain version and environment needed to reproduce the problem.
+- For language gaps, explain the use case, current workaround, and desired behavior. Clearly label proposed syntax as unimplemented.
+- For inefficiencies, include a representative workload and measurements where available; distinguish suspected bottlenecks from measured results and follow the benchmark honesty rules above.
+- Link relevant source files, tests, documentation, or related issues, and suggest concrete acceptance criteria where possible.
+
+If issue creation is unavailable, provide a ready-to-file issue title and body in the handoff and state that it was not filed.

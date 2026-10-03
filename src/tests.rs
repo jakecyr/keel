@@ -1,6 +1,12 @@
 use super::*;
 #[path = "feature_tests.rs"]
 mod feature_tests;
+#[path = "http_app_tests.rs"]
+mod http_app_tests;
+#[path = "process_runtime_tests.rs"]
+mod process_runtime_tests;
+#[path = "stdlib_tests.rs"]
+mod stdlib_tests;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::{process::Stdio, thread};

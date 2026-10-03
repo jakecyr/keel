@@ -1,0 +1,22 @@
+test "read a Jev choice without hand-written parsing" {
+    let response = "{\"answers\":{\"department\":{\"type\":\"choice\",\"choice\":\"billing\",\"confidence\":0.81}}}"
+    match json.text(response, "/answers/department/choice") {
+        Ok(team) => { assert team == "billing" }
+        Err(error) => { assert false }
+    }
+    match json.get(response, "/answers/department/confidence") {
+        Ok(confidence) => { assert confidence == "0.81" }
+        Err(error) => { assert false }
+    }
+}
+
+test "missing and invalid responses are recoverable" {
+    match json.text("{}", "/answers/department/choice") {
+        Ok(value) => { assert false }
+        Err(error) => { assert error == "JSON path not found" }
+    }
+    match json.parse("<html>Unavailable</html>") {
+        Ok(value) => { assert false }
+        Err(error) => { assert error == "invalid JSON" }
+    }
+}

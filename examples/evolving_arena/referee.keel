@@ -1,0 +1,70 @@
+// State: tick, red x/y/hp, blue x/y/hp, then each loadout's four stats.
+// Loadout: power, reach, armor, speed. Fixed, independently owned referee.
+fn legal(stats: read List<Int>) -> Bool {
+    if list.len(stats) != 4 { return false }
+    var total = 0
+    for value in stats {
+        if value < 1 || value > 5 { return false }
+        total = total + value
+    }
+    return total <= 10
+}
+fn distance(a: Int, b: Int) -> Int {
+    if a > b { return a - b }
+    return b - a
+}
+fn approach(a: Int, b: Int, speed: Int) -> Int {
+    if a < b { return a + speed }
+    if a > b { return a - speed }
+    return a
+}
+fn bound(value: Int) -> Int {
+    if value < 0 { return 0 }
+    if value > 100 { return 100 }
+    return value
+}
+fn damage(power: Int, armor: Int) -> Int {
+    if power <= armor { return 1 }
+    return power - armor + 1
+}
+fn health_after(hp: Int, hit: Int) -> Int {
+    if hit >= hp { return 0 }
+    return hp - hit
+}
+fn step(s: read List<Int>) -> List<Int> {
+    let tick = list.at(s, 0)
+    let rx = list.at(s, 1)
+    let ry = list.at(s, 2)
+    let rh = list.at(s, 3)
+    let bx = list.at(s, 4)
+    let by = list.at(s, 5)
+    let bh = list.at(s, 6)
+    let red = [list.at(s, 7), list.at(s, 8), list.at(s, 9), list.at(s, 10)]
+    let blue = [list.at(s, 11), list.at(s, 12), list.at(s, 13), list.at(s, 14)]
+    assert legal(red) && legal(blue)
+    var nrx = rx
+    var nry = ry
+    var nbx = bx
+    var nby = by
+    var red_hit = 0
+    var blue_hit = 0
+    let separation = distance(rx, bx) + distance(ry, by)
+    if separation > list.at(red, 1) * 6 {
+        nrx = bound(approach(rx, bx, list.at(red, 3)))
+        nry = bound(approach(ry, by, list.at(red, 3)))
+    }
+    if separation > list.at(blue, 1) * 6 {
+        nbx = bound(approach(bx, rx, list.at(blue, 3)))
+        nby = bound(approach(by, ry, list.at(blue, 3)))
+    }
+    // Simultaneous attacks avoid player-order advantage; attacks every third tick.
+    if tick % 3 == 0 && rh > 0 && bh > 0 {
+        if separation <= list.at(red, 1) * 6 {
+            blue_hit = damage(list.at(red, 0), list.at(blue, 2))
+        }
+        if separation <= list.at(blue, 1) * 6 {
+            red_hit = damage(list.at(blue, 0), list.at(red, 2))
+        }
+    }
+    return [tick + 1, nrx, nry, health_after(rh, red_hit), nbx, nby, health_after(bh, blue_hit), red_hit, blue_hit]
+}

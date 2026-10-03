@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": "My account shows two charges for the same order. Please help me get the extra charge refunded.",
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "Which team should handle this request?",
+      "criteria": {"billing": "Charges and refunds", "technical": "Software errors", "sales": "New purchases"}
+    },
+    "refund_requested": {
+      "type": "noul",
+      "instructions": "Is the customer requesting a refund?"
+    },
+    "urgency": {
+      "type": "score",
+      "instructions": "How urgently does the customer need help?",
+      "criteria": ["Routine request", "Time-sensitive request", "Immediate emergency"]
+    }
+  }
+}

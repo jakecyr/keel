@@ -1,0 +1,1 @@
+fn main() effects { fs.read, fs.write, process.exec, net.connect } { worker(1) }

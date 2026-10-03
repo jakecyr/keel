@@ -1,0 +1,1 @@
+{"schema":1,"name":"arena-worker-blue","entry":"worker-blue.keel","sources":["common.keel","worker.keel"],"tests":["worker-tests.keel"]}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Work Next Issue"
+  short_description: "Assign an issue, implement it, and request PR review"
+  default_prompt: "Use $work-next-issue to select an issue with gh, assign it to @me, implement it on a feature branch, then commit, push, and open a PR requesting code-owner review."

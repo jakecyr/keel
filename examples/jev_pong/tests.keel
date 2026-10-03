@@ -1,0 +1,60 @@
+test "initial tick moves ball and clamps paddle" {
+    let s = [500, 300, 8, 5, 56, 544, 0, 0, 0]
+    assert step(s, -1, 1) == [508, 305, 8, 5, 55, 545, 0, 0, 1]
+}
+test "top and bottom reflect overshoot" {
+    assert step([500, 9, 8, -5, 300, 300, 0, 0, 0], 0, 0) == [508, 12, 8, 5, 300, 300, 0, 0, 1]
+    assert step([500, 591, 8, 5, 300, 300, 0, 0, 0], 0, 0) == [508, 588, 8, -5, 300, 300, 0, 0, 1]
+}
+test "paddle collision reflects ball" {
+    let s = step([40, 300, -8, 5, 300, 300, 0, 0, 0], 0, 0)
+    assert list.at(s, 0) == 44
+    assert list.at(s, 2) == 8
+    assert list.at(s, 3) == 2
+    let r = step([960, 300, 8, -5, 300, 300, 0, 0, 0], 0, 0)
+    assert list.at(r, 0) == 956
+    assert list.at(r, 2) == -8
+}
+test "missing paddle awards opponent and resets serve" {
+    assert step([-5, 100, -8, 5, 400, 300, 2, 3, 12], 0, 0) == [500, 300, 8, 5, 400, 300, 2, 4, 13]
+    assert step([1005, 100, 8, 5, 300, 400, 2, 3, 12], 0, 0) == [500, 300, -8, -5, 300, 400, 3, 3, 13]
+}
+test "offline decisions use own paddle" {
+    let s = [500, 300, 8, 5, 100, 500, 0, 0, 0]
+    assert offline_action(s, 0) == 1
+    assert offline_action(s, 1) == -1
+}
+test "Jev choices and rejection" {
+    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"up\"}}}") { Ok(value) => { assert value == -1 } Err(error) => { assert false } }
+    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"down\"}}}") { Ok(value) => { assert value == 1 } Err(error) => { assert false } }
+    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"stay\"}}}") { Ok(value) => { assert value == 0 } Err(error) => { assert false } }
+    match decode_choice("{\"answers\":{\"move\":{\"choice\":\"teleport\"}}}") { Ok(value) => { assert false } Err(error) => { assert text.len(error) > 0 } }
+    match decode_choice("broken") { Ok(value) => { assert false } Err(error) => { assert text.len(error) > 0 } }
+}
+test "request escapes observation without changing schema" {
+    let body = request_body("player says \"hello\"\nstate")
+    match json.text(body, "/state") { Ok(value) => { assert value == "player says \"hello\"\nstate" } Err(error) => { assert false } }
+    match json.text(body, "/questions/move/type") { Ok(value) => { assert value == "choice" } Err(error) => { assert false } }
+}
+property "paddles remain bounded" (position in gen.int(min: 55, max: 545)) {
+    let s = step([500, 300, 8, 5, position, position, 0, 0, 0], -1, 1)
+    assert list.at(s, 4) >= 55 && list.at(s, 4) <= 545
+    assert list.at(s, 5) >= 55 && list.at(s, 5) <= 545
+}
+test "players receive their own state and separate bounded history" {
+    var state = boot_state(100)
+    list.set(edit state, 4, 100)
+    list.set(edit state, 5, 500)
+    remember(edit state, 0, 1, 2, 50, 100, 1500)
+    remember(edit state, 1, -1, 2, 70, 100, 1500)
+    let left = observation(state, 0, 600, 1500)
+    let right = observation(state, 1, 600, 1500)
+    assert number(left, "/own_paddle_y") == 100
+    assert number(right, "/own_paddle_y") == 500
+    assert number(left, "/history/0/action") == 1
+    assert number(right, "/history/0/action") == -1
+    var count = 0
+    while count < 12 { remember(edit state, 0, 0, 1, 0, 100, 1500) count = count + 1 }
+    assert list.at(state, 20) == 8
+    assert list.at(state, 30) == 1
+}

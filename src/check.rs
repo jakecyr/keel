@@ -12,6 +12,74 @@ pub fn builtin(name: &str) -> Option<Signature> {
     use Mode::*;
     use Type::*;
     let (params, result, effects) = match name {
+        "result.text_ok" | "result.text_err" => (vec![(Text, Take)], ResultTextText, vec![]),
+        "json.parse" => (vec![(Text, Read)], ResultTextText, vec![]),
+        "json.get" | "json.text" | "dotenv.get" => {
+            (vec![(Text, Read), (Text, Read)], ResultTextText, vec![])
+        }
+        "json.int" => (vec![(Text, Read), (Text, Read)], ResultIntText, vec![]),
+        "json.quote" => (vec![(Text, Read)], Text, vec![]),
+        "csv.get" => (
+            vec![(Text, Read), (Int, Value), (Int, Value)],
+            ResultTextText,
+            vec![],
+        ),
+        "xml.text" => (vec![(Text, Read), (Text, Read)], ResultTextText, vec![]),
+        "sse.data" => (vec![(Text, Read), (Int, Value)], ResultTextText, vec![]),
+        "fs.read_text" => (vec![(Text, Read)], ResultTextText, vec!["fs.read".into()]),
+        "fs.write_text" => (
+            vec![(Text, Read), (Text, Read)],
+            ResultIntText,
+            vec!["fs.write".into()],
+        ),
+        "process.run" => (
+            vec![(Text, Read), (Text, Read)],
+            ResultTextText,
+            vec!["process.exec".into()],
+        ),
+        "process.run_timeout" => (
+            vec![(Text, Read), (Text, Read), (Int, Value)],
+            ResultTextText,
+            vec!["process.exec".into()],
+        ),
+        "process.spawn" => (
+            vec![(Text, Read), (Text, Read)],
+            ResultIntText,
+            vec!["process.exec".into()],
+        ),
+        "process.poll" | "process.terminate" => (
+            vec![(Int, Value)],
+            ResultIntText,
+            vec!["process.exec".into()],
+        ),
+        "clock.millis" => (vec![], Int, vec!["clock.read".into()]),
+        "env.get" => (vec![(Text, Read)], ResultTextText, vec!["env.read".into()]),
+        "http.get" => (
+            vec![(Text, Read)],
+            ResultTextText,
+            vec!["net.connect".into()],
+        ),
+        "http.post_json" => (
+            vec![(Text, Read), (Text, Read), (Text, Read)],
+            ResultTextText,
+            vec!["net.connect".into()],
+        ),
+        "http.post_json_timeout" => (
+            vec![(Text, Read), (Text, Read), (Text, Read), (Int, Value)],
+            ResultTextText,
+            vec!["net.connect".into()],
+        ),
+        "http.json_response" => (vec![(Int, Value), (Text, Read)], ResultTextText, vec![]),
+        "tcp.exchange" | "udp.exchange" => (
+            vec![(Text, Read), (Int, Value), (Text, Read)],
+            ResultTextText,
+            vec!["net.connect".into()],
+        ),
+        "websocket.exchange" => (
+            vec![(Text, Read), (Text, Read)],
+            ResultTextText,
+            vec!["net.connect".into()],
+        ),
         "text.clone" => (vec![(Text, Read)], Text, vec![]),
         "text.concat" => (vec![(Text, Read), (Text, Read)], Text, vec![]),
         "text.len" => (vec![(Text, Read)], Int, vec![]),
@@ -102,7 +170,18 @@ pub fn check(source: &str, program: &Program) -> DResult<Analysis> {
             ));
         }
         for effect in &f.effects {
-            if effect != "io.stdout" && effect != "net.listen" {
+            if ![
+                "io.stdout",
+                "net.listen",
+                "net.connect",
+                "fs.read",
+                "fs.write",
+                "process.exec",
+                "clock.read",
+                "env.read",
+            ]
+            .contains(&effect.as_str())
+            {
                 return Err(Diagnostic::new(
                     source,
                     f.start,
@@ -402,6 +481,64 @@ impl Checker<'_> {
                     allowed_effects: self.effects.clone(),
                 });
                 expected
+            }
+            Call(name, args) if name == "parallel.map" => {
+                if args.len() != 2 {
+                    return self.err(
+                        e.at,
+                        "arity",
+                        "parallel.map expects a List<Int> and a pure fn(Int) -> Int",
+                    );
+                }
+                self.expect(&args[0], env, Type::ListInt, false)?;
+                let Var(handler) = &args[1].kind else {
+                    return self.err(e.at, "handler", "worker must be a named function");
+                };
+                if !self.signatures.get(handler).is_some_and(|s| {
+                    s.params == vec![(Type::Int, Mode::Value)]
+                        && s.result == Type::Int
+                        && s.effects.is_empty()
+                }) {
+                    return self.err(
+                        e.at,
+                        "handler",
+                        "parallel worker must be a pure fn(Int) -> Int",
+                    );
+                }
+                self.analysis
+                    .calls
+                    .entry(self.function.clone())
+                    .or_default()
+                    .insert(handler.clone());
+                Type::ListInt
+            }
+            Call(name, args) if name == "http.serve_app" => {
+                self.effects(e.at, &["net.listen".into(), "fs.read".into()])?;
+                if args.len() != 3 {
+                    return self.err(
+                        e.at,
+                        "arity",
+                        "http.serve_app expects a port, static root, and named handler",
+                    );
+                }
+                self.expect(&args[0], env, Type::Int, false)?;
+                self.expect(&args[1], env, Type::Text, false)?;
+                let Var(handler) = &args[2].kind else {
+                    return self.err(e.at, "handler", "handler must be a named function");
+                };
+                let Some(sig) = self.signatures.get(handler).cloned() else {
+                    return self.err(args[2].at, "handler", "unknown HTTP application handler");
+                };
+                if sig.params != vec![(Type::Text, Mode::Read); 3] || sig.result != Type::Text {
+                    return self.err(args[2].at, "handler", "application handler must have signature fn(method: read Text, path: read Text, body: read Text) -> Text");
+                }
+                self.effects(e.at, &sig.effects)?;
+                self.analysis
+                    .calls
+                    .entry(self.function.clone())
+                    .or_default()
+                    .insert(handler.clone());
+                Type::Unit
             }
             Call(name, args) if name == "http.serve" => {
                 self.effects(e.at, &["net.listen".into()])?;
@@ -703,6 +840,9 @@ impl Checker<'_> {
                     let ty = self.expr(value, env, None, false)?;
                     let variants: &[(&str, Option<Type>)] = match ty {
                         Type::OptionInt => &[("Some", Some(Type::Int)), ("None", None)],
+                        Type::ResultTextText => {
+                            &[("Ok", Some(Type::Text)), ("Err", Some(Type::Text))]
+                        }
                         Type::ResultIntText => {
                             &[("Ok", Some(Type::Int)), ("Err", Some(Type::Text))]
                         }
@@ -710,7 +850,7 @@ impl Checker<'_> {
                             return self.err(
                                 stmt.at,
                                 "match_type",
-                                "match requires Option<Int> or Result<Int, Text>",
+                                "match requires Option<Int>, Result<Int, Text>, or Result<Text, Text>",
                             );
                         }
                     };

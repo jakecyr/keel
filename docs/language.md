@@ -44,6 +44,7 @@ Braces delimit blocks. Semicolons are optional except when a bare `return` needs
 | `List<Int>` | Owned contiguous mutable integer buffer; literal syntax `[1, 2]` or `[]` |
 | `Option<Int>` | Copyable tagged value: `Some(Int)` or `None` |
 | `Result<Int, Text>` | Owned tagged value: `Ok(Int)` or `Err(Text)` |
+| `Result<Text, Text>` | Owned tagged value: `Ok(Text)` or `Err(Text)`; both match payloads are borrowed |
 | `Unit` | No result; cannot be stored in locals or parameters |
 
 These are specific built-in types, not arbitrary generic instantiations. There
@@ -77,7 +78,7 @@ No implicit conversions or Text concatenation operators exist. Use named library
 ## Ownership
 
 Int, Bool, and Option<Int> copy by value and use ordinary value parameters. Text,
-List<Int>, and Result<Int, Text> parameters must declare `read`, `edit`, or `take`:
+List<Int>, Result<Int, Text>, and Result<Text, Text> parameters must declare `read`, `edit`, or `take`:
 
 ```text
 fn length(value: read Text) -> Int { return text.len(value) }
@@ -175,7 +176,7 @@ fn main() effects { io.stdout } {
 }
 ```
 
-Only `io.stdout` and `net.listen` exist. Callers must permit every effect declared
+Supported effects are `io.stdout`, `net.listen`, `net.connect`, `fs.read`, `fs.write`, `env.read`, `process.exec`, and `clock.read`. Callers must permit every effect declared
 by their callees. Declarations are conservative upper bounds; unnecessary effects
 are allowed and may receive a lint warning. Local allocation and mutation do not
 count as external effects. Contracts cannot call effectful, consuming, or editing
@@ -190,6 +191,10 @@ deny authority by default. The network host checks the exact port before opening
 a socket. This is a local policy binding, not an OS sandbox or independently
 administered deployment system. A party controlling launch arguments or the
 policy file can grant permissions. Typed capability values remain future work.
+
+New exact grants are `--allow-connect=ORIGIN`, `--allow-read=PATH`, and
+`--allow-env=NAME`, with optional policy arrays `connect`, `read`, and `env`.
+See the [standard library](stdlib.md) for authority limits and native dependencies.
 
 ## Built-in library
 
@@ -211,6 +216,7 @@ policy file can grant permissions. Typed capability values remain future work.
 | `http.status` | `(read Text) -> Int`; extracts the status from the supported response form, or 0 |
 | `http.body` | `(read Text) -> Text`; copies bytes after the first header separator, or empty Text |
 | `http.serve` | `(Int, named_handler) -> Unit`; special intrinsic requiring `net.listen` |
+| `http.serve_app` | `(Int, read Text, named_handler) -> Unit`; port, static root, three-Text request handler; requires `net.listen`, `fs.read`, and handler effects |
 
 The HTTP handler must be a named pure function `(read Text) -> Text`. It receives
 the request path with the query removed, without URL decoding, and returns the
@@ -218,7 +224,29 @@ complete response. Function values are otherwise unsupported. Request/response
 helpers are demonstration primitives, not general HTTP validation libraries.
 Invalid status codes or ports still trap; those host APIs do not yet return typed
 errors. Retrieve ordinary built-in signatures with `keel api NAME --json`;
-`http.serve` is a special compiler intrinsic.
+`http.serve`, `http.serve_app`, and `parallel.map` are special compiler intrinsics.
+
+The application handler for `http.serve_app` accepts three borrowed Text values:
+method, path before the query (not URL-decoded), and UTF-8 request body. It returns
+a complete response and may declare effects, which must propagate to the caller.
+On GET/HEAD, a returned 404 falls back to the authorized static root. An empty
+root disables static files. HEAD omits the response body. The host sends binary
+files directly without exposing them as Text. See [application-server limits,
+MIME types, and root permissions](stdlib.md#application-server-and-static-assets)
+and the [runnable example](../examples/http_app/README.md).
+
+The [standard-library reference](stdlib.md), also embedded as
+`keel agent spec stdlib`, defines JSON, CSV, XML, SSE, dotenv, file/environment,
+HTTP clients, TCP/UDP/WebSocket exchanges, and scoped integer parallel mapping.
+Recoverable text APIs return `Result<Text, Text>` and borrow both match payloads.
+HTTP/XML selectively link libcurl/libxml2; pure core programs do not need them.
+
+Native orchestration also includes atomic `fs.write_text`, bounded `process.run` / `process.run_timeout`,
+owned child handles from `process.spawn`/`process.poll`/`process.terminate`, and
+monotonic `clock.millis`. Their effects are `fs.write`, `process.exec`, and
+`clock.read`, with separate launcher grants. See the [orchestration reference](stdlib.md#native-application-orchestration)
+for exact limits and executable/child authority; these are trusted host adapters,
+not language concurrency or an OS sandbox.
 
 ## Contracts, holes, and tests
 

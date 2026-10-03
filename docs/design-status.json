@@ -13,7 +13,13 @@
     "embedded agent guides and generated AGENTS.md/CLAUDE.md",
     "whole-source cached JSON-lines service",
     "bounded child processes and Linux worker memory limits",
-    "source installation, release installer, CI packaging and tests"
+    "source installation, release installer, CI packaging and tests",
+    "Result<Text, Text>, JSON pointers/escaping, CSV/XML and buffered SSE parsing",
+    "bounded UTF-8 file/env reads and exact launcher permissions",
+    "bounded HTTP/TCP/UDP clients and host-dependent WebSocket exchange",
+    "scoped pure integer parallel map with up to four pthread workers",
+    "sequential localhost static-file and JSON API application host",
+    "atomic text writes, monotonic clock and owned background process handles"
   ],
   "remaining_original_design_work": [
     "nominal records and user-defined tagged unions",
@@ -30,7 +36,10 @@
     "signed reproducible releases and published compatibility guarantees"
   ],
   "local_validation_platform": "macOS ARM64",
-  "ci_configured_platforms": ["Linux", "macOS"],
+  "ci_configured_platforms": [
+    "Linux",
+    "macOS"
+  ],
   "remote_ci_executed_by_this_session": true,
   "release_published_by_this_session": true,
   "experimental_release": "https://github.com/jakecyr/keel/releases/tag/v0.1.0",

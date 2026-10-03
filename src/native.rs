@@ -11,6 +11,7 @@ fn ctype(ty: Type) -> &'static str {
         Type::ListInt => "KList",
         Type::OptionInt => "KOption",
         Type::ResultIntText => "KResult",
+        Type::ResultTextText => "KTextResult",
         Type::Unit => "void",
     }
 }
@@ -156,13 +157,18 @@ impl<'a> Emitter<'a> {
                 let b = self.expr(right);
                 if matches!(
                     a.ty,
-                    Type::Text | Type::ListInt | Type::OptionInt | Type::ResultIntText
+                    Type::Text
+                        | Type::ListInt
+                        | Type::OptionInt
+                        | Type::ResultIntText
+                        | Type::ResultTextText
                 ) {
                     let equal = match a.ty {
                         Type::Text => "k_equal",
                         Type::ListInt => "k_list_equal",
                         Type::OptionInt => "k_option_equal",
                         Type::ResultIntText => "k_result_equal",
+                        Type::ResultTextText => "k_text_result_equal",
                         _ => unreachable!(),
                     };
                     return self.assign_temp(
@@ -210,6 +216,27 @@ impl<'a> Emitter<'a> {
                     self.slot(ty, true)
                 }
             }
+            ExprKind::Call(name, args) if name == "parallel.map" => {
+                let values = self.expr(&args[0]);
+                let ExprKind::Var(handler) = &args[1].kind else {
+                    unreachable!()
+                };
+                self.assign_temp(
+                    Type::ListInt,
+                    format!("k_parallel_map({}, f_{handler})", values.name),
+                )
+            }
+            ExprKind::Call(name, args) if name == "http.serve_app" => {
+                let port = self.expr(&args[0]);
+                let root = self.expr(&args[1]);
+                let ExprKind::Var(handler) = &args[2].kind else {
+                    unreachable!()
+                };
+                self.assign_temp(
+                    Type::Unit,
+                    format!("k_serve_app({}, {}, f_{handler})", port.name, root.name),
+                )
+            }
             ExprKind::Call(name, args) if name == "http.serve" => {
                 let port = self.expr(&args[0]);
                 let ExprKind::Var(handler) = &args[1].kind else {
@@ -220,6 +247,33 @@ impl<'a> Emitter<'a> {
             ExprKind::Call(name, args) => {
                 let (params, result, target) = if let Some(b) = builtin(name) {
                     let target = match name.as_str() {
+                        "result.text_ok" => "k_text_ok",
+                        "result.text_err" => "k_text_err",
+                        "dotenv.get" => "k_dotenv_get",
+                        "json.parse" => "k_json_parse",
+                        "json.get" => "k_json_get",
+                        "json.text" => "k_json_text",
+                        "json.int" => "k_json_int",
+                        "json.quote" => "k_json_quote",
+                        "csv.get" => "k_csv_get",
+                        "xml.text" => "k_xml_text",
+                        "sse.data" => "k_sse_data",
+                        "fs.read_text" => "k_read_text",
+                        "fs.write_text" => "k_write_text",
+                        "process.run" => "k_process_run",
+                        "process.run_timeout" => "k_process_run_timeout",
+                        "process.spawn" => "k_process_spawn",
+                        "process.poll" => "k_process_poll",
+                        "process.terminate" => "k_process_terminate",
+                        "clock.millis" => "k_clock_millis",
+                        "env.get" => "k_env_get",
+                        "http.get" => "k_http_get",
+                        "http.post_json" => "k_http_post_json",
+                        "http.post_json_timeout" => "k_http_post_json_timeout",
+                        "http.json_response" => "k_json_response",
+                        "tcp.exchange" => "k_tcp_exchange",
+                        "udp.exchange" => "k_udp_exchange",
+                        "websocket.exchange" => "k_websocket_exchange",
                         "text.clone" => "k_clone",
                         "text.concat" => "k_concat",
                         "text.len" => "k_len",
@@ -397,7 +451,7 @@ impl<'a> Emitter<'a> {
                                             "value"
                                         }
                                     ),
-                                    ty: if arm.variant == "Err" {
+                                    ty: if arm.variant == "Err" || v.ty == Type::ResultTextText {
                                         Type::Text
                                     } else {
                                         Type::Int
@@ -481,6 +535,19 @@ fn signature(f: &Function) -> String {
 }
 pub fn emit(program: &Program, analysis: &Analysis, tests: bool) -> String {
     let mut out = include_str!("runtime.c").to_string();
+    out.push_str(include_str!("stdlib.c"));
+    out.push_str(include_str!("process_runtime.c"));
+    out.push_str(include_str!("http_app.c"));
+    if uses_builtin(analysis, "http.get")
+        || uses_builtin(analysis, "http.post_json")
+        || uses_builtin(analysis, "http.post_json_timeout")
+        || uses_builtin(analysis, "websocket.exchange")
+    {
+        out.insert_str(0, "#define KEEL_CURL 1\n");
+    }
+    if uses_builtin(analysis, "xml.text") {
+        out.insert_str(0, "#define KEEL_XML 1\n");
+    }
     for f in &program.functions {
         writeln!(out, "{};", signature(f)).unwrap();
     }
@@ -526,7 +593,7 @@ pub fn emit(program: &Program, analysis: &Analysis, tests: bool) -> String {
             e.block(&test.body);
             out.push_str(&e.finish(&format!("static void test_{i}(void)"), Type::Unit, &[]));
         }
-        out.push_str("int main(int argc, char **argv) {\n if(argc!=5) return 64;\n size_t selected=(size_t)strtoull(argv[1],NULL,10);\n uint64_t seed=strtoull(argv[2],NULL,10); if(!seed) seed=1;\n size_t cases=(size_t)strtoull(argv[3],NULL,10);\n switch(selected) {\n");
+        out.push_str("int main(int argc, char **argv) {\n k_std_init();\n if(argc!=5) return 64;\n size_t selected=(size_t)strtoull(argv[1],NULL,10);\n uint64_t seed=strtoull(argv[2],NULL,10); if(!seed) seed=1;\n size_t cases=(size_t)strtoull(argv[3],NULL,10);\n switch(selected) {\n");
         for (i, test) in program.tests.iter().enumerate() {
             writeln!(out, "case {i}:").unwrap();
             if let Some((_, min, max)) = &test.generator {
@@ -537,7 +604,7 @@ pub fn emit(program: &Program, analysis: &Analysis, tests: bool) -> String {
         }
         out.push_str("default: return 64;\n } return 0;\n}\n");
     } else {
-        out.push_str("int main(int argc, char **argv) {\n for(int i=1;i<argc;i++) { if(!strncmp(argv[i],\"--allow-net=\",12)) k_net_permission=argv[i]+12; else if(!strcmp(argv[i],\"--allow-stdout\")) k_stdout_permission=true; else { fprintf(stderr,\"unknown runtime option: %s\\n\",argv[i]); return 64; } }\n");
+        out.push_str("int main(int argc, char **argv) {\n k_std_init();\n for(int i=1;i<argc;i++) { if(!strncmp(argv[i],\"--allow-net=\",12)) k_net_permission=argv[i]+12; else if(!strcmp(argv[i],\"--allow-stdout\")) k_stdout_permission=true; else if(k_std_permission(argv[i])) {} else { fprintf(stderr,\"unknown runtime option: %s\\n\",argv[i]); return 64; } }\n");
         if program.functions.iter().any(|f| f.name == "main") {
             out.push_str("f_main(); return 0;\n}\n");
         } else {
@@ -545,4 +612,9 @@ pub fn emit(program: &Program, analysis: &Analysis, tests: bool) -> String {
         }
     }
     out
+}
+
+// Search the checked call graph, including test bodies recorded by the checker.
+pub fn uses_builtin(analysis: &Analysis, name: &str) -> bool {
+    analysis.calls.values().any(|calls| calls.contains(name))
 }

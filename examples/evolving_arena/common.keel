@@ -1,0 +1,56 @@
+fn integer(body: read Text, path: read Text, fallback: Int) -> Int {
+    match json.int(body, path) {
+        Ok(value) => { return value }
+        Err(_error) => { return fallback }
+    }
+}
+fn string(body: read Text, path: read Text, fallback: read Text) -> Text {
+    match json.text(body, path) {
+        Ok(value) => { return text.clone(value) }
+        Err(_error) => { return text.clone(fallback) }
+    }
+}
+fn read_file(path: read Text, fallback: read Text) -> Text effects { fs.read } {
+    match fs.read_text(path) {
+        Ok(value) => { return text.clone(value) }
+        Err(_error) => { return text.clone(fallback) }
+    }
+}
+fn write_file(path: read Text, value: read Text) effects { fs.write } {
+    match fs.write_text(path, value) {
+        Ok(_written) => { }
+        Err(_error) => { assert false }
+    }
+}
+fn encode(values: read List<Int>) -> Text {
+    var encoded = "["
+    var index = 0
+    for value in values {
+        if index > 0 { encoded = text.concat(encoded, ",") }
+        encoded = text.concat(encoded, text.from_int(value))
+        index = index + 1
+    }
+    return text.concat(encoded, "]")
+}
+fn decode(body: read Text, count: Int) -> List<Int> {
+    var values = []
+    var index = 0
+    while index < count {
+        let value = integer(body, text.concat("/", text.from_int(index)), 0)
+        list.push(edit values, value)
+        index = index + 1
+    }
+    return values
+}
+fn player_path(prefix: read Text, player: Int, suffix: read Text) -> Text {
+    return text.concat(text.concat(prefix, text.from_int(player)), suffix)
+}
+fn binary_path(player: Int, slot: Int) -> Text {
+    return text.concat(player_path("runtime/ability-", player, "-"), text.from_int(slot))
+}
+fn json_reply(status: Int, body: read Text) -> Text {
+    match http.json_response(status, body) {
+        Ok(response) => { return text.clone(response) }
+        Err(_error) => { return http.response(500, "invalid response") }
+    }
+}

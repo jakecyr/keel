@@ -2,7 +2,7 @@
 
 For a repository-based syntax tour, read root `LANGUAGE.md`; its runnable examples are regression-tested. Project commands such as `keel check`, `keel test`, and `keel build` default to the current directory. Use `keel COMMAND --help` for focused options and examples. `keel agent context` without a path deliberately returns only bootstrap guidance; include `.` to inspect the project.
 
-This guide is embedded in the installed compiler. It describes supported syntax, not future design promises. Start with `keel agent context . --json` and request a symbol with `--symbol NAME` to keep implementation context small. Use `keel agent spec collections` or `keel api BUILTIN --json` for exact interfaces.
+This guide is embedded in the installed compiler. It describes supported syntax, not future design promises. Start with `keel agent context . --json` and request a symbol with `--symbol NAME` to keep implementation context small. Use `keel agent spec collections` or `keel api BUILTIN --json` for exact interfaces. Use `keel agent spec stdlib` for JSON, files, fetching, protocols, and scoped threading.
 
 ## Workflow
 
@@ -32,7 +32,7 @@ property "nonnegative" (n in gen.int(min: -1000, max: 1000)) {
 
 Functions have explicitly typed parameters; an omitted return type means Unit. Blocks use braces. `let` is immutable; `var` allows assignment. `if`/`else`, `while`, `for value in list`, `return`, `assert`, and exhaustive `match` are supported. No shadowing. `result` is reserved for postconditions: use a name such as `output` for local variables and parameters, even in functions without contracts. Newlines are whitespace; optional semicolons can disambiguate. `//` comments are preserved by formatting and edits outside the replaced body.
 
-Supported types: `Int` (signed 64-bit), `Bool`, `Text`, `List<Int>`, `Option<Int>`, `Result<Int, Text>`, and `Unit`. Lists/options/results are specific built-in types, not arbitrary generics. There are no user-defined records/unions, imports, closures, async functions, or automatic package installation yet. Project `keel.json` explicitly composes complete files into one namespace; it is not a module system.
+Supported types: `Int` (signed 64-bit), `Bool`, `Text`, `List<Int>`, `Option<Int>`, `Result<Int, Text>`, `Result<Text, Text>`, and `Unit`. Lists/options/results are specific built-in types, not arbitrary generics. There are no user-defined records/unions, imports, closures, async functions, or automatic package installation yet. Project `keel.json` explicitly composes complete files into one namespace; it is not a module system.
 
 Arithmetic overflow and invalid indexing trap consistently. Evaluation is left to right; `&&`/`||` short-circuit. No implicit numeric/text conversions. `text.len` counts UTF-8 bytes. Use `text.from_int`, `text.concat`, and explicit `text.clone`.
 
@@ -59,7 +59,7 @@ Read/edit argument loans last through later argument evaluation. Compute `let n 
 
 ## Effects, contracts, evidence
 
-Functions are externally pure unless declaring `effects { io.stdout }` or `effects { net.listen }`. Effects propagate through calls. Runtime authority is separate: use a launcher-controlled policy with `keel run . --policy keel.policy.json` or explicit CLI permission flags. Do not broaden policy without the user's authorization.
+Functions are externally pure unless declaring `io.stdout`, `net.listen`, `net.connect`, `fs.read`, `fs.write`, `env.read`, `process.exec`, or `clock.read` effects. Effects propagate through calls. Runtime authority is separate: use a launcher-controlled policy with `keel run . --policy keel.policy.json` or explicit CLI permission flags. Do not broaden policy without the user's authorization.
 
 `requires` and `ensures` are pure Boolean runtime checks; `result` denotes the return value. They are ENFORCED when executed, never PROVEN. Specifications should be independent of the implementation being tested. Invalid external input should use typed errors where available.
 
@@ -82,3 +82,41 @@ Tests return TESTED, FAILED, BLOCKED, or UNKNOWN. TESTED means recorded cases pa
 Edits preserve interfaces, contracts, and acceptance files. The run mode above checks the entire candidate and conservatively runs all tests. Multiple body replacements can be supplied in an `edits` array; all targets must share one physical file for an atomic transaction. Stale revisions are rejected; retrieve fresh context and reconsider the change instead of blindly retrying.
 
 `keel serve` exposes a local JSON-lines protocol for repeated check/inspect/test/lint/format requests. It caches whole-source snapshots with an estimated budget, not declaration-level incrementality. See `keel agent spec protocol`. No installed tool reaches the internet to resolve an unknown API.
+
+## Everyday built-ins
+
+Use `json.text(body, "/answers/team/choice")` for decoded strings and `json.get`
+for JSON fragments (including exact decimal spelling). Match `Ok(value)` and
+`Err(error)`; both are borrowed Text. `Result<Text, Text>` also carries file and
+network results. Clone payloads when returning them. `http.post_json(url, body,
+token)` returns a response: inspect `http.status` before parsing `http.body`.
+`json.quote` safely escapes strings for request construction.
+
+`csv.get`, `xml.text`, `sse.data`, and `dotenv.get` cover common data extraction.
+`fs.read_text` and `env.get` require declared effects and separate exact runtime
+grants. `parallel.map(list, worker)` joins up to four pure `fn(Int) -> Int`
+workers and preserves output order; it has no shared mutable state or escaping
+threads. HTTP clients and XML require system libcurl/libxml2 development libraries;
+WebSocket availability depends on libcurl's build. Read `keel agent spec stdlib`
+for all signatures, bounded protocol behavior, permissions, and remaining gaps.
+
+For browser apps, use `http.serve_app(port, static_root, handler)`. Its named
+handler is `fn(method: read Text, path: read Text, body: read Text) -> Text`.
+Declare `net.listen`, `fs.read`, and the handler's effects in the caller. A
+GET/HEAD handler response with status 404 falls back to the static directory;
+an empty root disables files. The launcher must grant the exact nonempty root
+with `--allow-read=ROOT` or policy `read: ["ROOT"]`, plus the listen address.
+Use `http.json_response` for JSON API responses. This sequential localhost host
+supports Content-Length UTF-8 request bodies and binary static files; read
+`keel agent spec stdlib` for bounds and restrictions. Existing `http.serve`
+retains its pure path-only GET handler.
+
+Native orchestration uses `fs.write_text(path, text)` (atomic exact-path writes),
+`process.run(executable, json_argv)` (30-second bounded captured output),
+`process.run_timeout(executable, json_argv, timeout_ms)` (1..30000 ms), and
+`process.spawn` / `process.poll` / `process.terminate` (owned background handles).
+Process calls require `process.exec`; launching requires `--allow-exec=PATH`.
+Write calls require `fs.write` and `--allow-write=PATH`. `clock.millis()` requires
+`clock.read` and `--allow-clock=monotonic`. The JSON argv is an array of strings;
+no shell is invoked automatically. Background children need application deadlines.
+See the stdlib guide for limits, result types, and child-authority boundaries.

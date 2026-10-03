@@ -1,0 +1,16 @@
+fn route(method: read Text, path: read Text, body: read Text) -> Text {
+    if path == "/api/health" && method == "GET" {
+        match http.json_response(200, "{\"ok\":true}") {
+            Ok(response) => { return text.clone(response) }
+            Err(_error) => { return http.response(500, "response error") }
+        }
+    }
+    if path == "/api/echo" && method == "POST" {
+        match http.json_response(200, body) {
+            Ok(response) => { return text.clone(response) }
+            Err(_error) => { return http.response(400, "expected JSON") }
+        }
+    }
+    // On GET/HEAD, a 404 lets the host try the authorized static directory.
+    return http.response(404, "not found")
+}

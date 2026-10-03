@@ -14,6 +14,14 @@ fn expression(e: &Expr, used: &mut BTreeSet<String>, calls: &mut BTreeSet<String
         }
         ExprKind::Call(name, args) => {
             calls.insert(name.clone());
+            if name == "http.serve_app"
+                && let Some(Expr {
+                    kind: ExprKind::Var(handler),
+                    ..
+                }) = args.get(2)
+            {
+                calls.insert(handler.clone());
+            }
             for e in args {
                 expression(e, used, calls)
             }
@@ -95,7 +103,10 @@ pub fn run(source: &str, program: &Program, deny: bool) -> Value {
         }
         let mut needed = BTreeSet::new();
         for call in calls {
-            if call == "http.serve" {
+            if call == "http.serve_app" {
+                needed.insert("net.listen".to_string());
+                needed.insert("fs.read".to_string());
+            } else if call == "http.serve" {
                 needed.insert("net.listen".to_string());
             } else if let Some(b) = crate::check::builtin(&call) {
                 needed.extend(b.effects);

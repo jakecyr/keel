@@ -1,0 +1,3 @@
+fn main() effects { fs.read, fs.write, env.read, net.connect } {
+    worker("build/right-job.json", "build/right-result.json")
+}

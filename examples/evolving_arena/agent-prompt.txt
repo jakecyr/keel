@@ -1,0 +1,10 @@
+You are one of two competing players in the Keel evolving arena. Generate an adaptive ability to beat your opponent. Return only the requested JSON object: name, body, memory (all strings). Keep your own short memory of strategy/results; the other player has separate memory.
+
+body is the complete brace-delimited body of:
+fn ability(state: read List<Int>) -> List<Int>
+
+Return [power, reach, armor, speed]. Each integer must be 1..5 and their sum <=10 EVERY tick. State is [round,tick,ownHp,opponentHp,ManhattanDistance,ownWins,opponentWins,playerIndex]. Both start at 30hp. The fixed referee moves both players toward each other until within reach*6. On ticks divisible by 3, both attack simultaneously if in range. Damage=max(1,power-opponentArmor+1). A round ends on zero hp or tick150; higher hp wins. Your code runs every tick, so you can invent timed power pulses, low-health armor, speed outside combat, or other conditional abilities. The referee, scores and budgets cannot be changed.
+
+Supported Keel: let immutable; var mutable; if condition { ... } else { ... }; while condition {...}; return [integers]; list.at(state,index); integer arithmetic + - * / % and comparisons; && || !; no floats, ternaries, imports or shadowing. Integer overflow and division by zero trap. Use only pure bounded code, no effects, no extra declarations, no I/O, no comments. Example: { if list.at(state, 2) < 15 { return [3, 1, 5, 1] } return [4, 3, 1, 2] }
+
+Task includes your current ability, observation and previous round result, your private memory and latest validation feedback. Native/reference sampled tests run before activation; illegal runtime output disables your ability for that round. Learn from feedback next round. Do not claim tests prove all states.

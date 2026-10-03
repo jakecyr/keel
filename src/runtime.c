@@ -1,4 +1,5 @@
 /* Trusted v0 host runtime. POSIX + GCC/Clang overflow builtins. */
+#define _DARWIN_C_SOURCE 1
 #define _POSIX_C_SOURCE 200809L
 #include <stdbool.h>
 #include <stdint.h>
@@ -102,8 +103,15 @@ static KResult k_parse_int(KText text) {
     }
     return k_ok(negative ? (magnitude == (uint64_t)INT64_MAX + 1 ? INT64_MIN : -(int64_t)magnitude) : (int64_t)magnitude);
 }
-#define k_drop(value) _Generic((value), KText*: k_drop, KList*: k_list_drop, KResult*: k_result_drop)(value)
-#define k_move(value) _Generic((value), KText*: k_move, KList*: k_list_move, KResult*: k_result_move)(value)
+typedef struct { bool ok; KText value; KText error; } KTextResult;
+static KTextResult k_text_ok(KText value) { return (KTextResult){true,value,{0}}; }
+static KTextResult k_text_err(KText error) { return (KTextResult){false,{0},error}; }
+static KTextResult k_text_error(const char *message) { return k_text_err((KText){message,strlen(message),false}); }
+static void k_text_result_drop(KTextResult *r) { k_drop(&r->value); k_drop(&r->error); *r=(KTextResult){0}; }
+static KTextResult k_text_result_move(KTextResult *r) { KTextResult out=*r; *r=(KTextResult){0}; return out; }
+static bool k_text_result_equal(KTextResult a,KTextResult b) { return a.ok==b.ok && k_equal(a.ok?a.value:a.error,b.ok?b.value:b.error); }
+#define k_drop(value) _Generic((value), KText*: k_drop, KList*: k_list_drop, KResult*: k_result_drop, KTextResult*: k_text_result_drop)(value)
+#define k_move(value) _Generic((value), KText*: k_move, KList*: k_list_move, KResult*: k_result_move, KTextResult*: k_text_result_move)(value)
 static KText k_response(int64_t status, KText body) {
     if (status < 100 || status > 599) k_fail("invalid_http_status", 0);
     const char *reason = status == 200 ? "OK" : status == 404 ? "Not Found" : status == 405 ? "Method Not Allowed" : "Response";

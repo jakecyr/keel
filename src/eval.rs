@@ -16,6 +16,7 @@ enum Val {
     List(Vec<i64>),
     Option(Option<i64>),
     Result(Result<i64, String>),
+    TextResult(Result<String, String>),
     Unit,
 }
 type Cell = Rc<RefCell<Val>>;
@@ -73,7 +74,10 @@ impl Val {
     }
     fn bytes(&self) -> usize {
         match self {
-            Self::Text(v) | Self::Result(Err(v)) => v.len(),
+            Self::Text(v)
+            | Self::Result(Err(v))
+            | Self::TextResult(Ok(v))
+            | Self::TextResult(Err(v)) => v.len(),
             Self::List(v) => v.len().saturating_mul(8),
             _ => 0,
         }
@@ -269,6 +273,8 @@ impl Evaluator<'_> {
                     let (variant, payload) = match value {
                         Val::Option(Some(v)) => ("Some", Val::Int(v)),
                         Val::Option(None) => ("None", Val::Unit),
+                        Val::TextResult(Ok(v)) => ("Ok", Val::Text(v)),
+                        Val::TextResult(Err(v)) => ("Err", Val::Text(v)),
                         Val::Result(Ok(v)) => ("Ok", Val::Int(v)),
                         Val::Result(Err(v)) => ("Err", Val::Text(v)),
                         _ => return Err(Fault::failed("reference_type_error", stmt.at)),
@@ -293,11 +299,116 @@ impl Evaluator<'_> {
         }
         Ok(None)
     }
+    fn standard_call(&mut self, name: &str, values: &[Val]) -> EResult<Option<Val>> {
+        let value = match name {
+            "result.text_ok" => Val::TextResult(Ok(values[0].text()?.into())),
+            "result.text_err" => Val::TextResult(Err(values[0].text()?.into())),
+            "json.parse" => Val::TextResult(crate::stdlib::json_parse(values[0].text()?)),
+            "json.get" => Val::TextResult(crate::stdlib::json_get(
+                values[0].text()?,
+                values[1].text()?,
+            )),
+            "json.text" => Val::TextResult(crate::stdlib::json_text(
+                values[0].text()?,
+                values[1].text()?,
+            )),
+            "json.int" => Val::Result(
+                crate::stdlib::json_get(values[0].text()?, values[1].text()?)
+                    .and_then(|s| parse_integer(&s)),
+            ),
+            "json.quote" => {
+                if values[0].text()?.len() > 1024 * 1024 {
+                    return Err(Fault::limit("resource_limit", 0));
+                }
+                Val::Text(crate::stdlib::json_quote(values[0].text()?))
+            }
+            "csv.get" => Val::TextResult(crate::stdlib::csv_get(
+                values[0].text()?,
+                values[1].integer()?,
+                values[2].integer()?,
+            )),
+            "sse.data" => Val::TextResult(crate::stdlib::sse_data(
+                values[0].text()?,
+                values[1].integer()?,
+            )),
+            "xml.text" => Val::TextResult(crate::stdlib::xml_text(
+                values[0].text()?,
+                values[1].text()?,
+            )),
+            "dotenv.get" => Val::TextResult(crate::stdlib::dotenv_get(
+                values[0].text()?,
+                values[1].text()?,
+            )),
+            "http.json_response" => {
+                let status = values[0].integer()?;
+                let body = values[1].text()?;
+                Val::TextResult(if !(100..=599).contains(&status) {
+                    Err("invalid HTTP status".into())
+                } else {
+                    crate::stdlib::json_parse(body).map(|body|format!("HTTP/1.1 {status} Response\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",body.len()))
+                })
+            }
+            _ => return Ok(None),
+        };
+        self.account(value.bytes())?;
+        Ok(Some(value))
+    }
     fn call(&mut self, name: &str, args: &[Expr], env: &mut Env, at: usize) -> EResult<Val> {
         if name == "hole" {
             return Err(Fault {
                 kind: "hole_reached",
                 at,
+                state: "BLOCKED",
+            });
+        }
+        if name == "parallel.map" {
+            let input = self.expr(&args[0], env)?;
+            let ExprKind::Var(worker) = &args[1].kind else {
+                unreachable!()
+            };
+            if input.list()?.len() > 100000 {
+                return Err(Fault::limit("resource_limit", 0));
+            }
+            let mut output = Vec::new();
+            for value in input.list()? {
+                let arg = Expr {
+                    kind: ExprKind::Int(*value),
+                    at,
+                };
+                output.push(self.call(worker, &[arg], env, at)?.integer()?);
+            }
+            self.account(output.len().saturating_mul(8))?;
+            return Ok(Val::List(output));
+        }
+        if let Some(signature) = crate::check::builtin(name)
+            && let Some(effect) = signature.effects.first()
+            && effect != "io.stdout"
+        {
+            for arg in args {
+                self.expr(arg, env)?;
+            }
+            return Err(Fault {
+                kind: match effect.as_str() {
+                    "fs.read" => "permission_denied_fs",
+                    "fs.write" => "permission_denied_write",
+                    "process.exec" => "permission_denied_exec",
+                    "clock.read" => "permission_denied_clock",
+                    "env.read" => "permission_denied_env",
+                    _ => "permission_denied_connect",
+                },
+                at: 0,
+                state: "BLOCKED",
+            });
+        }
+        if name == "http.serve_app" {
+            let port = self.expr(&args[0], env)?.integer()?;
+            self.expr(&args[1], env)?;
+            if !(1..=65535).contains(&port) {
+                return Err(Fault::failed("invalid_port", 0));
+            }
+            return Err(Fault {
+                kind: "permission_denied_net",
+                at: 0,
                 state: "BLOCKED",
             });
         }
@@ -391,6 +502,9 @@ impl Evaluator<'_> {
         let mut values = Vec::new();
         for arg in args {
             values.push(self.expr(arg, env)?);
+        }
+        if let Some(value) = self.standard_call(name, &values)? {
+            return Ok(value);
         }
         let value = match name {
             "text.clone" | "list.clone" => return self.snapshot(&values[0]),

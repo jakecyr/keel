@@ -1,0 +1,5 @@
+test "Responses output skips reasoning items" {
+    assert extract_proposal("{\"status\":\"completed\",\"output\":[{\"type\":\"reasoning\"},{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"{hello}\"}]}]}") == "{hello}"
+    assert extract_proposal("{\"status\":\"incomplete\",\"output\":[]}") == "{}"
+    assert extract_proposal("{\"status\":\"completed\",\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"refusal\"}]}]}") == "{}"
+}

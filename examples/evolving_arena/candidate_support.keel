@@ -1,0 +1,4 @@
+fn main() effects { fs.read, io.stdout } {
+    let observation = decode(read_file("runtime/observation.json", "[]"), 8)
+    io.println(encode(ability(observation)))
+}

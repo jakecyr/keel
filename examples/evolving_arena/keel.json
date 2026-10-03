@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "name": "evolving-arena",
+  "entry": "main.keel",
+  "sources": ["common.keel", "referee.keel", "arena.keel"],
+  "tests": ["tests.keel"]
+}

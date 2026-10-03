@@ -1,0 +1,31 @@
+test "loadout budget belongs to referee" {
+    assert legal([5, 2, 2, 1])
+    assert !legal([5, 5, 5, 5])
+    assert !legal([0, 2, 2, 2])
+    assert !legal([2, 2, 2])
+}
+test "simultaneous combat and armor" {
+    let next = step([0, 40, 50, 20, 45, 50, 20, 5, 2, 2, 1, 2, 3, 3, 2])
+    assert list.at(next, 3) == 19
+    assert list.at(next, 6) == 17
+    assert list.at(next, 7) == 1
+    assert list.at(next, 8) == 3
+}
+test "movement follows each player's independent speed" {
+    let next = step([1, 10, 20, 30, 90, 80, 30, 2, 2, 2, 4, 3, 3, 3, 1])
+    assert list.at(next, 1) == 14
+    assert list.at(next, 2) == 24
+    assert list.at(next, 4) == 89
+    assert list.at(next, 5) == 79
+    assert list.at(next, 3) == 30
+    assert list.at(next, 6) == 30
+}
+test "health cannot become negative and trade can draw" {
+    let next = step([0, 40, 50, 1, 45, 50, 1, 5, 2, 2, 1, 5, 2, 2, 1])
+    assert list.at(next, 3) == 0
+    assert list.at(next, 6) == 0
+}
+property "damage remains positive" (armor in gen.int(min: 1, max: 5)) {
+    assert damage(1, armor) == 1
+    assert damage(5, armor) >= 1
+}

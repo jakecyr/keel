@@ -35,7 +35,7 @@ pub fn help(command: &str) -> Option<&'static str> {
             "keel build [FILE_OR_PROJECT] [-o BINARY] [--emit-c FILE] [--json]\n\nBuild a native executable using your C compiler. Defaults to the current project; the result prints its executable path. Unresolved holes are rejected.\n\n  keel build -o build/hello\n  ./build/hello --allow-stdout"
         }
         "run" => {
-            "keel run [FILE_OR_PROJECT] [-o BINARY] [--emit-c FILE] [--json]\n         [--policy POLICY.json | --allow-stdout --allow-net=127.0.0.1:PORT]\n\nBuild and run the current project by default. No external authority is granted implicitly. The starter greeting needs --allow-stdout. Policy files cannot be combined with permission overrides.\n\n  keel run --allow-stdout"
+            "keel run [FILE_OR_PROJECT] [-o BINARY] [--emit-c FILE] [--json]\n         [--policy POLICY.json | --allow-stdout --allow-net=127.0.0.1:PORT]\n         [--allow-connect=ORIGIN --allow-read=PATH --allow-env=NAME]\n         [--allow-write=PATH --allow-exec=PATH --allow-clock=monotonic]\n\nBuild and run the current project by default. No external authority is granted implicitly. The starter greeting needs --allow-stdout. Policy files cannot be combined with permission overrides.\n\n  keel run --allow-stdout"
         }
         "test" => {
             "keel test [FILE_OR_PROJECT] [--engine native|reference|both] [--json]\n          [--cases N] [--seed N] [--filter TEXT] [--value N]\n          [--timeout-ms N] [--budget-ms N] [--memory-mib N] [--no-shrink]\n\nDefaults: current project, native engine, 100 property cases, seed 1, 2000 ms/test, 30000 ms/suite, 256 MiB/worker (Linux only). Reference execution has separate interpreter limits.\nTESTED is sampled evidence; FAILED/BLOCKED/UNKNOWN exit nonzero. Replay --value requires exactly one property selected by --filter.\n\n  keel test --engine both\n  keel test --filter 'property name' --value 17 --json"
@@ -47,7 +47,7 @@ pub fn help(command: &str) -> Option<&'static str> {
             "keel lint [FILE_OR_PROJECT] [--deny-warnings] [--json]\n\nCheck for unused bindings and effects in the current project by default. --deny-warnings makes warnings fail CI. Does not run tests."
         }
         "agent" => {
-            "keel agent context [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\nkeel agent spec language|collections|protocol [--json]\nkeel agent commands [--json]\n\nVersioned offline documentation and structured tool discovery. Context without a path returns the bootstrap guide; include . for project context. --max-chars limits source snippets, not total metadata.\n\n  keel agent context . --symbol greet --json\n  keel agent spec language"
+            "keel agent context [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\nkeel agent spec language|collections|stdlib|protocol [--json]\nkeel agent commands [--json]\n\nVersioned offline documentation and structured tool discovery. Context without a path returns the bootstrap guide; include . for project context. --max-chars limits source snippets, not total metadata.\n\n  keel agent context . --symbol greet --json\n  keel agent spec language"
         }
         "inspect" => {
             "keel inspect [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\n\nRetrieve revision-bound function source, dependencies, callers, contracts and holes. Defaults to current project. Source snippet limits do not bound total metadata."
@@ -68,7 +68,7 @@ pub fn help(command: &str) -> Option<&'static str> {
             "keel doctor [--json]\n\nProbe your C compiler and report platform limitations. Set CC to a compiler executable if needed. On macOS: xcode-select --install. On Debian/Ubuntu: install build-essential. This is a toolchain check, not production certification."
         }
         "api" => {
-            "keel api BUILTIN [--json]\n\nLook up an exact supported builtin, e.g. keel api list.get --json. Browse available language features with: keel agent spec collections"
+            "keel api BUILTIN [--json]\n\nLook up an exact supported builtin, e.g. keel api list.get --json. Browse available language features with: keel agent spec stdlib"
         }
         _ => return None,
     })
@@ -122,6 +122,28 @@ pub fn validate(args: &[String]) -> Result<(), String> {
     let mut i = 2;
     let mut seen = BTreeSet::new();
     while i < args.len() {
+        if command == "run"
+            && [
+                "--allow-connect=",
+                "--allow-read=",
+                "--allow-env=",
+                "--allow-write=",
+                "--allow-exec=",
+                "--allow-clock=",
+            ]
+            .iter()
+            .any(|prefix| args[i].starts_with(prefix))
+        {
+            if args[i]
+                .split_once('=')
+                .is_none_or(|(_, v)| v.is_empty() || v.chars().any(char::is_control))
+            {
+                return Err("invalid scoped permission".into());
+            }
+            seen.insert("--scoped-permission".into());
+            i += 1;
+            continue;
+        }
         let key = if command == "run" && args[i].starts_with("--allow-net=") {
             "--allow-net"
         } else {
@@ -142,7 +164,9 @@ pub fn validate(args: &[String]) -> Result<(), String> {
         }
     }
     if seen.contains("--policy")
-        && (seen.contains("--allow-net") || seen.contains("--allow-stdout"))
+        && (seen.contains("--allow-net")
+            || seen.contains("--allow-stdout")
+            || seen.contains("--scoped-permission"))
     {
         return Err("--policy cannot be combined with permission overrides".into());
     }

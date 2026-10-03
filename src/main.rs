@@ -11,6 +11,7 @@ mod native;
 mod process;
 mod project;
 mod service;
+mod stdlib;
 mod syntax;
 mod terminal;
 #[cfg(test)]
@@ -76,6 +77,46 @@ fn report(value: &Value, json_output: bool) {
     terminal::report(value, json_output, None);
 }
 
+fn native_libraries(command: &mut Command, analysis: &Analysis) -> Result<()> {
+    command.arg("-pthread");
+    let mut packages = Vec::new();
+    if [
+        "http.get",
+        "http.post_json",
+        "http.post_json_timeout",
+        "websocket.exchange",
+    ]
+    .iter()
+    .any(|n| native::uses_builtin(analysis, n))
+    {
+        packages.push("libcurl");
+    }
+    if native::uses_builtin(analysis, "xml.text") {
+        packages.push("libxml-2.0");
+    }
+    if !packages.is_empty() {
+        let output = Command::new("pkg-config")
+            .args(["--cflags", "--libs"])
+            .args(&packages)
+            .output()
+            .map_err(|_| {
+                format!(
+                    "native adapter requires pkg-config and development libraries: {}",
+                    packages.join(", ")
+                )
+            })?;
+        if !output.status.success() {
+            return Err(format!(
+                "native adapter requires development libraries: {} (pkg-config failed)",
+                packages.join(", ")
+            ));
+        }
+        let flags =
+            String::from_utf8(output.stdout).map_err(|_| "pkg-config returned non-UTF-8")?;
+        command.args(flags.split_whitespace());
+    }
+    Ok(())
+}
 fn compile(
     program: &Program,
     analysis: &Analysis,
@@ -97,6 +138,7 @@ fn compile(
         .arg(&cpath)
         .arg("-o")
         .arg(&target);
+    native_libraries(&mut command, analysis)?;
     let timeout = env::var("KEEL_BUILD_TIMEOUT_MS")
         .ok()
         .map(|v| {
@@ -175,8 +217,24 @@ fn run_worker(
                     || json!({"kind":"worker_failure","exit_code":output.status.code(),"message":output.stderr,"truncated":output.truncated}),
                 );
     let state = match failure["kind"].as_str() {
-        Some("hole_reached" | "permission_denied_net" | "permission_denied_stdout") => "BLOCKED",
-        Some("allocation_failed" | "allocation_limit") => "UNKNOWN",
+        Some(
+            "hole_reached"
+            | "permission_denied_net"
+            | "permission_denied_stdout"
+            | "permission_denied_connect"
+            | "permission_denied_fs"
+            | "permission_denied_write"
+            | "permission_denied_exec"
+            | "permission_denied_clock"
+            | "permission_denied_env",
+        ) => "BLOCKED",
+        Some(
+            "allocation_failed"
+            | "allocation_limit"
+            | "resource_limit"
+            | "thread_start_failed"
+            | "thread_join_failed",
+        ) => "UNKNOWN",
         _ => "FAILED",
     };
     Ok((state.into(), Some(failure)))
@@ -667,7 +725,7 @@ fn review(source: &str, program: &Program, args: &[String]) -> Result<Value> {
 }
 fn usage() {
     terminal::document(
-        "Keel — experimental native language\n\nProject paths default to the current directory. Use keel help COMMAND for examples.\nColor: KEEL_COLOR=auto|always|never or NO_COLOR=1. Animation: KEEL_PROGRESS=off.\n\nGetting started:\n  keel init DIRECTORY [--json]\n  keel doctor [--json]\n  keel --version\n\nDevelopment (FILE_OR_PROJECT is a .keel file, project directory, or keel.json):\n  keel check FILE_OR_PROJECT [--json]\n  keel fmt FILE_OR_PROJECT [--check] [--json]\n  keel lint FILE_OR_PROJECT [--deny-warnings] [--json]\n  keel build FILE_OR_PROJECT [-o BINARY] [--emit-c FILE] [--json]\n  keel run FILE_OR_PROJECT [--policy POLICY.json | --allow-net=127.0.0.1:PORT --allow-stdout]\n  keel test FILE_OR_PROJECT [--engine native|reference|both]\n                 [--cases N] [--seed N] [--filter TEXT] [--value N]\n                 [--timeout-ms N] [--budget-ms N] [--memory-mib N] [--no-shrink] [--json]\n\nAgent tooling and offline documentation:\n  keel agent context [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\n  keel agent spec language|collections|protocol [--json]\n  keel agent commands [--json]\n  keel api BUILTIN [--json]\n  keel inspect FILE_OR_PROJECT [--symbol NAME] [--max-chars N] [--json]\n  keel edit FILE_OR_PROJECT --request EDIT.json [--json]\n  keel review FILE_OR_PROJECT --against BASELINE [--json]\n  keel explain FILE_OR_PROJECT --offset N [--json]\n  keel serve [--max-cache-mib N]\n\nBuilds reject holes. Tests reaching holes are BLOCKED. No network authority is granted by an effects declaration.",
+        "Keel — experimental native language\n\nProject paths default to the current directory. Use keel help COMMAND for examples.\nColor: KEEL_COLOR=auto|always|never or NO_COLOR=1. Animation: KEEL_PROGRESS=off.\n\nGetting started:\n  keel init DIRECTORY [--json]\n  keel doctor [--json]\n  keel --version\n\nDevelopment (FILE_OR_PROJECT is a .keel file, project directory, or keel.json):\n  keel check FILE_OR_PROJECT [--json]\n  keel fmt FILE_OR_PROJECT [--check] [--json]\n  keel lint FILE_OR_PROJECT [--deny-warnings] [--json]\n  keel build FILE_OR_PROJECT [-o BINARY] [--emit-c FILE] [--json]\n  keel run FILE_OR_PROJECT [--policy POLICY.json | --allow-net=127.0.0.1:PORT --allow-stdout]\n  keel test FILE_OR_PROJECT [--engine native|reference|both]\n                 [--cases N] [--seed N] [--filter TEXT] [--value N]\n                 [--timeout-ms N] [--budget-ms N] [--memory-mib N] [--no-shrink] [--json]\n\nAgent tooling and offline documentation:\n  keel agent context [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\n  keel agent spec language|collections|stdlib|protocol [--json]\n  keel agent commands [--json]\n  keel api BUILTIN [--json]\n  keel inspect FILE_OR_PROJECT [--symbol NAME] [--max-chars N] [--json]\n  keel edit FILE_OR_PROJECT --request EDIT.json [--json]\n  keel review FILE_OR_PROJECT --against BASELINE [--json]\n  keel explain FILE_OR_PROJECT --offset N [--json]\n  keel serve [--max-cache-mib N]\n\nBuilds reject holes. Tests reaching holes are BLOCKED. No network authority is granted by an effects declaration.",
     );
 }
 fn execute() -> Result<i32> {
@@ -734,9 +792,19 @@ fn execute() -> Result<i32> {
             return Err("usage: keel api BUILTIN [--json]".into());
         }
         let name = &args[1];
-        let signature = check::builtin(name).ok_or(
-            "unknown builtin; use keel agent spec collections or keel agent spec language",
-        )?;
+        if name == "parallel.map" || name == "http.serve" || name == "http.serve_app" {
+            let value = if name == "parallel.map" {
+                json!({"name":name,"parameters":[["ListInt","Read"],["named pure fn(Int) -> Int","Function"]],"result":"ListInt","effects":[],"trusted_host_adapter":true,"max_workers":4})
+            } else if name == "http.serve_app" {
+                json!({"name":name,"parameters":[["Int","Value"],["Text","Read"],["named fn(read Text, read Text, read Text) -> Text","Function"]],"result":"Unit","effects":["net.listen","fs.read","handler effects"],"trusted_host_adapter":true,"static_fallback":"GET/HEAD after handler returns 404; empty root disables files","request":"method, path without query, UTF-8 body"})
+            } else {
+                json!({"name":name,"parameters":[["Int","Value"],["named pure fn(read Text) -> Text","Function"]],"result":"Unit","effects":["net.listen"],"trusted_host_adapter":true})
+            };
+            report(&value, args.iter().any(|a| a == "--json"));
+            return Ok(0);
+        }
+        let signature = check::builtin(name)
+            .ok_or("unknown builtin; use keel agent spec stdlib or keel agent spec language")?;
         report(
             &json!({"name":name,"parameters":signature.params,"result":signature.result,"effects":signature.effects,"trusted_host_adapter":true}),
             args.iter().any(|a| a == "--json"),
@@ -839,7 +907,7 @@ fn execute() -> Result<i32> {
                 project::policy(Path::new(policy))?
             } else {
                 args.iter()
-                    .filter(|a| a.starts_with("--allow-net=") || a.as_str() == "--allow-stdout")
+                    .filter(|a| a.starts_with("--allow-"))
                     .cloned()
                     .collect()
             };

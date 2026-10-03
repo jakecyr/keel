@@ -1,0 +1,295 @@
+fn configuration(name: read Text, fallback: Int) -> Int effects { env.read } {
+    match env.get(name) {
+        Ok(raw) => { match text.parse_int(raw) { Ok(value) => { if value > 0 { return value } } Err(_error) => {} } }
+        Err(_error) => {}
+    }
+    return fallback
+}
+fn live_mode() -> Bool effects { env.read } {
+    match env.get("PONG_MODE") { Ok(mode) => { return mode == "jev" } Err(_error) => { return false } }
+}
+fn read_key() -> Result<Text, Text> effects { env.read, fs.read } {
+    match env.get("JEV_API_KEY") {
+        Ok(key) => { if text.len(key) > 0 { return result.text_ok(text.clone(key)) } }
+        Err(_error) => {}
+    }
+    match fs.read_text("../jev/.env") {
+        Ok(config) => { return dotenv.get(config, "JEV_API_KEY") }
+        Err(_error) => { return result.text_err("Missing Jev key") }
+    }
+}
+fn query_jev(observation: read Text) -> List<Int> effects { env.read, fs.read, net.connect } {
+    match read_key() {
+        Ok(key) => {
+            if text.len(key) == 0 { return [0, 4] }
+            let request = request_body(observation)
+            match http.post_json("https://api.typesafe.ai/v1/systemone", request, key) {
+                Ok(response) => {
+                    if http.status(response) != 200 { return [0, 4] }
+                    match decode_choice(http.body(response)) {
+                        Ok(action) => { return [action, 2] }
+                        Err(_error) => { return [0, 4] }
+                    }
+                }
+                Err(_error) => { return [0, 4] }
+            }
+        }
+        Err(_error) => { return [0, 4] }
+    }
+}
+fn worker(input: read Text, output: read Text) effects { fs.read, fs.write, env.read, net.connect } {
+    var accumulated = [0, 4]
+    match fs.read_text(input) {
+        Ok(observation) => { accumulated = query_jev(observation) }
+        Err(_error) => {}
+    }
+    match fs.write_text(output, encode_state(accumulated)) { Ok(_written) => {} Err(_error) => {} }
+}
+// Persistent layout: nine physics fields, running, clock; two ten-field player
+// records; then two eight-entry histories of [action, tick, status].
+fn boot_state(now: Int) -> List<Int> {
+    var state = initial_state()
+    list.push(edit state, 0)
+    list.push(edit state, now)
+    while list.len(state) < 79 { list.push(edit state, 0) }
+    return state
+}
+fn decode_array(document: read Text, count: Int) -> List<Int> {
+    var accumulated = []
+    var index = 0
+    while index < count {
+        list.push(edit accumulated, number(document, text.concat("/", text.from_int(index))))
+        index = index + 1
+    }
+    return accumulated
+}
+fn physics_state(state: read List<Int>) -> List<Int> {
+    var accumulated = []
+    var index = 0
+    while index < 9 { list.push(edit accumulated, list.at(state, index)) index = index + 1 }
+    return accumulated
+}
+fn remember(state: edit List<Int>, side: Int, action: Int, status: Int, latency: Int, now: Int, ttl: Int) {
+    let base = 11 + side * 10
+    let history = 31 + side * 24
+    var index = 0
+    while index < 21 {
+        let value = list.at(state, history + index + 3)
+        list.set(edit state, history + index, value)
+        index = index + 1
+    }
+    let tick = list.at(state, 8)
+    let count = clamp(list.at(state, base + 9) + 1, 0, 8)
+    list.set(edit state, history + 21, action)
+    list.set(edit state, history + 22, tick)
+    list.set(edit state, history + 23, status)
+    list.set(edit state, base, action)
+    list.set(edit state, base + 1, status)
+    list.set(edit state, base + 5, now + ttl)
+    list.set(edit state, base + 7, latency)
+    list.set(edit state, base + 9, count)
+}
+fn history_json(state: read List<Int>, side: Int) -> Text {
+    let count = list.at(state, 20 + side * 10)
+    var accumulated = "["
+    var index = 8 - count
+    while index < 8 {
+        if index > 8 - count { accumulated = text.concat(accumulated, ",") }
+        let base = 31 + side * 24 + index * 3
+        var entry = text.concat("{\"action\":", text.from_int(list.at(state, base)))
+        entry = text.concat(entry, text.concat(",\"tick\":", text.from_int(list.at(state, base + 1))))
+        entry = text.concat(entry, text.concat(",\"status\":", text.from_int(list.at(state, base + 2))))
+        accumulated = text.concat(accumulated, text.concat(entry, "}"))
+        index = index + 1
+    }
+    return text.concat(accumulated, "]")
+}
+fn observation(state: read List<Int>, side: Int, interval: Int, ttl: Int) -> Text {
+    var label = "left"
+    if side == 1 { label = "right" }
+    var accumulated = text.concat("{\"player\":", json.quote(label))
+    accumulated = text.concat(accumulated, text.concat(",\"ball_x\":", text.from_int(list.at(state, 0))))
+    accumulated = text.concat(accumulated, text.concat(",\"ball_y\":", text.from_int(list.at(state, 1))))
+    accumulated = text.concat(accumulated, text.concat(",\"ball_vx_per_tick\":", text.from_int(list.at(state, 2))))
+    accumulated = text.concat(accumulated, text.concat(",\"ball_vy_per_tick\":", text.from_int(list.at(state, 3))))
+    accumulated = text.concat(accumulated, text.concat(",\"own_paddle_y\":", text.from_int(list.at(state, 4 + side))))
+    accumulated = text.concat(accumulated, text.concat(",\"opponent_paddle_y\":", text.from_int(list.at(state, 5 - side))))
+    accumulated = text.concat(accumulated, text.concat(",\"own_score\":", text.from_int(list.at(state, 6 + side))))
+    accumulated = text.concat(accumulated, text.concat(",\"opponent_score\":", text.from_int(list.at(state, 7 - side))))
+    accumulated = text.concat(accumulated, text.concat(",\"tick\":", text.from_int(list.at(state, 8))))
+    accumulated = text.concat(accumulated, text.concat(",\"held_action\":", text.from_int(list.at(state, 11 + side * 10))))
+    accumulated = text.concat(accumulated, text.concat(",\"decision_interval_ms\":", text.from_int(interval)))
+    accumulated = text.concat(accumulated, text.concat(",\"action_expiry_ms\":", text.from_int(ttl)))
+    accumulated = text.concat(accumulated, ",\"rules\":\"1000x600 arena; y increases down. Paddle centers 55..545, speed 9/tick, half-height55. Ball radius8. 30 ticks/sec. Actions -1 up,0 stay,1 down.\",\"history\":")
+    return text.concat(text.concat(accumulated, history_json(state, side)), "}")
+}
+fn player_json(state: read List<Int>, side: Int) -> Text {
+    let base = 11 + side * 10
+    var accumulated = text.concat("{\"action\":", text.from_int(list.at(state, base)))
+    accumulated = text.concat(accumulated, text.concat(",\"status\":", text.from_int(list.at(state, base + 1))))
+    accumulated = text.concat(accumulated, text.concat(",\"requests\":", text.from_int(list.at(state, base + 6))))
+    accumulated = text.concat(accumulated, text.concat(",\"latency_ms\":", text.from_int(list.at(state, base + 7))))
+    var thinking = "false"
+    if list.at(state, base + 2) > 0 { thinking = "true" }
+    accumulated = text.concat(accumulated, text.concat(",\"thinking\":", thinking))
+    accumulated = text.concat(accumulated, text.concat(",\"history\":", history_json(state, side)))
+    return text.concat(accumulated, "}")
+}
+fn snapshot(state: read List<Int>) -> Text effects { env.read } {
+    var mode = "offline"
+    if live_mode() { mode = "jev" }
+    var running = "false"
+    if list.at(state, 9) == 1 { running = "true" }
+    var accumulated = text.concat("{\"state\":", encode_state(physics_state(state)))
+    accumulated = text.concat(accumulated, text.concat(",\"mode\":", json.quote(mode)))
+    accumulated = text.concat(accumulated, text.concat(",\"running\":", running))
+    accumulated = text.concat(accumulated, text.concat(",\"interval_ms\":", text.from_int(configuration("PONG_INTERVAL", 600))))
+    accumulated = text.concat(accumulated, text.concat(",\"max_decisions\":", text.from_int(configuration("PONG_MAX_DECISIONS", 30))))
+    accumulated = text.concat(accumulated, text.concat(",\"players\":[", player_json(state, 0)))
+    accumulated = text.concat(accumulated, text.concat(",", player_json(state, 1)))
+    return text.concat(accumulated, "]}")
+}
+fn worker_paths(side: Int, part: Int) -> Text {
+    if side == 0 {
+        if part == 0 { return "build/left-job.json" }
+        if part == 1 { return "build/left-result.json" }
+        return "./build/left-worker"
+    }
+    if part == 0 { return "build/right-job.json" }
+    if part == 1 { return "build/right-result.json" }
+    return "./build/right-worker"
+}
+fn poll_player(state: edit List<Int>, side: Int, now: Int) effects { process.exec, fs.read, fs.write, env.read } {
+    let base = 11 + side * 10
+    let ttl = configuration("PONG_TTL", 1500)
+    let timeout = configuration("PONG_TIMEOUT", 3000)
+    let handle = list.at(state, base + 2)
+    if handle > 0 {
+        let age = now - list.at(state, base + 3)
+        var finished = false
+        var succeeded = false
+        match process.poll(handle) {
+            Ok(code) => { if code >= 0 { finished = true succeeded = code == 0 } }
+            Err(_error) => { finished = true }
+        }
+        if age >= timeout {
+            if !finished { match process.terminate(handle) { Ok(_code) => {} Err(_error) => {} } }
+            list.set(edit state, base + 2, 0)
+            remember(edit state, side, 0, 3, age, now, ttl)
+        } else {
+            if finished {
+                list.set(edit state, base + 2, 0)
+                var action = 0
+                var status = 4
+                var valid_action = false
+                if succeeded {
+                    match fs.read_text(worker_paths(side, 1)) {
+                        Ok(body) => {
+                            match json.int(body, "/0") { Ok(value) => { if value >= -1 && value <= 1 { action = value valid_action = true } } Err(_error) => {} }
+                            match json.int(body, "/1") { Ok(value) => { if value == 2 { status = 2 } } Err(_error) => {} }
+                        }
+                        Err(_error) => {}
+                    }
+                }
+                if !valid_action { status = 4 }
+                if status != 2 { action = 0 }
+                remember(edit state, side, action, status, age, now, ttl)
+            }
+        }
+    }
+    if now >= list.at(state, base + 5) {
+        list.set(edit state, base, 0)
+        if list.at(state, base + 1) == 2 { list.set(edit state, base + 1, 6) }
+    }
+    let maximum = configuration("PONG_MAX_DECISIONS", 30)
+    if list.at(state, base + 2) == 0 && now >= list.at(state, base + 4) {
+        if list.at(state, base + 6) >= maximum {
+            if now >= list.at(state, base + 5) { list.set(edit state, base + 1, 5) }
+            return;
+        }
+        let interval = configuration("PONG_INTERVAL", 600)
+        let input = observation(state, side, interval, ttl)
+        match fs.write_text(worker_paths(side, 0), input) { Ok(_written) => {} Err(_error) => { return; } }
+        // Clear the accumulated first so a failed child can never reuse an old decision.
+        match fs.write_text(worker_paths(side, 1), "[0,4]") { Ok(_written) => {} Err(_error) => { return; } }
+        var args = "[\"--allow-read=../jev/.env\",\"--allow-env=JEV_API_KEY\",\"--allow-connect=https://api.typesafe.ai\","
+        args = text.concat(args, json.quote(text.concat("--allow-read=", worker_paths(side, 0))))
+        args = text.concat(args, text.concat(",", json.quote(text.concat("--allow-write=", worker_paths(side, 1)))))
+        args = text.concat(args, "]")
+        let requests = list.at(state, base + 6) + 1
+        list.set(edit state, base + 6, requests)
+        list.set(edit state, base + 4, now + interval)
+        match process.spawn(worker_paths(side, 2), args) {
+            Ok(child) => { list.set(edit state, base + 2, child) list.set(edit state, base + 3, now) }
+            Err(_error) => { remember(edit state, side, 0, 4, 0, now, ttl) }
+        }
+    }
+}
+fn advance(state: edit List<Int>, now: Int) effects { process.exec, fs.read, fs.write, env.read } {
+    if list.at(state, 9) == 0 { list.set(edit state, 10, now) return; }
+    let live = live_mode()
+    if live { poll_player(edit state, 0, now) poll_player(edit state, 1, now) }
+    let elapsed = now - list.at(state, 10)
+    let ticks = clamp(elapsed / 33, 0, 5)
+    let clock = now - elapsed % 33
+    if ticks > 0 { list.set(edit state, 10, clock) }
+    var count = 0
+    while count < ticks {
+        let physics = physics_state(state)
+        if !live {
+            let interval = configuration("PONG_INTERVAL", 600)
+            let cadence = clamp(interval / 33, 1, 3000)
+            if list.at(state, 8) % cadence == 0 {
+                let left = offline_action(physics, 0)
+                let right = offline_action(physics, 1)
+                remember(edit state, 0, left, 1, 0, now, 1500)
+                remember(edit state, 1, right, 1, 0, now, 1500)
+            }
+        }
+        let next = step(physics, list.at(state, 11), list.at(state, 21))
+        var index = 0
+        while index < 9 { list.set(edit state, index, list.at(next, index)) index = index + 1 }
+        count = count + 1
+    }
+}
+fn api_response(status: Int, body: read Text) -> Text {
+    match http.json_response(status, body) { Ok(response) => { return text.clone(response) } Err(_error) => { return http.response(500, "response error") } }
+}
+fn route(method: read Text, path: read Text, body: read Text) -> Text effects { env.read, fs.read, fs.write, process.exec, clock.read } {
+    if path != "/api/state" && path != "/api/control" { return http.response(404, "not found") }
+    if path == "/api/state" && method != "GET" { return http.response(405, "GET required") }
+    if path == "/api/control" && method != "POST" { return http.response(405, "POST required") }
+    match fs.read_text("build/state.json") {
+        Ok(document) => {
+            var state = decode_array(document, 79)
+            let now = clock.millis()
+            if path == "/api/control" {
+                match json.get(body, "/running") {
+                    Ok(value) => {
+                        if value == "true" { list.set(edit state, 9, 1) }
+                        else { if value == "false" { list.set(edit state, 9, 0) } else { return api_response(400, "{\"error\":\"running must be boolean\"}") } }
+                        list.set(edit state, 10, now)
+                    }
+                    Err(_error) => { return api_response(400, "{\"error\":\"invalid control\"}") }
+                }
+                if list.at(state, 9) == 0 {
+                    var side = 0
+                    while side < 2 {
+                        let base = 11 + side * 10
+                        let handle = list.at(state, base + 2)
+                        if handle > 0 { match process.terminate(handle) { Ok(_code) => {} Err(_error) => {} } }
+                        list.set(edit state, base + 2, 0)
+                        list.set(edit state, base, 0)
+                        side = side + 1
+                    }
+                }
+            }
+            advance(edit state, now)
+            match fs.write_text("build/state.json", encode_state(state)) {
+                Ok(_written) => { return api_response(200, snapshot(state)) }
+                Err(_error) => { return api_response(500, "{\"error\":\"state write failed\"}") }
+            }
+        }
+        Err(_error) => { return api_response(500, "{\"error\":\"state unavailable\"}") }
+    }
+}

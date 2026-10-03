@@ -30,11 +30,15 @@ pub enum Type {
     ListInt,
     OptionInt,
     ResultIntText,
+    ResultTextText,
     Unit,
 }
 impl Type {
     pub fn owned(self) -> bool {
-        matches!(self, Self::Text | Self::ListInt | Self::ResultIntText)
+        matches!(
+            self,
+            Self::Text | Self::ListInt | Self::ResultIntText | Self::ResultTextText
+        )
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -332,14 +336,17 @@ impl Parser<'_> {
             }
             "Result" => {
                 self.expect("<")?;
-                self.expect("Int")?;
+                let payload = self.ident()?;
+                if payload != "Int" && payload != "Text" {
+                    return self.error("Result supports Int or Text success payloads");
+                }
                 self.expect(",")?;
                 self.expect("Text")?;
                 self.expect(">")?;
-                Ok(Type::ResultIntText)
+                Ok(if payload == "Int" { Type::ResultIntText } else { Type::ResultTextText })
             }
             _ => self.error(
-                "supported types: Int, Bool, Text, Unit, List<Int>, Option<Int>, Result<Int, Text>",
+                "supported types: Int, Bool, Text, Unit, List<Int>, Option<Int>, Result<Int, Text>, Result<Text, Text>",
             ),
         }
     }

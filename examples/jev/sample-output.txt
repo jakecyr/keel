@@ -1,0 +1,10 @@
+Recorded development smoke call (synthetic request.json; one request, no retries).
+Not an acceptance oracle, performance benchmark, or promise of future model output.
+
+HTTP 200
+/model = "jev-1.13.0"
+/answers/department/choice = "billing"
+/answers/refund_requested/noul = 0.99
+/answers/urgency/score = 0.23
+/usage = {"input_tokens":400,"output_tokens":70}
+Route this request to billing.

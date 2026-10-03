@@ -1,0 +1,119 @@
+// Background native worker. Only this process can read .env or call OpenAI.
+fn demo_proposal(round: Int, player: Int) -> Text {
+    let choice = (round + player) % 4
+    if choice == 0 {
+        return "{\"name\":\"Pulse cannon\",\"body\":\"{ if list.at(state, 1) % 3 == 0 { return [5, 3, 1, 1] } return [1, 2, 2, 5] }\",\"memory\":\"scripted pulse\"}"
+    }
+    if choice == 1 {
+        return "{\"name\":\"Last stand\",\"body\":\"{ if list.at(state, 2) < 16 { return [3, 1, 5, 1] } return [4, 3, 1, 2] }\",\"memory\":\"scripted armor\"}"
+    }
+    if choice == 2 {
+        return "{\"name\":\"Longbow\",\"body\":\"{ if list.at(state, 4) > 24 { return [3, 5, 1, 1] } return [5, 2, 2, 1] }\",\"memory\":\"scripted reach\"}"
+    }
+    return "{\"name\":\"Counter shell\",\"body\":\"{ if list.at(state, 1) % 3 == 0 { return [3, 1, 5, 1] } return [1, 2, 2, 5] }\",\"memory\":\"scripted counter\"}"
+}
+fn extract_proposal(response: read Text) -> Text {
+    if string(response, "/status", "") != "completed" { return "{}" }
+    var item = 0
+    while item < 32 {
+        let prefix = text.concat("/output/", text.from_int(item))
+        if string(response, text.concat(prefix, "/type"), "") == "message" {
+            var content = 0
+            while content < 32 {
+                let part = text.concat(text.concat(prefix, "/content/"), text.from_int(content))
+                if string(response, text.concat(part, "/type"), "") == "output_text" {
+                    return string(response, text.concat(part, "/text"), "{}")
+                }
+                content = content + 1
+            }
+        }
+        item = item + 1
+    }
+    return "{}"
+}
+fn live_proposal(task: read Text) -> Text effects { fs.read, net.connect } {
+    let config = read_file(".env", "")
+    var key = ""
+    var model = "gpt-5-mini"
+    match dotenv.get(config, "OPENAI_API_KEY") {
+        Ok(value) => { key = text.clone(value) }
+        Err(_error) => { return "{}" }
+    }
+    match dotenv.get(config, "OPENAI_MODEL") {
+        Ok(value) => { model = text.clone(value) }
+        Err(_error) => { }
+    }
+    let instructions = read_file("agent-prompt.txt", "")
+    var request = text.concat("{\"model\":", json.quote(model))
+    request = text.concat(request, ",\"store\":false,\"max_output_tokens\":4096,\"instructions\":")
+    request = text.concat(request, json.quote(instructions))
+    request = text.concat(request, text.concat(",\"input\":", json.quote(task)))
+    request = text.concat(request, ",\"text\":{\"format\":{\"type\":\"json_schema\",\"name\":\"arena_proposal\",\"strict\":true,\"schema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"body\":{\"type\":\"string\"},\"memory\":{\"type\":\"string\"}},\"required\":[\"name\",\"body\",\"memory\"],\"additionalProperties\":false}}}}")
+    match http.post_json_timeout("https://api.openai.com/v1/responses", request, key, 60000) {
+        Ok(response) => {
+            if http.status(response) == 200 { return extract_proposal(http.body(response)) }
+        }
+        Err(_error) => { }
+    }
+    return "{}"
+}
+fn publish_error(player: Int, error: read Text) effects { fs.write } {
+    write_file(player_path("runtime/result-", player, ".json"), text.concat(text.concat("{\"ok\":0,\"error\":", json.quote(error)), "}"))
+}
+fn compiler_command(arguments: read Text) -> Result<Text, Text> effects { process.exec } {
+    return process.run("../../target/debug/keel", arguments)
+}
+fn worker(player: Int) effects { fs.read, fs.write, process.exec, net.connect } {
+    let task = read_file(player_path("runtime/task-", player, ".json"), "{}")
+    let round = integer(task, "/round", 1)
+    let slot = integer(task, "/slot", 1)
+    let mode = read_file("runtime/mode.txt", "demo")
+    var proposal = demo_proposal(round, player)
+    if mode == "agents" { proposal = live_proposal(task) }
+    let name = string(proposal, "/name", "")
+    let body = string(proposal, "/body", "")
+    let memory = string(proposal, "/memory", "")
+    if text.len(name) < 1 || text.len(name) > 80 || text.len(body) < 2 || text.len(body) > 12000 || text.len(memory) > 16000 {
+        publish_error(player, "Proposal failed: missing/invalid output, API error, or incomplete response. Previous code retained.")
+        return;
+    }
+    let binary = binary_path(player, slot)
+    let source_path = text.concat(binary, ".keel")
+    var source = read_file("common.keel", "")
+    source = text.concat(source, read_file("referee.keel", ""))
+    source = text.concat(source, read_file("candidate_support.keel", ""))
+    source = text.concat(source, "\nfn ability(state: read List<Int>) -> List<Int> { return [3,3,2,2] }")
+    // Acceptance text comes from the trusted worker, never from the proposal.
+    source = text.concat(source, "\nproperty \"budget over sampled ticks\" (t in gen.int(min: 0, max: 200)) { assert legal(ability([1,t,30,30,70,0,0,0])) assert legal(ability([2,t,1,30,0,0,1,1])) assert legal(ability([3,t,15,10,25,1,0,0])) }\n")
+    write_file(source_path, source)
+    let quoted_source = json.quote(source_path)
+    let inspect_args = text.concat(text.concat("[\"inspect\",", quoted_source), ",\"--symbol\",\"ability\",\"--json\"]")
+    var revision = ""
+    match compiler_command(inspect_args) {
+        Ok(context) => { revision = string(context,"/revision","") }
+        Err(diagnostics) => { publish_error(player,diagnostics) return; }
+    }
+    let edit_path = player_path("runtime/edit-",player,".json")
+    var request = text.concat("{\"base_revision\":",json.quote(revision))
+    request = text.concat(request,",\"target\":\"fn:ability\",\"operation\":\"replace_body\",\"run\":\"check\",\"source\":")
+    request = text.concat(request,text.concat(json.quote(body),"}"))
+    write_file(edit_path,request)
+    let edit_args = text.concat(text.concat(text.concat(text.concat("[\"edit\",",quoted_source),",\"--request\","),json.quote(edit_path)),",\"--json\"]")
+    match compiler_command(edit_args) {
+        Ok(_edited) => { }
+        Err(diagnostics) => { publish_error(player,diagnostics) return; }
+    }
+    let test_args = text.concat(text.concat("[\"test\",", quoted_source), ",\"--engine\",\"both\",\"--timeout-ms\",\"500\",\"--budget-ms\",\"3000\"]")
+    match compiler_command(test_args) {
+        Ok(_tested) => { }
+        Err(diagnostics) => { publish_error(player, diagnostics) return; }
+    }
+    // argv JSON uses commas, never a shell command string.
+    let args = text.concat(text.concat(text.concat(text.concat("[\"build\",", quoted_source), ",\"-o\","), json.quote(binary)), "]")
+    match compiler_command(args) {
+        Ok(_built) => { }
+        Err(diagnostics) => { publish_error(player, diagnostics) return; }
+    }
+    let completed = text.concat(text.concat(text.concat("{\"ok\":1,\"slot\":", text.from_int(slot)), ",\"proposal\":"), proposal)
+    write_file(player_path("runtime/result-", player, ".json"), text.concat(completed, "}"))
+}

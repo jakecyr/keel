@@ -1,0 +1,16 @@
+fn request_body(observation: read Text) -> Text {
+    let prefix = "{\"model\":\"jev-latest\",\"state\":"
+    let questions = ",\"questions\":{\"move\":{\"type\":\"choice\",\"instructions\":\"Choose a Pong paddle action. Coordinates increase downward. Move to intercept the ball; anticipate wall bounces and the held-action duration. Choose only for your own player.\",\"criteria\":{\"up\":\"Move paddle upward\",\"down\":\"Move paddle downward\",\"stay\":\"Keep paddle stationary\"}}}}"
+    return text.concat(text.concat(prefix, json.quote(observation)), questions)
+}
+fn decode_choice(body: read Text) -> Result<Int, Text> {
+    match json.text(body, "/answers/move/choice") {
+        Ok(choice) => {
+            if choice == "up" { return result.ok(-1) }
+            if choice == "stay" { return result.ok(0) }
+            if choice == "down" { return result.ok(1) }
+            return result.err("Unsupported Jev choice")
+        }
+        Err(_error) => { return result.err("Malformed Jev response") }
+    }
+}

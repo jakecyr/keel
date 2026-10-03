@@ -1,0 +1,11 @@
+fn main() effects { net.listen, fs.read, fs.write, process.exec, clock.read, env.read } {
+    var port=8780
+    match env.get("ARENA_PORT") {
+        Ok(value) => {
+            match text.parse_int(value) { Ok(number) => { port=number } Err(_error) => { assert false } }
+        }
+        Err(_error) => { }
+    }
+    initialize()
+    http.serve_app(port,"public",route)
+}

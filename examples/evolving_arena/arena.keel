@@ -1,0 +1,203 @@
+// Numeric state layout is documented in README; all authority stays in this host.
+fn observation(s: read List<Int>, player: Int) -> List<Int> {
+    var own = 3
+    var other = 6
+    if player == 1 { own = 6 other = 3 }
+    return [list.at(s,15),list.at(s,0),list.at(s,own),list.at(s,other),distance(list.at(s,1),list.at(s,4))+distance(list.at(s,2),list.at(s,5)),list.at(s,16+player),list.at(s,17-player),player]
+}
+fn active_path(player: Int) -> Text { return player_path("runtime/active-", player, ".json") }
+fn feedback_path(player: Int) -> Text { return player_path("runtime/feedback-", player, ".json") }
+fn feedback(player: Int, message: read Text) effects { fs.write } {
+    write_file(feedback_path(player), json.quote(message))
+}
+fn start_worker(s: edit List<Int>, player: Int) effects { fs.read, fs.write, process.exec, clock.read } {
+    if list.at(s,19+player) != 0 || list.at(s,25+player) != 0 { return; }
+    if list.at(s,32+player) >= 10 { feedback(player,"Generation limit reached: 10 attempts per player") return; }
+    let slot = 1 - list.at(s,21+player)
+    let task_path = player_path("runtime/task-",player,".json")
+    let result_path = player_path("runtime/result-",player,".json")
+    let previous = read_file(active_path(player), "{}")
+    var task = text.concat("{\"round\":",text.from_int(list.at(s,15)))
+    task = text.concat(task,text.concat(",\"slot\":",text.from_int(slot)))
+    task = text.concat(task,text.concat(",\"player\":",text.from_int(player)))
+    task = text.concat(task,text.concat(",\"observation\":",encode(observation(s,player))))
+    task = text.concat(task,text.concat(",\"current\":",previous))
+    task = text.concat(task,text.concat(",\"feedback\":",read_file(feedback_path(player),"\"\"")))
+    task = text.concat(task,text.concat(",\"previous_round\":",read_file(player_path("runtime/history-",player,".json"),"{}")))
+    task = text.concat(task,"}")
+    write_file(task_path,task)
+    write_file(result_path,"{\"ok\":0,\"error\":\"Worker did not publish a result\"}")
+    var args = "[\"--allow-read=.env\",\"--allow-read=runtime/mode.txt\",\"--allow-read=agent-prompt.txt\",\"--allow-read=common.keel\",\"--allow-read=referee.keel\",\"--allow-read=candidate_support.keel\",\"--allow-connect=https://api.openai.com\",\"--allow-exec=../../target/debug/keel\","
+    args = text.concat(args,json.quote(text.concat("--allow-read=",task_path)))
+    args = text.concat(args,text.concat(",",json.quote(text.concat("--allow-write=",result_path))))
+    args = text.concat(args,text.concat(",",json.quote(text.concat("--allow-write=",text.concat(binary_path(player,slot),".keel")))))
+    args = text.concat(args,text.concat(",",json.quote(text.concat("--allow-write=",player_path("runtime/edit-",player,".json")))))
+    args = text.concat(args,"]")
+    let executable = player_path("runtime/worker-",player,"")
+    match process.spawn(executable,args) {
+        Ok(handle) => {
+            let now = clock.millis()
+            let attempts=list.at(s,32+player)+1
+            list.set(edit s,32+player,attempts)
+            list.set(edit s,19+player,handle)
+            list.set(edit s,23+player,now)
+            feedback(player,"Writing and validating a new ability")
+        }
+        Err(_error) => { feedback(player,"Worker could not start; previous ability retained") }
+    }
+}
+fn poll_worker(s: edit List<Int>, player: Int) effects { fs.read, fs.write, process.exec, clock.read } {
+    let handle = list.at(s,19+player)
+    if handle == 0 { return; }
+    match process.poll(handle) {
+        Ok(code) => {
+            if code == -1 {
+                if clock.millis() - list.at(s,23+player) > 90000 {
+                    match process.terminate(handle) { Ok(_exit) => { } Err(_error) => { } }
+                    list.set(edit s,19+player,0)
+                    feedback(player,"Worker exceeded 90s; previous ability retained")
+                }
+                return;
+            }
+            list.set(edit s,19+player,0)
+            let completed = read_file(player_path("runtime/result-",player,".json"),"{}")
+            if code == 0 && integer(completed,"/ok",0) == 1 {
+                let slot = integer(completed,"/slot",-1)
+                if slot >= 0 && slot <= 1 {
+                    list.set(edit s,25+player,slot+1)
+                    feedback(player,"Native + reference samples passed; queued for next round")
+                    return;
+                }
+            }
+            feedback(player,string(completed,"/error","Worker failed; previous code retained"))
+        }
+        Err(_error) => {
+            list.set(edit s,19+player,0)
+            feedback(player,"Worker polling failed; previous code retained")
+        }
+    }
+}
+fn next_round(s: edit List<Int>) effects { fs.read, fs.write, process.exec, clock.read } {
+    let rh = list.at(s,3)
+    let bh = list.at(s,6)
+    if rh > bh { let score = list.at(s,16)+1 list.set(edit s,16,score) }
+    if bh > rh { let score = list.at(s,17)+1 list.set(edit s,17,score) }
+    var player = 0
+    while player < 2 {
+        write_file(player_path("runtime/history-",player,".json"),encode(observation(s,player)))
+        let pending = list.at(s,25+player)
+        if pending != 0 {
+            let completed = read_file(player_path("runtime/result-",player,".json"),"{}")
+            match json.get(completed,"/proposal") {
+                Ok(proposal) => { write_file(active_path(player),proposal) }
+                Err(_error) => { assert false }
+            }
+            list.set(edit s,21+player,pending-1)
+            list.set(edit s,25+player,0)
+            feedback(player,"New ability activated at round boundary")
+        }
+        list.set(edit s,28+player,0)
+        player = player+1
+    }
+    let round = list.at(s,15)+1
+    list.set(edit s,15,round)
+    let reset = [0,15,30,30,85,70,30]
+    var index = 0
+    for value in reset { list.set(edit s,index,value) index=index+1 }
+    list.set(edit s,30,0)
+    list.set(edit s,31,0)
+    start_worker(edit s,0)
+    start_worker(edit s,1)
+}
+fn player_stats(s: read List<Int>, player: Int) -> List<Int> effects { fs.write, process.exec } {
+    write_file("runtime/observation.json",encode(observation(s,player)))
+    let binary = binary_path(player,list.at(s,21+player))
+    match process.run_timeout(binary,"[\"--allow-read=runtime/observation.json\",\"--allow-stdout\"]",250) {
+        Ok(output) => {
+            let stats = decode(output,4)
+            if legal(stats) { return stats }
+        }
+        Err(_error) => { }
+    }
+    return []
+}
+fn advance(s: edit List<Int>) effects { fs.read, fs.write, process.exec, clock.read } {
+    poll_worker(edit s,0)
+    poll_worker(edit s,1)
+    let now = clock.millis()
+    if list.at(s,27) == 1 || now-list.at(s,18) < 100 { return; }
+    list.set(edit s,18,now)
+    var player = 0
+    while player < 2 {
+        var stats = [3,3,2,2]
+        if list.at(s,28+player) == 0 {
+            stats = player_stats(s,player)
+            if !legal(stats) {
+                stats = [3,3,2,2]
+                list.set(edit s,28+player,1)
+                feedback(player,"Runtime ability rejected; standard loadout for this round")
+            }
+        }
+        var index = 0
+        for value in stats { list.set(edit s,7+4*player+index,value) index=index+1 }
+        player=player+1
+    }
+    let frame = step(s)
+    var index = 0
+    while index < 7 { let value=list.at(frame,index) list.set(edit s,index,value) index=index+1 }
+    let red_hit = list.at(frame,7)
+    let blue_hit = list.at(frame,8)
+    list.set(edit s,30,red_hit)
+    list.set(edit s,31,blue_hit)
+    if list.at(s,3)==0 || list.at(s,6)==0 || list.at(s,0)>=150 { next_round(edit s) }
+}
+fn snapshot(s: read List<Int>) -> Text effects { fs.read } {
+    var body=text.concat("{\"game\":",encode(s))
+    body=text.concat(body,text.concat(",\"mode\":",json.quote(read_file("runtime/mode.txt","demo"))))
+    body=text.concat(body,text.concat(",\"players\":[",read_file(active_path(0),"{}")))
+    body=text.concat(body,text.concat(",",read_file(active_path(1),"{}")))
+    body=text.concat(body,text.concat("],\"feedback\":[",read_file(feedback_path(0),"\"\"")))
+    body=text.concat(body,text.concat(",",read_file(feedback_path(1),"\"\"")))
+    return text.concat(body,"]}")
+}
+fn initialize() effects { fs.read, fs.write, process.exec, clock.read } {
+    var s=[0,15,30,30,85,70,30,3,3,2,2,3,3,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    var player=0
+    while player<2 {
+        write_file(active_path(player),"{\"name\":\"Standard issue\",\"body\":\"{ return [3,3,2,2] }\",\"memory\":\"\"}")
+        write_file(feedback_path(player),"\"Ready\"")
+        write_file(player_path("runtime/history-",player,".json"),"[]")
+        player=player+1
+    }
+    start_worker(edit s,0)
+    start_worker(edit s,1)
+    write_file("runtime/state.json",encode(s))
+}
+fn route(method: read Text,path: read Text,body: read Text) -> Text effects { fs.read, fs.write, process.exec, clock.read } {
+    if path=="/state" && method=="GET" {
+        var s=decode(read_file("runtime/state.json","[]"),34)
+        advance(edit s)
+        write_file("runtime/state.json",encode(s))
+        return json_reply(200,snapshot(s))
+    }
+    if path=="/pause" && method=="POST" {
+        if body!="{}" { return json_reply(400,"{}") }
+        var s=decode(read_file("runtime/state.json","[]"),34)
+        let paused=1-list.at(s,27)
+        list.set(edit s,27,paused)
+        var player=0
+        while player<2 {
+            let handle=list.at(s,19+player)
+            if paused==1 && handle!=0 {
+                match process.terminate(handle) { Ok(_exit) => { } Err(_error) => { } }
+                list.set(edit s,19+player,0)
+                feedback(player,"Generation cancelled by pause")
+            }
+            if paused==0 { start_worker(edit s,player) }
+            player=player+1
+        }
+        write_file("runtime/state.json",encode(s))
+        return json_reply(200,"{}")
+    }
+    return http.response(404,"not found")
+}

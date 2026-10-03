@@ -2,7 +2,7 @@ use crate::{Result, files};
 use serde_json::{Value, json};
 use std::path::Path;
 pub const GUIDE: &str = include_str!("../docs/agent-language.md");
-pub const INSTRUCTIONS: &str = "<!-- keel:agent-guide:start -->\n## Keel development\n\nBefore editing Keel code, run `keel agent context . --json`. For a focused change use\n`keel agent context . --symbol FUNCTION --json`. The installed compiler provides\nthe supported-language reference: `keel agent spec language`,\n`keel agent spec collections`, `keel agent spec protocol`, and `keel api BUILTIN --json`.\nUse `keel agent commands --json` to discover tools.\n\nUse current revisions for `keel edit . --request edit.json --json`. Preserve\napproved contracts, assertions, helper oracles, expected results, and generator domains.\nValidate with `keel fmt . --check`, `keel check . --json`, `keel lint . --json`,\nand `keel test . --engine both --json`. TESTED is sampled evidence; UNKNOWN,\nBLOCKED, and INCOMPLETE are not success. Ask the user before expanding runtime\nauthority in keel.policy.json. Ordinary source edits and Git review still work.\n<!-- keel:agent-guide:end -->\n";
+pub const INSTRUCTIONS: &str = "<!-- keel:agent-guide:start -->\n## Keel development\n\nBefore editing Keel code, run `keel agent context . --json`. For a focused change use\n`keel agent context . --symbol FUNCTION --json`. The installed compiler provides\nthe supported-language reference: `keel agent spec language`,\n`keel agent spec collections`, `keel agent spec stdlib`, `keel agent spec protocol`, and `keel api BUILTIN --json`.\nUse `keel agent commands --json` to discover tools.\n\nUse current revisions for `keel edit . --request edit.json --json`. Preserve\napproved contracts, assertions, helper oracles, expected results, and generator domains.\nValidate with `keel fmt . --check`, `keel check . --json`, `keel lint . --json`,\nand `keel test . --engine both --json`. TESTED is sampled evidence; UNKNOWN,\nBLOCKED, and INCOMPLETE are not success. Ask the user before expanding runtime\nauthority in keel.policy.json. Ordinary source edits and Git review still work.\n<!-- keel:agent-guide:end -->\n";
 pub fn merge_instructions(existing: &str) -> Result<String> {
     let start = "<!-- keel:agent-guide:start -->";
     let end = "<!-- keel:agent-guide:end -->";
@@ -36,7 +36,7 @@ pub fn commands() -> Value {
     json!({"schema":1,"commands":[
         {"command":"keel init PATH","purpose":"Initialize project; preserve existing instructions"},
         {"command":"keel agent context [PROJECT] [--symbol NAME] --json","purpose":"Get supported syntax, APIs, tools and task context"},
-        {"command":"keel agent spec language|collections|protocol","purpose":"Read versioned offline reference"},
+        {"command":"keel agent spec language|collections|stdlib|protocol","purpose":"Read versioned offline reference"},
         {"command":"keel api BUILTIN --json","purpose":"Retrieve exact built-in signature"},
         {"command":"keel check PROJECT --json","purpose":"Check syntax/types/ownership/effects"},
         {"command":"keel lint PROJECT [--deny-warnings] --json","purpose":"Report unused bindings and effects"},
@@ -71,13 +71,20 @@ pub fn execute(args: &[String]) -> Result<Value> {
             2
         };
         if args.iter().skip(start).any(|a| a != "--json") {
-            return Err("usage: keel agent spec [language|collections|protocol] [--json]".into());
+            return Err(
+                "usage: keel agent spec [language|collections|stdlib|protocol] [--json]".into(),
+            );
         }
         let content = match topic {
             "language" => GUIDE,
             "collections" => include_str!("../docs/features.md"),
+            "stdlib" => include_str!("../docs/stdlib.md"),
             "protocol" => include_str!("../docs/agent-protocol.md"),
-            _ => return Err("unknown spec topic; use language, collections, or protocol".into()),
+            _ => {
+                return Err(
+                    "unknown spec topic; use language, collections, stdlib, or protocol".into(),
+                );
+            }
         };
         return Ok(
             json!({"schema":1,"version":env!("CARGO_PKG_VERSION"),"topic":topic,"content":content}),
@@ -94,7 +101,7 @@ pub fn execute(args: &[String]) -> Result<Value> {
     ];
     inspect_args.extend_from_slice(args.get(first..).unwrap_or(&[]));
     crate::cli::validate(&inspect_args)?;
-    let mut context = json!({"schema":1,"version":env!("CARGO_PKG_VERSION"),"language_reference":GUIDE,"commands":commands()["commands"],"project":null,"incomplete":false,"unsupported":["arbitrary generics and nominal records/unions","async and structured concurrency","Cranelift and declaration-level incremental compilation","host capability objects and distributed simulation","formal proof and production certification"]});
+    let mut context = json!({"schema":1,"version":env!("CARGO_PKG_VERSION"),"language_reference":GUIDE,"commands":commands()["commands"],"project":null,"incomplete":false,"unsupported":["arbitrary generics and nominal records/unions","async, general structured tasks and channels","Cranelift and declaration-level incremental compilation","host capability objects and distributed simulation","formal proof and production certification"]});
     if let Some(path) = path {
         let project = match crate::project::Project::load(Path::new(path)) {
             Ok(project) => project,
