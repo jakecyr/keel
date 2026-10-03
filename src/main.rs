@@ -12,6 +12,7 @@ mod process;
 mod project;
 mod service;
 mod syntax;
+mod terminal;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
@@ -72,88 +73,9 @@ fn checked(source: &str) -> std::result::Result<(Program, Analysis), Value> {
     Ok((program, analysis))
 }
 fn report(value: &Value, json_output: bool) {
-    if json_output {
-        println!("{}", serde_json::to_string_pretty(value).unwrap());
-    } else {
-        if let Some(status) = value.get("status").and_then(Value::as_str) {
-            println!(
-                "{status}  {}",
-                value.get("revision").and_then(Value::as_str).unwrap_or("")
-            );
-        }
-        if let Some(diagnostics) = value.get("diagnostics").and_then(Value::as_array) {
-            for d in diagnostics {
-                let file = d.get("file").and_then(Value::as_str).unwrap_or("source");
-                println!(
-                    "{file}:{}:{} [{}] {}",
-                    d["line"],
-                    d["column"],
-                    d["kind"].as_str().unwrap_or("error"),
-                    d["message"].as_str().unwrap_or("")
-                );
-            }
-        }
-        if let Some(tests) = value.get("tests").and_then(Value::as_array) {
-            for test in tests {
-                println!(
-                    "{}  {} ({} cases)",
-                    test["status"].as_str().unwrap_or("UNKNOWN"),
-                    test["name"].as_str().unwrap_or(""),
-                    test["cases"]
-                );
-                if let Some(failure) = test.get("failure") {
-                    println!("  {failure}");
-                }
-            }
-        }
-        if let Some(holes) = value.get("holes").and_then(Value::as_array) {
-            for hole in holes {
-                println!(
-                    "HOLE {}: expected {} in {}",
-                    hole["id"], hole["expected"], hole["function"]
-                );
-            }
-        }
-        if let Some(message) = value.get("message").and_then(Value::as_str) {
-            println!("{message}");
-        }
-        if let Some(binary) = value.get("binary").and_then(Value::as_str) {
-            println!("Executable: {binary}");
-        }
-        if let Some(changed) = value.get("changed").and_then(Value::as_array) {
-            for file in changed.iter().filter_map(Value::as_str) {
-                println!("  {file}");
-            }
-        }
-        if let Some(directory) = value.get("working_directory").and_then(Value::as_str) {
-            println!("Run these commands from {directory}:");
-            if let Some(commands) = value.get("next").and_then(Value::as_array) {
-                for command in commands.iter().filter_map(Value::as_str) {
-                    println!("  {command}");
-                }
-            }
-        }
-        if let Some(compiler) = value.get("native_compiler").and_then(Value::as_str) {
-            println!("Native compiler: {compiler}");
-            println!(
-                "Worker memory limits: {}",
-                value["worker_memory_limits"].as_str().unwrap_or("unknown")
-            );
-            if let Some(error) = value.get("native_probe").and_then(Value::as_str) {
-                println!("Native compilation failed: {error}");
-            }
-            println!(
-                "{}",
-                value["production_readiness"]
-                    .as_str()
-                    .unwrap_or("NOT CERTIFIED")
-            );
-        }
-        if value.get("status").is_none() {
-            println!("{}", serde_json::to_string_pretty(value).unwrap());
-        }
-    }
+    terminal::report(value, json_output, None);
 }
+
 fn compile(
     program: &Program,
     analysis: &Analysis,
@@ -744,11 +666,8 @@ fn review(source: &str, program: &Program, args: &[String]) -> Result<Value> {
     )
 }
 fn usage() {
-    println!(
-        "Project paths are optional (default: current directory). Use keel help COMMAND or keel COMMAND --help for examples.\n"
-    );
-    println!(
-        "Keel — experimental native language\n\nGetting started:\n  keel init DIRECTORY [--json]\n  keel doctor [--json]\n  keel --version\n\nDevelopment (FILE_OR_PROJECT is a .keel file, project directory, or keel.json):\n  keel check FILE_OR_PROJECT [--json]\n  keel fmt FILE_OR_PROJECT [--check] [--json]\n  keel lint FILE_OR_PROJECT [--deny-warnings] [--json]\n  keel build FILE_OR_PROJECT [-o BINARY] [--emit-c FILE] [--json]\n  keel run FILE_OR_PROJECT [--policy POLICY.json | --allow-net=127.0.0.1:PORT --allow-stdout]\n  keel test FILE_OR_PROJECT [--engine native|reference|both]\n                 [--cases N] [--seed N] [--filter TEXT] [--value N]\n                 [--timeout-ms N] [--budget-ms N] [--memory-mib N] [--no-shrink] [--json]\n\nAgent tooling and offline documentation:\n  keel agent context [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\n  keel agent spec language|collections|protocol [--json]\n  keel agent commands [--json]\n  keel api BUILTIN [--json]\n  keel inspect FILE_OR_PROJECT [--symbol NAME] [--max-chars N] [--json]\n  keel edit FILE_OR_PROJECT --request EDIT.json [--json]\n  keel review FILE_OR_PROJECT --against BASELINE [--json]\n  keel explain FILE_OR_PROJECT --offset N [--json]\n  keel serve [--max-cache-mib N]\n\nBuilds reject holes. Tests reaching holes are BLOCKED. No network authority is granted by an effects declaration."
+    terminal::document(
+        "Keel — experimental native language\n\nProject paths default to the current directory. Use keel help COMMAND for examples.\nColor: KEEL_COLOR=auto|always|never or NO_COLOR=1. Animation: KEEL_PROGRESS=off.\n\nGetting started:\n  keel init DIRECTORY [--json]\n  keel doctor [--json]\n  keel --version\n\nDevelopment (FILE_OR_PROJECT is a .keel file, project directory, or keel.json):\n  keel check FILE_OR_PROJECT [--json]\n  keel fmt FILE_OR_PROJECT [--check] [--json]\n  keel lint FILE_OR_PROJECT [--deny-warnings] [--json]\n  keel build FILE_OR_PROJECT [-o BINARY] [--emit-c FILE] [--json]\n  keel run FILE_OR_PROJECT [--policy POLICY.json | --allow-net=127.0.0.1:PORT --allow-stdout]\n  keel test FILE_OR_PROJECT [--engine native|reference|both]\n                 [--cases N] [--seed N] [--filter TEXT] [--value N]\n                 [--timeout-ms N] [--budget-ms N] [--memory-mib N] [--no-shrink] [--json]\n\nAgent tooling and offline documentation:\n  keel agent context [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\n  keel agent spec language|collections|protocol [--json]\n  keel agent commands [--json]\n  keel api BUILTIN [--json]\n  keel inspect FILE_OR_PROJECT [--symbol NAME] [--max-chars N] [--json]\n  keel edit FILE_OR_PROJECT --request EDIT.json [--json]\n  keel review FILE_OR_PROJECT --against BASELINE [--json]\n  keel explain FILE_OR_PROJECT --offset N [--json]\n  keel serve [--max-cache-mib N]\n\nBuilds reject holes. Tests reaching holes are BLOCKED. No network authority is granted by an effects declaration.",
     );
 }
 fn execute() -> Result<i32> {
@@ -761,10 +680,9 @@ fn execute() -> Result<i32> {
             args.first().filter(|arg| !arg.starts_with('-'))
         };
         if let Some(topic) = topic {
-            println!(
-                "{}",
+            terminal::document(
                 cli::help(topic)
-                    .ok_or_else(|| format!("unknown command '{topic}'; use keel --help"))?
+                    .ok_or_else(|| format!("unknown command '{topic}'; use keel --help"))?,
             );
         } else {
             usage();
@@ -772,16 +690,19 @@ fn execute() -> Result<i32> {
         return Ok(0);
     }
     if args[0] == "--version" {
-        println!("keel {}", env!("CARGO_PKG_VERSION"));
+        terminal::document(&format!("keel {}", env!("CARGO_PKG_VERSION")));
         return Ok(0);
     }
     if args[0] == "agent" {
+        let mut progress =
+            terminal::Progress::new(args.iter().any(|a| a == "--json"), "Reading agent context");
         let result = agent::execute(&args)?;
+        progress.finish();
         let json_output = args.iter().any(|a| a == "--json");
         if !json_output && let Some(content) = result.get("content").and_then(Value::as_str) {
-            println!("{content}");
+            terminal::reference(content);
         } else {
-            report(&result, true);
+            report(&result, json_output);
         }
         return Ok(if result["status"] == "FAILED" { 1 } else { 0 });
     }
@@ -796,10 +717,15 @@ fn execute() -> Result<i32> {
         if args.iter().skip(1).any(|a| a != "--json") {
             return Err("usage: keel doctor [--json]".into());
         }
+        let mut progress = terminal::Progress::new(
+            args.iter().any(|a| a == "--json"),
+            "Probing native toolchain",
+        );
         let temporary = Temp::new()?;
         let (program, analysis) = checked("fn main() {}").map_err(|v| v.to_string())?;
         let outcome = compile(&program, &analysis, false, &temporary.0.join("probe"), None);
         let value = json!({"status":if outcome.is_ok(){"READY"}else{"FAILED"},"native_compiler":env::var("CC").unwrap_or_else(|_|"cc".into()),"native_probe":outcome.err(),"os":env::consts::OS,"architecture":env::consts::ARCH,"worker_memory_limits":if cfg!(target_os="linux"){"RLIMIT_AS"}else{"not enforced on this platform"},"production_readiness":"NOT CERTIFIED; see docs/design-status.json"});
+        progress.finish();
         report(&value, args.iter().any(|a| a == "--json"));
         return Ok(if value["status"] == "READY" { 0 } else { 1 });
     }
@@ -822,20 +748,37 @@ fn execute() -> Result<i32> {
     let command = &args[0];
     let path = PathBuf::from(args.get(1).ok_or("expected source file")?);
     let json_output = args.iter().any(|a| a == "--json");
+    let mut progress = terminal::Progress::new(json_output, "Loading project");
     if command == "init" {
-        report(&project::init(&path)?, json_output);
+        progress.stage("Initializing project");
+        let value = project::init(&path)?;
+        progress.finish();
+        report(&value, json_output);
         return Ok(0);
     }
     let project = project::Project::load(&path)?;
     let source = &project.source;
+    progress.stage("Checking types and ownership");
     let (program, analysis) = match checked(source) {
         Ok(v) => v,
         Err(mut v) => {
             project.annotate(&mut v);
-            report(&v, json_output);
+            progress.finish();
+            terminal::report(&v, json_output, Some(&project));
             return Ok(1);
         }
     };
+    progress.stage(match command.as_str() {
+        "lint" => "Linting bindings and effects",
+        "fmt" => "Formatting source",
+        "build" | "run" => "Building native executable",
+        "test" => "Building and running tests",
+        "edit" => "Validating structural edits",
+        "review" => "Reviewing source changes",
+        "inspect" => "Inspecting project symbols",
+        "explain" => "Reading source context",
+        _ => "Checking types and ownership",
+    });
     let mut value = match command.as_str() {
         "check" => {
             json!({"status":if analysis.holes.is_empty(){"CHECKED"}else{"INCOMPLETE"},"revision":revision(source),"functions":program.functions.len(),"tests":program.tests.len(),"holes":analysis.holes,"message":"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied."})
@@ -878,6 +821,7 @@ fn execute() -> Result<i32> {
         }
         "build" | "run" => {
             if !analysis.holes.is_empty() {
+                progress.finish();
                 report(
                     &json!({"status":"FAILED","holes":analysis.holes,"message":"Release builds reject unresolved holes."}),
                     json_output,
@@ -915,6 +859,7 @@ fn execute() -> Result<i32> {
             }
             compile(&program, &analysis, false, &output, emit_c.as_deref())?;
             if command == "run" {
+                progress.finish();
                 let status = Command::new(fs::canonicalize(&output).map_err(|e| e.to_string())?)
                     .args(permissions)
                     .status()
@@ -956,7 +901,8 @@ fn execute() -> Result<i32> {
         value["status"].as_str(),
         Some("FAILED" | "BLOCKED" | "UNKNOWN" | "INCOMPLETE")
     );
-    report(&value, json_output);
+    progress.finish();
+    terminal::report(&value, json_output, Some(&project));
     Ok(if failed { 1 } else { 0 })
 }
 fn main() {
@@ -969,7 +915,7 @@ fn main() {
                     json!({"status":"FAILED","kind":"tool_error","message":message})
                 );
             } else {
-                eprintln!("keel: {message}");
+                terminal::error(&message);
             }
             std::process::exit(2);
         }

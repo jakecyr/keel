@@ -53,6 +53,29 @@ Report any failures or incomplete results.
 
 Then tell it what you'd like to build. Keel creates `AGENTS.md` and `CLAUDE.md` for you and includes offline language guides. No Keel-specific plugin is needed—just an agent that can read files and run terminal commands.
 
+## Terminal output
+
+Keel uses a retro terminal theme with colored status markers, source-linked errors
+and warnings, and an animated activity indicator for builds, linting, tests, and
+other project commands. The indicator shows the current phase and elapsed time;
+short operations finish without flicker. `keel run` clears it before starting your
+program, preserving the program's own output.
+
+Color is automatic on terminals. Piped output, CI, and `TERM=dumb` use plain text;
+`--json` and `keel serve` retain their machine-readable output without decoration.
+
+- `KEEL_COLOR=always` forces color (including redirected output); `KEEL_COLOR=never`
+  disables it. The default is `auto`.
+- A nonempty `NO_COLOR` or `TERM=dumb` overrides forced color.
+- `KEEL_PROGRESS=off` disables animation independently of color. Animation requires
+  both stdout and stderr to be terminals and is disabled in CI.
+
+```sh
+KEEL_PROGRESS=off keel build
+NO_COLOR=1 keel lint
+keel check --json
+```
+
 ## Keep going
 
 - [Keel website](https://jakecyr.github.io/keel/) — explore the agent workflow and recorded benchmarks
