@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Keel icon</title>
+  <desc id="desc">A cream and orange pixel K above a teal line, on a dark rounded square.</desc>
+  <rect width="128" height="128" rx="20" fill="#202D32"/>
+  <path d="M34 18h12v84H34z" fill="#F5EBD8"/>
+  <path d="M82 18h12v12H82zM70 30h12v12H70zM58 42h12v12H58zM46 54h12v12H46zM58 66h12v12H58zM70 78h12v12H70zM82 90h12v12H82z" fill="#F28B50"/>
+  <path d="M34 110h60v4H34z" fill="#80B5A4"/>
+</svg>

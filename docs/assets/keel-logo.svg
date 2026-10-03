@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="128" viewBox="0 0 380 128" role="img" aria-labelledby="title desc">
+  <title id="title">Keel</title>
+  <desc id="desc">Keel's pixel K icon and a block-letter KEEL wordmark on warm cream.</desc>
+  <rect width="380" height="128" rx="16" fill="#F5EBD8"/>
+  <g transform="translate(20 20) scale(.6875)">
+    <rect width="128" height="128" rx="20" fill="#202D32"/>
+  <path d="M34 18h12v84H34z" fill="#F5EBD8"/>
+  <path d="M82 18h12v12H82zM70 30h12v12H70zM58 42h12v12H58zM46 54h12v12H46zM58 66h12v12H58zM70 78h12v12H70zM82 90h12v12H82z" fill="#F28B50"/>
+  <path d="M34 110h60v4H34z" fill="#80B5A4"/>
+  </g>
+  <path fill="#202D32" d="M140 32h8v8h-8zM172 32h8v8h-8zM140 40h8v8h-8zM164 40h8v8h-8zM140 48h8v8h-8zM156 48h8v8h-8zM140 56h8v8h-8zM148 56h8v8h-8zM140 64h8v8h-8zM156 64h8v8h-8zM140 72h8v8h-8zM164 72h8v8h-8zM140 80h8v8h-8zM172 80h8v8h-8zM196 32h8v8h-8zM204 32h8v8h-8zM212 32h8v8h-8zM220 32h8v8h-8zM228 32h8v8h-8zM196 40h8v8h-8zM196 48h8v8h-8zM196 56h8v8h-8zM204 56h8v8h-8zM212 56h8v8h-8zM220 56h8v8h-8zM196 64h8v8h-8zM196 72h8v8h-8zM196 80h8v8h-8zM204 80h8v8h-8zM212 80h8v8h-8zM220 80h8v8h-8zM228 80h8v8h-8zM252 32h8v8h-8zM260 32h8v8h-8zM268 32h8v8h-8zM276 32h8v8h-8zM284 32h8v8h-8zM252 40h8v8h-8zM252 48h8v8h-8zM252 56h8v8h-8zM260 56h8v8h-8zM268 56h8v8h-8zM276 56h8v8h-8zM252 64h8v8h-8zM252 72h8v8h-8zM252 80h8v8h-8zM260 80h8v8h-8zM268 80h8v8h-8zM276 80h8v8h-8zM284 80h8v8h-8zM308 32h8v8h-8zM308 40h8v8h-8zM308 48h8v8h-8zM308 56h8v8h-8zM308 64h8v8h-8zM308 72h8v8h-8zM308 80h8v8h-8zM316 80h8v8h-8zM324 80h8v8h-8zM332 80h8v8h-8zM340 80h8v8h-8z"/>
+  <path d="M140 100h32v4h-32z" fill="#F28B50"/>
+  <path d="M180 100h168v4H180z" fill="#477A6B"/>
+</svg>
