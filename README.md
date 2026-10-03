@@ -53,6 +53,6 @@ Then tell it what you'd like to build. Keel creates `AGENTS.md` and `CLAUDE.md` 
 - [Language tour](LANGUAGE.md) — learn the syntax with examples
 - [Development workflows](docs/workflows.md) — build, test, use agent tools, and try the web-server example
 - [Installation guide](docs/installation.md) — platform support, upgrades, and editor setup
-- [Contributing](AGENTS.md) — work on Keel itself
+- [Contributing](CONTRIBUTING.md) — work on Keel itself
 - [Release gaps](docs/release-gaps.md) — what's supported and what's still experimental
 - [Icon and design](docs/design.md) — the retro visual identity
