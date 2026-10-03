@@ -122,22 +122,19 @@ impl Drop for ChildGuard {
 #[test]
 fn help_is_discoverable_and_init_prints_next_steps() {
     let work = Work::new();
-    for args in [
-        vec!["--help"],
-        vec!["init", "--help"],
-        vec!["agent", "context", "--help"],
+    for (args, expected) in [
+        (vec!["--help"], "keel lint"),
+        (vec!["init", "--help"], "Create a project"),
+        (vec!["help", "test"], "--engine native|reference|both"),
+        (
+            vec!["agent", "context", "-h"],
+            "Versioned offline documentation",
+        ),
     ] {
         let output = work.run(".", &args, true);
         assert!(output.status.success());
         let help = String::from_utf8(output.stdout).unwrap();
-        for command in [
-            "keel init",
-            "keel lint",
-            "keel agent context",
-            "--engine native|reference|both",
-        ] {
-            assert!(help.contains(command), "missing {command}");
-        }
+        assert!(help.contains(expected), "missing {expected}: {help}");
     }
     let output = work.run(".", &["init", "starter"], true);
     assert!(output.status.success());
@@ -146,6 +143,41 @@ fn help_is_discoverable_and_init_prints_next_steps() {
     assert!(message.contains("starter"));
     assert!(message.contains("keel test . --engine both"));
     assert!(!work.path("--help").exists());
+}
+
+#[test]
+fn current_directory_workflow_and_missing_project_guidance() {
+    let work = Work::new();
+    let missing = work.run(".", &["check"], true);
+    assert!(!missing.status.success());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("keel init"));
+    assert_eq!(
+        work.json(".", &["init", "--json"], true)["status"],
+        "CREATED"
+    );
+    for args in [
+        vec!["check", "--json"],
+        vec!["lint", "--deny-warnings", "--json"],
+        vec!["fmt", "--check", "--json"],
+        vec!["test", "--engine", "both", "--json"],
+        vec!["build", "-o", "build/hello", "--json"],
+    ] {
+        work.json(".", &args, true);
+    }
+    let run = work.run(".", &["run", "--allow-stdout"], false);
+    assert!(run.status.success(), "{run:?}");
+    assert_eq!(
+        String::from_utf8(run.stdout).unwrap().trim(),
+        "Hello from Keel!"
+    );
+    for args in [
+        vec!["check", "--typo"],
+        vec!["test", "--engine"],
+        vec!["init", "extra", "unexpected"],
+        vec!["nonsense", "--help"],
+    ] {
+        assert!(!work.run(".", &args, true).status.success());
+    }
 }
 
 #[test]

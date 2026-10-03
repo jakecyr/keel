@@ -1,0 +1,169 @@
+# Keel: syntax and semantics
+
+This is the starting guide for developers and agents using **Keel 0.1.0**.
+It describes implemented features, not the full proposed language. Keel is
+experimental. See the [detailed language reference](docs/language.md),
+[collections and errors](docs/features.md), and [remaining work](docs/release-gaps.md).
+
+Without a checkout, the installed compiler provides versioned offline guidance:
+
+```sh
+keel agent spec language
+keel agent spec collections
+keel agent spec protocol
+keel api list.get --json
+keel agent context . --symbol greet --json
+```
+
+## A complete program
+
+Save this as `greeting.keel`; run `keel test greeting.keel --engine both`, then
+`keel run greeting.keel --allow-stdout`. Runnable `keel` blocks in this guide are
+compiled and tested in the repository's automated suite.
+
+```keel
+pub fn greet(name: read Text) -> Text {
+    return text.concat("Hello, ", name)
+}
+
+fn main() effects { io.stdout } {
+    io.println(greet("Keel"))
+}
+
+test "greeting" {
+    assert greet("developer") == "Hello, developer"
+}
+```
+
+Functions declare parameter types and return types (`Unit` if omitted). `pub`
+marks an intended public interface, not module-level access control. `//` starts
+a comment. Blocks use braces. Semicolons are optional; newlines are whitespace.
+Names are ASCII identifiers. Strings are UTF-8 with ordinary escaped quotes,
+backslashes, newline, carriage-return, and tab escapes.
+
+## Values and control flow
+
+- `let` creates an immutable binding; `var` permits assignment. Shadowing is rejected.
+- Types: `Int`, `Bool`, `Text`, `List<Int>`, `Option<Int>`, `Result<Int, Text>`, `Unit`.
+  These container types are built-in specializations, not general generics.
+- Use `if`/`else`, `while`, `for value in list`, exhaustive `match`, and `return`.
+  A non-Unit function must return on every checked path. Use `return;` for Unit.
+- `Int` is signed 64-bit. Overflow and division by zero trap, including in release
+  builds. Division truncates toward zero. There are no implicit conversions.
+- Evaluation is left to right; `&&` and `||` short-circuit. Text comparison is by
+  bytes and length. `text.len` counts bytes, not Unicode characters.
+- List indexing uses `list.get` (returns Option) or `list.at` (traps out of bounds).
+
+## Ownership: read, edit, take
+
+Int, Bool, and Option<Int> copy. Text, List<Int>, and Result<Int, Text> are owned:
+
+- `read` borrows without mutation for a call.
+- `edit` borrows exclusively; the caller writes `edit value` and needs a mutable binding.
+- `take` transfers ownership; the caller writes `take value` for an existing binding.
+  The old binding can no longer be read until reassigned.
+- Returning an owned local transfers it. Borrowed values cannot escape; clone
+  explicitly when an independent owner is needed. There are no hidden deep copies.
+- Loans include later argument evaluation. A `for` loop read-borrows its input
+  throughout the loop. Restore moved outer values on every iteration.
+- Owned values are cleaned up on normal scope exit, replacement, and return.
+  Traps terminate the process without unwinding cleanup.
+
+```keel
+fn unique(values: read List<Int>) -> List<Int> {
+    var output = []
+    for value in values {
+        if !list.contains(output, value) {
+            list.push(edit output, value)
+        }
+    }
+    return output
+}
+
+test "first occurrences" {
+    assert unique([4, 2, 4, 1, 2]) == [4, 2, 1]
+}
+```
+
+## Recoverable errors
+
+Handle both arms of Option/Result with `match`. There are no implicit nulls,
+exceptions, wildcard arms, or `?` propagation yet. Err text is borrowed inside
+its match arm; explicitly clone it to retain it. Strict integer parsing accepts
+an optional minus and decimal digits; whitespace, plus signs, and overflow fail.
+
+```keel
+fn parsed_or_zero(raw: read Text) -> Int {
+    match text.parse_int(raw) {
+        Ok(value) => { return value }
+        Err(message) => { assert text.len(message) > 0 return 0 }
+    }
+}
+
+test "recoverable parsing" {
+    assert parsed_or_zero("42") == 42
+    assert parsed_or_zero("bad") == 0
+}
+```
+
+## Effects, contracts, holes, and evidence
+
+Functions are externally pure unless declaring `effects { io.stdout }` or
+`effects { net.listen }`; local mutation/allocation are allowed. Effects propagate
+through calls. Declarations grant no authority: a launcher must separately grant
+permissions. `keel init` creates a deny-by-default policy. A greeting therefore
+needs `keel run --allow-stdout`; policy files are never silently broadened.
+
+`requires` checks entry conditions; `ensures` checks the returned `result`.
+Contracts must be pure, cannot consume/edit borrowed inputs, and run in optimized
+builds. They are executable checks, never proofs or optimizer assumptions. Use
+typed errors for ordinary invalid external input, not precondition traps.
+
+```keel
+pub fn square(value: Int) -> Int
+    requires value >= -1000 && value <= 1000
+    ensures result >= 0
+{
+    return value * value
+}
+
+test "square" { assert square(12) == 144 }
+property "nonnegative" (n in gen.int(min: -1000, max: 1000)) {
+    assert square(n) >= 0
+}
+```
+
+Properties currently support one bounded integer generator. Seeds and budgets
+are explicit; failures may be shrunk and replayed. Independent specifications
+and approved acceptance assertions must not be weakened to pass a change.
+
+`hole("name")` represents unfinished work and needs an expected type. Inspection
+reports its context; builds reject unresolved holes. `TESTED` means recorded cases
+passed, reached holes are `BLOCKED`, and time/resource exhaustion is `UNKNOWN`.
+None means `PROVEN`. Native/reference agreement is additional sampled evidence.
+
+## Projects and agent workflow
+
+`keel init` scaffolds the current directory; `keel init NAME` creates a directory.
+`keel.json` explicitly lists complete source/test files in one namespace; it is
+not a module or package manager. No dependencies are downloaded during builds.
+
+```sh
+keel fmt --check
+keel check
+keel lint --deny-warnings
+keel test --engine both
+keel build
+```
+
+Project commands default to `.`. Use `keel COMMAND --help` for options. Agents
+should read generated AGENTS.md/CLAUDE.md, inspect focused revision-bound context,
+make small edits, run checks/tests, and retain the evidence. See the
+[agent protocol](docs/agent-protocol.md) for protected structural transactions.
+
+## Not implemented
+
+General records/unions/generics, modules/packages, shared ownership, closures,
+structured concurrency, capability simulation, formal proofs, and Cranelift are
+not supported. Native compilation currently lowers through C and your system C
+compiler. The HTTP host is an example, not a production web framework.

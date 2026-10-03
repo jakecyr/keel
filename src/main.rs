@@ -83,8 +83,9 @@ fn report(value: &Value, json_output: bool) {
         }
         if let Some(diagnostics) = value.get("diagnostics").and_then(Value::as_array) {
             for d in diagnostics {
+                let file = d.get("file").and_then(Value::as_str).unwrap_or("source");
                 println!(
-                    "{}:{} [{}] {}",
+                    "{file}:{}:{} [{}] {}",
                     d["line"],
                     d["column"],
                     d["kind"].as_str().unwrap_or("error"),
@@ -118,6 +119,11 @@ fn report(value: &Value, json_output: bool) {
         }
         if let Some(binary) = value.get("binary").and_then(Value::as_str) {
             println!("Executable: {binary}");
+        }
+        if let Some(changed) = value.get("changed").and_then(Value::as_array) {
+            for file in changed.iter().filter_map(Value::as_str) {
+                println!("  {file}");
+            }
         }
         if let Some(directory) = value.get("working_directory").and_then(Value::as_str) {
             println!("Run these commands from {directory}:");
@@ -739,17 +745,34 @@ fn review(source: &str, program: &Program, args: &[String]) -> Result<Value> {
 }
 fn usage() {
     println!(
+        "Project paths are optional (default: current directory). Use keel help COMMAND or keel COMMAND --help for examples.\n"
+    );
+    println!(
         "Keel — experimental native language\n\nGetting started:\n  keel init DIRECTORY [--json]\n  keel doctor [--json]\n  keel --version\n\nDevelopment (FILE_OR_PROJECT is a .keel file, project directory, or keel.json):\n  keel check FILE_OR_PROJECT [--json]\n  keel fmt FILE_OR_PROJECT [--check] [--json]\n  keel lint FILE_OR_PROJECT [--deny-warnings] [--json]\n  keel build FILE_OR_PROJECT [-o BINARY] [--emit-c FILE] [--json]\n  keel run FILE_OR_PROJECT [--policy POLICY.json | --allow-net=127.0.0.1:PORT --allow-stdout]\n  keel test FILE_OR_PROJECT [--engine native|reference|both]\n                 [--cases N] [--seed N] [--filter TEXT] [--value N]\n                 [--timeout-ms N] [--budget-ms N] [--memory-mib N] [--no-shrink] [--json]\n\nAgent tooling and offline documentation:\n  keel agent context [FILE_OR_PROJECT] [--symbol NAME] [--max-chars N] [--json]\n  keel agent spec language|collections|protocol [--json]\n  keel agent commands [--json]\n  keel api BUILTIN [--json]\n  keel inspect FILE_OR_PROJECT [--symbol NAME] [--max-chars N] [--json]\n  keel edit FILE_OR_PROJECT --request EDIT.json [--json]\n  keel review FILE_OR_PROJECT --against BASELINE [--json]\n  keel explain FILE_OR_PROJECT --offset N [--json]\n  keel serve [--max-cache-mib N]\n\nBuilds reject holes. Tests reaching holes are BLOCKED. No network authority is granted by an effects declaration."
     );
 }
 fn execute() -> Result<i32> {
-    let args: Vec<String> = env::args().skip(1).collect();
-    if args.is_empty() || args.iter().any(|arg| arg == "--help") || args[0] == "help" {
-        usage();
+    let mut args: Vec<String> = env::args().skip(1).collect();
+    if args.is_empty() || args.iter().any(|arg| arg == "--help" || arg == "-h") || args[0] == "help"
+    {
+        let topic = if args.first().is_some_and(|arg| arg == "help") {
+            args.get(1)
+        } else {
+            args.first().filter(|arg| !arg.starts_with('-'))
+        };
+        if let Some(topic) = topic {
+            println!(
+                "{}",
+                cli::help(topic)
+                    .ok_or_else(|| format!("unknown command '{topic}'; use keel --help"))?
+            );
+        } else {
+            usage();
+        }
         return Ok(0);
     }
     if args[0] == "--version" {
-        println!("keel 0.1.0");
+        println!("keel {}", env!("CARGO_PKG_VERSION"));
         return Ok(0);
     }
     if args[0] == "agent" {
@@ -785,14 +808,16 @@ fn execute() -> Result<i32> {
             return Err("usage: keel api BUILTIN [--json]".into());
         }
         let name = &args[1];
-        let signature = check::builtin(name)
-            .ok_or("unknown builtin; see docs/features.md and docs/language.md")?;
+        let signature = check::builtin(name).ok_or(
+            "unknown builtin; use keel agent spec collections or keel agent spec language",
+        )?;
         report(
             &json!({"name":name,"parameters":signature.params,"result":signature.result,"effects":signature.effects,"trusted_host_adapter":true}),
             args.iter().any(|a| a == "--json"),
         );
         return Ok(0);
     }
+    cli::default_project(&mut args);
     cli::validate(&args)?;
     let command = &args[0];
     let path = PathBuf::from(args.get(1).ok_or("expected source file")?);

@@ -1,5 +1,7 @@
 # Keel agent language reference
 
+For a repository-based syntax tour, read root `LANGUAGE.md`; its runnable examples are regression-tested. Project commands such as `keel check`, `keel test`, and `keel build` default to the current directory. Use `keel COMMAND --help` for focused options and examples. `keel agent context` without a path deliberately returns only bootstrap guidance; include `.` to inspect the project.
+
 This guide is embedded in the installed compiler. It describes supported syntax, not future design promises. Start with `keel agent context . --json` and request a symbol with `--symbol NAME` to keep implementation context small. Use `keel agent spec collections` or `keel api BUILTIN --json` for exact interfaces.
 
 ## Workflow

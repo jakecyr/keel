@@ -170,6 +170,19 @@ shutil.copyfile(source, args[args.index("--output") + 1])
         self.assertTrue((self.prefix / "bin" / "keel").is_file())
         self.assertEqual(list(self.tmp.iterdir()), [])
 
+    def test_bash_pipe_and_copyable_path_for_quoted_directory(self):
+        destination = self.root / "it's a directory"
+        result = subprocess.run(["bash", "-s", "--", "--bin-dir", str(destination)],
+                                input=INSTALLER.read_text(), env=self.env, text=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        export = next(line.removeprefix("For this terminal: ") for line in result.stdout.splitlines()
+                      if line.startswith("For this terminal: "))
+        probe = subprocess.run(["sh", "-c", export + '\ncommand -v keel'], env=self.env,
+                               text=True, capture_output=True, timeout=5)
+        self.assertEqual(probe.returncode, 0, probe.stderr)
+        self.assertEqual(probe.stdout.strip(), str(destination / "keel"))
+
     def test_download_failure_preserves_existing_binary(self):
         target = self.existing()
         self.env["INSTALL_TEST_FAIL"] = "1"

@@ -6,7 +6,7 @@ description = "An experimental agent-oriented language and native development pr
 license = "MIT"
 repository = "https://github.com/jakecyr/keel"
 readme = "README.md"
-include = ["src/**", "examples/**", "docs/**", "tests/**", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE"]
+include = ["src/**", "examples/**", "docs/**", "tests/**", "Cargo.toml", "Cargo.lock", "README.md", "LANGUAGE.md", "LICENSE"]
 
 [dependencies]
 serde = { version = "=1.0.229", features = ["derive"] }

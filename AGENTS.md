@@ -10,6 +10,8 @@ Before handing off changes, run the relevant compiler tests and `cargo fmt --che
 
 ## Language implementation invariants
 
+Root `LANGUAGE.md` is the developer/agent syntax tour; `docs/language.md` is the detailed reference. Keep both aligned with embedded guides. Runnable `keel` code fences in the root tour are checked by both native and reference engines in the test suite.
+
 - Preserve defined left-to-right evaluation, checked integer semantics, exhaustive handling, and ownership rules in both native and reference engines.
 - Add negative compiler tests, native tests, and differential/sanitizer tests for ownership, runtime, or lowering changes.
 - Static success, TESTED, ENFORCED, BLOCKED, UNKNOWN, and PROVEN are distinct. No tool currently establishes PROVEN.

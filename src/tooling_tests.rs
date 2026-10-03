@@ -1,6 +1,26 @@
 use super::*;
 
 #[test]
+fn root_language_guide_examples_are_checked_and_tested_by_both_engines() {
+    let guide = include_str!("../LANGUAGE.md");
+    let mut count = 0;
+    for block in guide.split("```keel\n").skip(1) {
+        let source = block.split("```").next().unwrap();
+        let (program, analysis) = checked(source).unwrap();
+        let report = test_engine(
+            source,
+            &program,
+            &analysis,
+            &["--engine".into(), "both".into()],
+        )
+        .unwrap();
+        assert_eq!(report["status"], "TESTED", "{report}");
+        count += 1;
+    }
+    assert_eq!(count, 4, "keep the runnable language tour covered");
+}
+
+#[test]
 fn persistent_service_invalidates_by_complete_source_and_evicts() {
     let mut service = service::Service::new(20_000);
     let valid = "fn answer() -> Int { return 42 }";

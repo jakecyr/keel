@@ -53,6 +53,12 @@ impl Project {
             manifest: manifest.clone(),
         };
         let paths = if let Some(manifest) = manifest {
+            if !manifest.exists() {
+                return Err(format!(
+                    "no Keel project found at {}; run `keel init` here, change to your project directory, or pass a .keel file",
+                    manifest.display()
+                ));
+            }
             let config: Manifest = serde_json::from_str(&files::read(&manifest, 64 * 1024)?)
                 .map_err(|e| format!("invalid project manifest: {e}"))?;
             if config.schema != 1

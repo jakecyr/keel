@@ -6,49 +6,51 @@ Readable code. Native executables. A compiler that helps both developers and cod
 
 ## 1. Install the CLI
 
-From an existing checkout, run `cargo install --path . --locked`. Once the
-repository is published on GitHub, a fresh installation is:
+Download a prebuilt compiler—**no Git clone or Rust installation required**:
+
+```sh
+curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/jakecyr/keel/master/scripts/install.sh | bash
+export PATH="$HOME/.local/bin:$PATH"
+keel --version
+keel doctor
+```
+
+The installer selects your platform, verifies SHA-256, and installs to `~/.local/bin` without `sudo`. It prints a copyable PATH command and leaves your shell files unchanged. Add the `export PATH` line above to `~/.zshrc` or `~/.bashrc` to keep it across terminals. Prefer [reviewing the script](scripts/install.sh) before running it.
+
+Supported release targets: Linux x86_64 (glibc 2.35+, e.g. Ubuntu 22.04+), Linux ARM64 (glibc 2.39+, e.g. Ubuntu 24.04+), and macOS 15+ on Apple Silicon or Intel. Windows and Alpine/musl are not supported. macOS binaries are not Apple-notarized. Checksums verify integrity, not an independent publisher signature.
+
+You still need a **C compiler to build Keel programs**. On macOS, run `xcode-select --install`; on Debian/Ubuntu, install `build-essential`. `keel doctor` checks this prerequisite. The resulting application binaries do not need Rust or Keel to run.
+
+### Upgrade, pin a version, or choose a directory
+
+Re-run the install command to upgrade. To install a specific [published release](https://github.com/jakecyr/keel/releases) or a different directory:
+
+```sh
+curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/jakecyr/keel/master/scripts/install.sh | bash -s -- --version v0.1.0 --prefix "$HOME/.local"
+```
+
+`--prefix DIRECTORY` installs into `DIRECTORY/bin`; `--bin-dir DIRECTORY` chooses the exact binary directory. Both require absolute paths. Forks can use `--repo OWNER/REPOSITORY`. Use `bash -s -- --help` to view installer options without downloading a compiler. To uninstall the default download installation, remove only `~/.local/bin/keel`; projects are separate and remain untouched.
+
+### Build from source (contributors)
+
+Source builds additionally require Rust/Cargo. From an existing checkout, run `cargo install --path . --locked`; for a fresh checkout:
 
 ```sh
 git clone https://github.com/jakecyr/keel.git
 cd keel
 cargo install --path . --locked
-keel --version
-keel doctor
-```
-
-You need **Rust/Cargo and a C compiler**. On macOS, install the Xcode Command Line Tools with `xcode-select --install`. On Linux, install your distribution's C compiler toolchain. `keel doctor` checks that native compilation works. macOS and Linux are the current target platforms; Windows is not supported yet.
-
-Cargo normally installs `keel` into `~/.cargo/bin`. If your shell cannot find it:
-
-```sh
 export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 ```
 
-Add that line to your shell's configuration if needed. Re-run `cargo install --path . --locked --force` after pulling compiler updates. To uninstall a Cargo installation, use `cargo uninstall keel`.
-
-### Download installation — after a GitHub release is published
-
-Release installation requires published assets in [jakecyr/keel](https://github.com/jakecyr/keel/releases). This development work does not publish a release. CI builds archives and checksums; those are workflow artifacts, not public releases. You can inspect the installer locally:
-
-```sh
-sh scripts/install.sh --help
-```
-
-After the repository and a release are published:
-
-```sh
-curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/jakecyr/keel/main/scripts/install.sh | sh
-```
-
-Prefer reviewing the script first. To pin a published version, append `-s -- --version VERSION` to `sh`; forks can pass `--repo OWNER/REPOSITORY`. The installer checks the archive checksum, installs without `sudo`, and prints PATH instructions instead of changing your shell configuration. See `sh scripts/install.sh --help` for installation-directory options. Downloaded Keel compilers still need a local C compiler to build programs; the resulting application binaries do not need Rust or Keel to run.
+Use `--force` when reinstalling an updated source checkout, and `cargo uninstall keel` to remove a Cargo installation. If you have both installations, `command -v keel` shows which one your PATH selects.
 
 ## 2. Create your first project
 
 ```sh
 keel init hello-keel
 cd hello-keel
-keel run . --allow-stdout
+keel test --engine both
+keel run --allow-stdout
 ```
 
 Output:
@@ -69,7 +71,9 @@ hello-keel/
 └── CLAUDE.md                 # Same entry point for Claude-based tools
 ```
 
-Already in an existing repository? Run `keel init .`. It refuses to overwrite existing source files and preserves human-written agent instructions. Re-running init refreshes the marked Keel guidance without replacing your program or tests.
+Already in an existing repository? Run `keel init`. It refuses to overwrite existing source files and preserves human-written agent instructions. Re-running init refreshes the marked Keel guidance without replacing your program or tests. Edit `src/main.keel` to change your program; keep approved acceptance checks in `tests/acceptance.keel` independent of the implementation.
+
+Read the root [syntax and semantics guide](LANGUAGE.md) next. Use `keel help init`, `keel test --help`, or `keel agent spec language` for help without a checkout or internet connection.
 
 ## 3. Build, format, lint, and test
 
@@ -85,14 +89,15 @@ keel build . -o build/hello
 ./build/hello --allow-stdout
 ```
 
-Each command also accepts a single `.keel` file. Add `--json` for structured diagnostics. Use `keel fmt . --check` and `keel lint . --deny-warnings` in CI.
+The `.` is optional: project commands default to the current directory. Each command also accepts a single `.keel` file or another project path. Add `--json` for structured diagnostics. Use `keel fmt --check` and `keel lint --deny-warnings` in CI.
 
 Property-test budgets and replay are explicit:
 
 ```sh
 keel test . --cases 1000 --seed 42 --timeout-ms 2000 --budget-ms 30000
-keel test . --filter "exact property name" --value 17 --json
 ```
+
+For an existing failing property, replay with `keel test --filter "exact property name" --value 17 --json`. Replace the name and input with the reported case; the starter project contains an example test, not a property.
 
 `TESTED` means the recorded cases passed. Reached holes are `BLOCKED`; timeouts are `UNKNOWN`. Neither counts as a pass. Linux workers enforce the configured memory limit; macOS currently reports that limit as unenforced.
 
@@ -167,7 +172,7 @@ python3 -m unittest discover -s benchmarks -p 'test_*.py'
 python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 ```
 
-GitHub Actions runs compiler, native/sanitizer, CLI, HTTP, tooling, installer, and benchmark-methodology tests on Linux/macOS. CI also exercises installation and retains compiled CLI archives plus validation reports. It does not run paid agent evaluations or publish releases automatically.
+GitHub Actions runs compiler, native/sanitizer, CLI, HTTP, tooling, installer, and benchmark-methodology tests on Linux/macOS, on both x86_64 and ARM64. Version tags publish a release only after all four validation jobs pass, then test the real download-to-init workflow on every platform. Ordinary pushes do not publish releases. CI does not run paid agent evaluations.
 
 [Benchmark instructions](benchmarks/README.md) separate native/iteration timings from real-agent evaluation. Missing billing, comparable baseline tooling, or independent acceptance evidence remains `UNKNOWN`; faster scripted edits do not prove lower cost per accepted agent change. [Release-readiness audit →](docs/release-gaps.md)
 

@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-22.04, ubuntu-24.04-arm, macos-15, macos-15-intel]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     env:
@@ -90,6 +90,69 @@ jobs:
           path: build/ci-reports/
           retention-days: 14
           if-no-files-found: ignore
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: verification-*
+          path: release-assets
+          merge-multiple: true
+      - name: Verify version and publish tested experimental binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import os, pathlib, tomllib
+          version = tomllib.loads(pathlib.Path('Cargo.toml').read_text())['package']['version']
+          assert os.environ['RELEASE_TAG'] == 'v' + version, 'tag must match Cargo version'
+          assets = pathlib.Path('release-assets')
+          for platform in ('Linux-X64', 'Linux-ARM64', 'macOS-X64', 'macOS-ARM64'):
+              name = f'keel-{platform}.tar.gz'
+              assert (assets / name).is_file(), name
+              assert (assets / (name + '.sha256')).is_file(), name
+          PY
+          (cd release-assets && sha256sum -c -- *.sha256)
+          gh release create "$RELEASE_TAG" release-assets/*.tar.gz release-assets/*.sha256 \
+            --verify-tag --latest --title "Keel $RELEASE_TAG (experimental)" --notes-file docs/release-notes.md
+  install-release:
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04-arm, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Install published release and complete first-project workflow
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/$RELEASE_TAG/scripts/install.sh" |
+            bash -s -- --repo "${{ github.repository }}" --version "$RELEASE_TAG" --prefix "$RUNNER_TEMP/keel-download"
+          export PATH="$RUNNER_TEMP/keel-download/bin:$PATH"
+          keel --version
+          keel doctor
+          keel init "$RUNNER_TEMP/first-keel-project"
+          cd "$RUNNER_TEMP/first-keel-project"
+          keel help test
+          keel fmt --check
+          keel check
+          keel lint --deny-warnings
+          keel test --engine both
+          keel build -o build/hello
+          test "$(./build/hello --allow-stdout)" = 'Hello from Keel!'
+          test "$(keel run --allow-stdout)" = 'Hello from Keel!'
+          keel agent context . --json
   manual-engineering-targets:
     if: github.event_name == 'workflow_dispatch' && inputs.full_benchmarks
     runs-on: ubuntu-latest

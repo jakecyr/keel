@@ -183,5 +183,8 @@ mv -f "$keel_stage" "$keel_target" || fail "cannot install compiler"
 keel_stage=
 printf 'Installed Keel to %s\n' "$keel_target"
 printf 'Add this directory to PATH if needed: %s\n' "$keel_bin_dir"
+keel_quoted_bin=$(printf '%s' "$keel_bin_dir" | sed "s/'/'\\\\''/g")
+printf "For this terminal: export PATH='%s':\"\$PATH\"\n" "$keel_quoted_bin"
 printf 'Shell profiles were not changed. Try: keel --version\n'
 printf 'Native builds also require a C compiler (cc, clang, or gcc).\n'
+printf 'Next: keel doctor, then keel init hello-keel, cd hello-keel, keel run --allow-stdout\n'
