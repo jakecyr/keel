@@ -1,0 +1,1928 @@
+{
+  "schema_version": 1,
+  "kind": "local_toolchain_measurements",
+  "agent_efficiency": "UNKNOWN",
+  "started_at_utc": "2026-10-03T02:30:30Z",
+  "environment": {
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.13.2 (main, Feb  4 2025, 14:51:09) [Clang 16.0.0 (clang-1600.0.26.6)]",
+    "cpu_count": 8,
+    "cpu_model": "Apple M1",
+    "physical_memory_bytes": "17179869184",
+    "git_revision": "Command '['git', 'rev-parse', 'HEAD']' returned non-zero exit status 128.",
+    "git_status": "Command '['git', 'status', '--porcelain']' returned non-zero exit status 128.",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01) (Homebrew)",
+    "cc": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.2.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "keel_binary_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218"
+  },
+  "configuration": {
+    "repeats": 7,
+    "declarations": 2500,
+    "runtime_iterations": 1000000,
+    "ordering_seed": 42
+  },
+  "limitations": [
+    "CLI figures use process-per-invocation; service figures separately label exact-source cache hits and unique body-edit misses.",
+    "First build uses fresh outputs with uncontrolled OS caches; it is NOT a true cold-cache build.",
+    "Repeated builds/checks use a warm OS cache but new compiler processes.",
+    "10k-line corpus consists of tiny independent functions; it does not represent large generic or dependency graphs.",
+    "C does not provide Keel's ownership/effect checks; timings do not measure equivalent static assurance.",
+    "Runtime recurrence stays in signed 64-bit range; it is a narrow throughput/startup microbenchmark.",
+    "Peak RSS is /usr/bin/time's platform-dependent maximum for a command, not aggregate concurrent process-tree RSS.",
+    "No hosted model is run; these timings cannot establish a 25% agent-cost advantage."
+  ],
+  "languages": {
+    "keel": {
+      "source_lines": 10003,
+      "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7",
+      "first_build_fresh_outputs_os_cache_uncontrolled": {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "build",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+          "--json"
+        ],
+        "elapsed_ms": 343.844208,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 51691520,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"BUILT\"\n}\n",
+        "stderr": ""
+      },
+      "edited_check_warm_os_cache_fresh_process": {
+        "samples": [
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "check",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "--json"
+            ],
+            "elapsed_ms": 11.512042,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 10829824,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"functions\": 2501,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+            "stderr": "",
+            "trial_index": 0,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "check",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "--json"
+            ],
+            "elapsed_ms": 12.895667,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 10829824,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"functions\": 2501,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"rcf83fb31a841c28b\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+            "stderr": "",
+            "trial_index": 1,
+            "source_sha256": "4b85f58646c3b0b59a1a36b0f2e0c09cbbccfb18d4b3344ba34bc3986b6b3481"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "check",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "--json"
+            ],
+            "elapsed_ms": 12.539167,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 10878976,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"functions\": 2501,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+            "stderr": "",
+            "trial_index": 2,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "check",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "--json"
+            ],
+            "elapsed_ms": 12.863833,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 10895360,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"functions\": 2501,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"rcf83fb31a841c28b\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+            "stderr": "",
+            "trial_index": 3,
+            "source_sha256": "4b85f58646c3b0b59a1a36b0f2e0c09cbbccfb18d4b3344ba34bc3986b6b3481"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "check",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "--json"
+            ],
+            "elapsed_ms": 12.034042,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 10878976,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"functions\": 2501,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+            "stderr": "",
+            "trial_index": 4,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "check",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "--json"
+            ],
+            "elapsed_ms": 11.738292,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 10878976,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"functions\": 2501,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"rcf83fb31a841c28b\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+            "stderr": "",
+            "trial_index": 5,
+            "source_sha256": "4b85f58646c3b0b59a1a36b0f2e0c09cbbccfb18d4b3344ba34bc3986b6b3481"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "check",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "--json"
+            ],
+            "elapsed_ms": 11.326916,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 10878976,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"functions\": 2501,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+            "stderr": "",
+            "trial_index": 6,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 12.034042,
+        "p95_ms": 12.895667,
+        "peak_rss_bytes": 10895360
+      },
+      "edited_build_warm_os_cache_fresh_process": {
+        "samples": [
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "build",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+              "--json"
+            ],
+            "elapsed_ms": 179.370833,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 51642368,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"BUILT\"\n}\n",
+            "stderr": "",
+            "trial_index": 0,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "build",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+              "--json"
+            ],
+            "elapsed_ms": 176.660416,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 51724288,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rcf83fb31a841c28b\",\n  \"status\": \"BUILT\"\n}\n",
+            "stderr": "",
+            "trial_index": 1,
+            "source_sha256": "4b85f58646c3b0b59a1a36b0f2e0c09cbbccfb18d4b3344ba34bc3986b6b3481"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "build",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+              "--json"
+            ],
+            "elapsed_ms": 276.043125,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 51707904,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"BUILT\"\n}\n",
+            "stderr": "",
+            "trial_index": 2,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "build",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+              "--json"
+            ],
+            "elapsed_ms": 230.938458,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 51757056,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rcf83fb31a841c28b\",\n  \"status\": \"BUILT\"\n}\n",
+            "stderr": "",
+            "trial_index": 3,
+            "source_sha256": "4b85f58646c3b0b59a1a36b0f2e0c09cbbccfb18d4b3344ba34bc3986b6b3481"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "build",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+              "--json"
+            ],
+            "elapsed_ms": 176.2775,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 51675136,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"BUILT\"\n}\n",
+            "stderr": "",
+            "trial_index": 4,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "build",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+              "--json"
+            ],
+            "elapsed_ms": 174.860417,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 51593216,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rcf83fb31a841c28b\",\n  \"status\": \"BUILT\"\n}\n",
+            "stderr": "",
+            "trial_index": 5,
+            "source_sha256": "4b85f58646c3b0b59a1a36b0f2e0c09cbbccfb18d4b3344ba34bc3986b6b3481"
+          },
+          {
+            "command": [
+              "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+              "build",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+              "--json"
+            ],
+            "elapsed_ms": 167.629708,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 51658752,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rc70909057094d110\",\n  \"status\": \"BUILT\"\n}\n",
+            "stderr": "",
+            "trial_index": 6,
+            "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 176.660416,
+        "p95_ms": 276.043125,
+        "peak_rss_bytes": 51757056
+      },
+      "corpus_binary_bytes_unstripped": 33912,
+      "runtime_build": {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "build",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+          "--json"
+        ],
+        "elapsed_ms": 104.082042,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 44335104,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"rbbbd673fc2eb901d\",\n  \"status\": \"BUILT\"\n}\n",
+        "stderr": ""
+      },
+      "runtime_native": {
+        "samples": [
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel"
+            ],
+            "elapsed_ms": 62.234166,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1720320,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel"
+            ],
+            "elapsed_ms": 11.343166,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1720320,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel"
+            ],
+            "elapsed_ms": 10.219042,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel"
+            ],
+            "elapsed_ms": 10.690625,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1720320,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel"
+            ],
+            "elapsed_ms": 9.737417,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1720320,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel"
+            ],
+            "elapsed_ms": 9.620417,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1720320,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel"
+            ],
+            "elapsed_ms": 10.995458,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1720320,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 10.690625,
+        "p95_ms": 62.234166,
+        "peak_rss_bytes": 1720320
+      },
+      "minimal_build": {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "build",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.keel",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel",
+          "--json"
+        ],
+        "elapsed_ms": 109.450792,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 42008576,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"backend\": \"C11 \u2192 system native compiler\",\n  \"binary\": \"/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-keel\",\n  \"contracts\": \"ENFORCED\",\n  \"revision\": \"r355463d2db8c9b7f\",\n  \"status\": \"BUILT\"\n}\n",
+        "stderr": ""
+      },
+      "minimal_binary_bytes_unstripped": 33912,
+      "minimal_binary_bytes_stripped": 33592
+    },
+    "rust": {
+      "source_lines": 10004,
+      "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837",
+      "first_build_fresh_outputs_os_cache_uncontrolled": {
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "-C",
+          "opt-level=2",
+          "-C",
+          "debuginfo=2",
+          "-C",
+          "overflow-checks=yes",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+        ],
+        "elapsed_ms": 2619.761584,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 115179520,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "",
+        "stderr": ""
+      },
+      "edited_check_warm_os_cache_fresh_process": {
+        "samples": [
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "--emit=metadata",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust.rmeta"
+            ],
+            "elapsed_ms": 182.849333,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 100728832,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 0,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "--emit=metadata",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust.rmeta"
+            ],
+            "elapsed_ms": 187.557291,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 100663296,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 1,
+            "source_sha256": "da1e6413eee85d3aba01d7e43d58cc35c0b1ad753176706c8531736ca23bce54"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "--emit=metadata",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust.rmeta"
+            ],
+            "elapsed_ms": 183.423708,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 100712448,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 2,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "--emit=metadata",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust.rmeta"
+            ],
+            "elapsed_ms": 199.317125,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 101007360,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 3,
+            "source_sha256": "da1e6413eee85d3aba01d7e43d58cc35c0b1ad753176706c8531736ca23bce54"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "--emit=metadata",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust.rmeta"
+            ],
+            "elapsed_ms": 179.654708,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 100777984,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 4,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "--emit=metadata",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust.rmeta"
+            ],
+            "elapsed_ms": 177.90475,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 100941824,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 5,
+            "source_sha256": "da1e6413eee85d3aba01d7e43d58cc35c0b1ad753176706c8531736ca23bce54"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "--emit=metadata",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust.rmeta"
+            ],
+            "elapsed_ms": 177.976375,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 100794368,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 6,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 182.849333,
+        "p95_ms": 199.317125,
+        "peak_rss_bytes": 101007360
+      },
+      "edited_build_warm_os_cache_fresh_process": {
+        "samples": [
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 289.0885,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 118800384,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 0,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 297.736417,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 118931456,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 1,
+            "source_sha256": "da1e6413eee85d3aba01d7e43d58cc35c0b1ad753176706c8531736ca23bce54"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 349.654041,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 116637696,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 2,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 311.988458,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 118833152,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 3,
+            "source_sha256": "da1e6413eee85d3aba01d7e43d58cc35c0b1ad753176706c8531736ca23bce54"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 317.905041,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 118734848,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 4,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 298.789125,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 118915072,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 5,
+            "source_sha256": "da1e6413eee85d3aba01d7e43d58cc35c0b1ad753176706c8531736ca23bce54"
+          },
+          {
+            "command": [
+              "rustc",
+              "--edition=2024",
+              "-C",
+              "opt-level=2",
+              "-C",
+              "debuginfo=2",
+              "-C",
+              "overflow-checks=yes",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 284.819959,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 118702080,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 6,
+            "source_sha256": "b30c0fd9cf7a55e35260d5982e0ac16f876bbdc5c3db38909cd89ceeaddcd837"
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 298.789125,
+        "p95_ms": 349.654041,
+        "peak_rss_bytes": 118931456
+      },
+      "corpus_binary_bytes_unstripped": 431784,
+      "runtime_build": {
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "-C",
+          "opt-level=2",
+          "-C",
+          "debuginfo=2",
+          "-C",
+          "overflow-checks=yes",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+        ],
+        "elapsed_ms": 195.160666,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 92782592,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "",
+        "stderr": ""
+      },
+      "runtime_native": {
+        "samples": [
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 71.678708,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1851392,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 11.413209,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1851392,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 11.558375,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1851392,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 10.329292,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1851392,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 9.980291,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1851392,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 10.168375,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1851392,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+            ],
+            "elapsed_ms": 10.954041,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1851392,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 10.954041,
+        "p95_ms": 71.678708,
+        "peak_rss_bytes": 1851392
+      },
+      "minimal_build": {
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "-C",
+          "opt-level=2",
+          "-C",
+          "debuginfo=2",
+          "-C",
+          "overflow-checks=yes",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.rs",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-rust"
+        ],
+        "elapsed_ms": 135.613375,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 77217792,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "",
+        "stderr": ""
+      },
+      "minimal_binary_bytes_unstripped": 431784,
+      "minimal_binary_bytes_stripped": 341560
+    },
+    "c": {
+      "source_lines": 10006,
+      "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0",
+      "first_build_fresh_outputs_os_cache_uncontrolled": {
+        "command": [
+          "cc",
+          "-std=c11",
+          "-O2",
+          "-g",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+        ],
+        "elapsed_ms": 102.693125,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 38699008,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "",
+        "stderr": ""
+      },
+      "edited_check_warm_os_cache_fresh_process": {
+        "samples": [
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "-fsyntax-only",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c"
+            ],
+            "elapsed_ms": 48.920917,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 26935296,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 0,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "-fsyntax-only",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c"
+            ],
+            "elapsed_ms": 50.971042,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 26968064,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 1,
+            "source_sha256": "0ffda7b388535e2545ef66ba16dae060a8ef0dbf562f0d2cbea7e7aa590456b7"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "-fsyntax-only",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c"
+            ],
+            "elapsed_ms": 49.084125,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 26918912,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 2,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "-fsyntax-only",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c"
+            ],
+            "elapsed_ms": 49.971291,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 26804224,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 3,
+            "source_sha256": "0ffda7b388535e2545ef66ba16dae060a8ef0dbf562f0d2cbea7e7aa590456b7"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "-fsyntax-only",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c"
+            ],
+            "elapsed_ms": 44.715708,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 26853376,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 4,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "-fsyntax-only",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c"
+            ],
+            "elapsed_ms": 47.224625,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 26853376,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 5,
+            "source_sha256": "0ffda7b388535e2545ef66ba16dae060a8ef0dbf562f0d2cbea7e7aa590456b7"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "-fsyntax-only",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c"
+            ],
+            "elapsed_ms": 45.0275,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 26853376,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 6,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 48.920917,
+        "p95_ms": 50.971042,
+        "peak_rss_bytes": 26968064
+      },
+      "edited_build_warm_os_cache_fresh_process": {
+        "samples": [
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 93.472625,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 38895616,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 0,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 92.33025,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 38830080,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 1,
+            "source_sha256": "0ffda7b388535e2545ef66ba16dae060a8ef0dbf562f0d2cbea7e7aa590456b7"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 99.078125,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 38682624,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 2,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 99.975333,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 38764544,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 3,
+            "source_sha256": "0ffda7b388535e2545ef66ba16dae060a8ef0dbf562f0d2cbea7e7aa590456b7"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 92.742416,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 38813696,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 4,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 95.870167,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 38813696,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 5,
+            "source_sha256": "0ffda7b388535e2545ef66ba16dae060a8ef0dbf562f0d2cbea7e7aa590456b7"
+          },
+          {
+            "command": [
+              "cc",
+              "-std=c11",
+              "-O2",
+              "-g",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+              "-o",
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 92.074125,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 38764544,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": "",
+            "trial_index": 6,
+            "source_sha256": "b489c700810c2152637c14b02c9e364a41509d30007cf0ed9e72d51c1a3553b0"
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 93.472625,
+        "p95_ms": 99.975333,
+        "peak_rss_bytes": 38895616
+      },
+      "corpus_binary_bytes_unstripped": 17128,
+      "runtime_build": {
+        "command": [
+          "cc",
+          "-std=c11",
+          "-O2",
+          "-g",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+        ],
+        "elapsed_ms": 78.444875,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 39026688,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "",
+        "stderr": ""
+      },
+      "runtime_native": {
+        "samples": [
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 61.852416,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 11.829458,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 11.424916,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 10.162667,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 10.037958,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 11.289583,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+            ],
+            "elapsed_ms": 10.539875,
+            "returncode": 0,
+            "timed_out": false,
+            "peak_rss_bytes": 1703936,
+            "stdout_truncated": false,
+            "stderr_truncated": false,
+            "stdout": "",
+            "stderr": ""
+          }
+        ],
+        "successes": 7,
+        "failures": 0,
+        "p50_ms": 11.289583,
+        "p95_ms": 61.852416,
+        "peak_rss_bytes": 1703936
+      },
+      "minimal_build": {
+        "command": [
+          "cc",
+          "-std=c11",
+          "-O2",
+          "-g",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus.c",
+          "-o",
+          "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-bench-l9qoe4la/corpus-c"
+        ],
+        "elapsed_ms": 69.13775,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 38584320,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "",
+        "stderr": ""
+      },
+      "minimal_binary_bytes_unstripped": 17128,
+      "minimal_binary_bytes_stripped": 16832
+    }
+  },
+  "web_example_native_test": {
+    "samples": [
+      {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "test",
+          "/Users/jakecyr/code/agent-lang/examples/web_server.keel",
+          "--cases",
+          "1000",
+          "--seed",
+          "42",
+          "--json"
+        ],
+        "elapsed_ms": 259.528375,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 51068928,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r99b7868a4ec6e80c\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"home returns a greeting\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"health returns ok\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"square endpoint uses checked arithmetic\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"unknown route is a 404\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is nonnegative\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is symmetric\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "test",
+          "/Users/jakecyr/code/agent-lang/examples/web_server.keel",
+          "--cases",
+          "1000",
+          "--seed",
+          "42",
+          "--json"
+        ],
+        "elapsed_ms": 236.06075,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 50888704,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r99b7868a4ec6e80c\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"home returns a greeting\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"health returns ok\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"square endpoint uses checked arithmetic\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"unknown route is a 404\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is nonnegative\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is symmetric\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "test",
+          "/Users/jakecyr/code/agent-lang/examples/web_server.keel",
+          "--cases",
+          "1000",
+          "--seed",
+          "42",
+          "--json"
+        ],
+        "elapsed_ms": 230.007166,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 51134464,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r99b7868a4ec6e80c\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"home returns a greeting\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"health returns ok\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"square endpoint uses checked arithmetic\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"unknown route is a 404\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is nonnegative\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is symmetric\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "test",
+          "/Users/jakecyr/code/agent-lang/examples/web_server.keel",
+          "--cases",
+          "1000",
+          "--seed",
+          "42",
+          "--json"
+        ],
+        "elapsed_ms": 237.836125,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 51216384,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r99b7868a4ec6e80c\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"home returns a greeting\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"health returns ok\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"square endpoint uses checked arithmetic\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"unknown route is a 404\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is nonnegative\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is symmetric\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "test",
+          "/Users/jakecyr/code/agent-lang/examples/web_server.keel",
+          "--cases",
+          "1000",
+          "--seed",
+          "42",
+          "--json"
+        ],
+        "elapsed_ms": 228.412666,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 51019776,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r99b7868a4ec6e80c\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"home returns a greeting\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"health returns ok\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"square endpoint uses checked arithmetic\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"unknown route is a 404\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is nonnegative\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is symmetric\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "test",
+          "/Users/jakecyr/code/agent-lang/examples/web_server.keel",
+          "--cases",
+          "1000",
+          "--seed",
+          "42",
+          "--json"
+        ],
+        "elapsed_ms": 233.473583,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 51019776,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r99b7868a4ec6e80c\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"home returns a greeting\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"health returns ok\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"square endpoint uses checked arithmetic\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"unknown route is a 404\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is nonnegative\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is symmetric\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+          "test",
+          "/Users/jakecyr/code/agent-lang/examples/web_server.keel",
+          "--cases",
+          "1000",
+          "--seed",
+          "42",
+          "--json"
+        ],
+        "elapsed_ms": 228.626833,
+        "returncode": 0,
+        "timed_out": false,
+        "peak_rss_bytes": 50921472,
+        "stdout_truncated": false,
+        "stderr_truncated": false,
+        "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r99b7868a4ec6e80c\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"home returns a greeting\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"health returns ok\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"square endpoint uses checked arithmetic\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"unknown route is a 404\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is nonnegative\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1000,\n      \"name\": \"square is symmetric\",\n      \"seed\": 42,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+        "stderr": ""
+      }
+    ],
+    "successes": 7,
+    "failures": 0,
+    "p50_ms": 233.473583,
+    "p95_ms": 259.528375,
+    "peak_rss_bytes": 51216384
+  },
+  "compiler_binary_unchanged": true,
+  "service": {
+    "command": [
+      "/private/tmp/keel-frozen-benchmark.G2UXPl/keel",
+      "serve",
+      "--max-cache-mib",
+      "64"
+    ],
+    "first_check": {
+      "elapsed_ms": 8.719958,
+      "returncode": 0,
+      "response": {
+        "id": 1,
+        "result": {
+          "functions": 2501,
+          "holes": [],
+          "revision": "rc70909057094d110",
+          "status": "CHECKED",
+          "tests": 0
+        }
+      },
+      "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+    },
+    "exact_source_cache_hits": {
+      "samples": [
+        {
+          "elapsed_ms": 1.179458,
+          "returncode": 0,
+          "response": {
+            "id": 3,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rc70909057094d110",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+        },
+        {
+          "elapsed_ms": 1.047042,
+          "returncode": 0,
+          "response": {
+            "id": 4,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rc70909057094d110",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+        },
+        {
+          "elapsed_ms": 1.031167,
+          "returncode": 0,
+          "response": {
+            "id": 5,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rc70909057094d110",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+        },
+        {
+          "elapsed_ms": 1.015792,
+          "returncode": 0,
+          "response": {
+            "id": 6,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rc70909057094d110",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+        },
+        {
+          "elapsed_ms": 0.967125,
+          "returncode": 0,
+          "response": {
+            "id": 7,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rc70909057094d110",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+        },
+        {
+          "elapsed_ms": 0.981917,
+          "returncode": 0,
+          "response": {
+            "id": 8,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rc70909057094d110",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+        },
+        {
+          "elapsed_ms": 1.009083,
+          "returncode": 0,
+          "response": {
+            "id": 9,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rc70909057094d110",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "0e5c861966468cfc133c904c821de546b38da3a15362a76fe7da2d2ccfa6d2c7"
+        }
+      ],
+      "successes": 7,
+      "failures": 0,
+      "p50_ms": 1.015792,
+      "p95_ms": 1.179458,
+      "peak_rss_bytes": null
+    },
+    "unique_body_edit_cache_misses": {
+      "samples": [
+        {
+          "elapsed_ms": 5.046167,
+          "returncode": 0,
+          "response": {
+            "id": 11,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rcf83fb31a841c28b",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "4b85f58646c3b0b59a1a36b0f2e0c09cbbccfb18d4b3344ba34bc3986b6b3481"
+        },
+        {
+          "elapsed_ms": 5.304875,
+          "returncode": 0,
+          "response": {
+            "id": 12,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "r864df5945c048abe",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "702c25e6d9c34e14a4fb83d4c7da4141d43dbfc234f2550667c101b6bc3bdbd4"
+        },
+        {
+          "elapsed_ms": 4.984875,
+          "returncode": 0,
+          "response": {
+            "id": 13,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "re8ceac43deb93119",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "9ba0bb159f4d308beb6bda7d675a4261e4e307a28c6ee88df33b6b24edd08c15"
+        },
+        {
+          "elapsed_ms": 4.916791,
+          "returncode": 0,
+          "response": {
+            "id": 14,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "rec652a58ac0d94ac",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "5506b047cf6e67e5f39fe3b1de2767c66eee88279d993fd46327c3f8bc35f01f"
+        },
+        {
+          "elapsed_ms": 4.936875,
+          "returncode": 0,
+          "response": {
+            "id": 15,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "r1ea08eafacca1277",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "c09059e253798d1a2bfbfb740f1ae20e24ea201bd1ce05e97df581110ccdab9e"
+        },
+        {
+          "elapsed_ms": 4.613625,
+          "returncode": 0,
+          "response": {
+            "id": 16,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "r7319f72a549bb7ea",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "23f6d41eebbf1e0ec048a4d1d96e3662caf78def2fa46e055c50dfcb086d382b"
+        },
+        {
+          "elapsed_ms": 4.569,
+          "returncode": 0,
+          "response": {
+            "id": 17,
+            "result": {
+              "functions": 2501,
+              "holes": [],
+              "revision": "r2f5f34c1ffef0215",
+              "status": "CHECKED",
+              "tests": 0
+            }
+          },
+          "source_sha256": "7320d342380848dbb1fa4f59e5228af48f8cea399e46bbdf5dd4c0732091f8ec"
+        }
+      ],
+      "successes": 7,
+      "failures": 0,
+      "p50_ms": 4.936875,
+      "p95_ms": 5.304875,
+      "peak_rss_bytes": null
+    },
+    "final_stats": {
+      "id": 18,
+      "result": {
+        "cache_entries": 2,
+        "cache_estimated_bytes": 51939840,
+        "cache_limit_bytes": 67108864,
+        "hits": 7,
+        "incrementality": "whole-source snapshots; no declaration-level invalidation yet",
+        "misses": 8
+      }
+    },
+    "cache_behavior_verified": true,
+    "peak_rss_bytes": 18710528,
+    "returncode": 0,
+    "stderr": "",
+    "incrementality": "Whole-source cache only. A changed function reparses/rechecks the source.",
+    "timing_scope": "JSON serialization/write/read round trip; first request includes startup, later requests exclude it"
+  },
+  "engineering_targets": {
+    "warm_feedback_under_50ms": "PASS",
+    "minimal_binary_under_1MiB": "PASS",
+    "cold_build_under_2s": "UNKNOWN: OS caches were not controlled",
+    "affected_test_under_500ms": "UNKNOWN: affected-test selection is not measured",
+    "daemon_under_256MiB": "PASS",
+    "agent_cost_reduction_25_percent": "UNKNOWN: requires independently accepted, metered model trials"
+  }
+}

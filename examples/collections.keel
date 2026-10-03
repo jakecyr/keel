@@ -1,0 +1,102 @@
+// Stable deduplication uses an explicit owned output buffer.
+// Membership is a linear scan: O(n^2) worst case, no hidden hash table.
+pub fn stable_unique(values: read List<Int>) -> List<Int>
+    ensures distinct(result)
+    ensures same_values(result, values)
+    ensures first_occurrence_order(result, values)
+{
+    var output = []
+    for value in values {
+        if !list.contains(output, value) {
+            list.push(edit output, value)
+        }
+    }
+    return output
+}
+
+fn distinct(values: read List<Int>) -> Bool {
+    var index = 0
+    while index < list.len(values) {
+        var other = index + 1
+        while other < list.len(values) {
+            if list.at(values, index) == list.at(values, other) { return false }
+            other = other + 1
+        }
+        index = index + 1
+    }
+    return true
+}
+
+fn same_values(output: read List<Int>, input: read List<Int>) -> Bool {
+    for value in input {
+        if !list.contains(output, value) { return false }
+    }
+    for value in output {
+        if !list.contains(input, value) { return false }
+    }
+    return true
+}
+
+fn first_occurrence_order(output: read List<Int>, input: read List<Int>) -> Bool {
+    var previous = -1
+    for value in output {
+        var first = 0
+        while first < list.len(input) && list.at(input, first) != value {
+            first = first + 1
+        }
+        if first == list.len(input) || first <= previous { return false }
+        previous = first
+    }
+    return true
+}
+
+fn append_twice(values: edit List<Int>, value: Int) {
+    list.push(edit values, value)
+    list.push(edit values, value)
+}
+
+fn parsed_or_zero(raw: read Text) -> Int {
+    match text.parse_int(raw) {
+        Ok(value) => { return value }
+        Err(message) => { assert text.len(message) > 0 return 0 }
+    }
+}
+
+test "preserves first occurrences" {
+    assert stable_unique([4, 2, 4, 1, 2]) == [4, 2, 1]
+    assert stable_unique([]) == []
+    assert stable_unique([1, 1, 1]) == [1]
+}
+
+test "explicit mutation and clone independence" {
+    var values = [7]
+    append_twice(edit values, 8)
+    var copy = list.clone(values)
+    list.set(edit copy, 0, 9)
+    assert values == [7, 8, 8]
+    assert copy == [9, 8, 8]
+    let owned = take copy
+    assert owned == [9, 8, 8]
+}
+
+test "recoverable indexing and parsing" {
+    let values = [17]
+    match list.get(values, 0) {
+        Some(value) => { assert value == 17 }
+        None => { assert false }
+    }
+    assert list.get(values, -1) == option.none()
+    assert list.get(values, 1) == option.none()
+    assert parsed_or_zero("42") == 42
+    assert parsed_or_zero("bad") == 0
+}
+
+property "deduplication is idempotent" (value in gen.int(min: -1000, max: 1000)) {
+    let once = stable_unique([value, 0, value, 1, 0, value])
+    assert stable_unique(once) == once
+}
+
+fn main() effects { io.stdout } {
+    let output = stable_unique([4, 2, 4, 1, 2])
+    for value in output { io.println(text.from_int(value)) }
+}

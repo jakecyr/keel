@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "kind": "preregistered_agent_plan",
+  "suite_sha256": "f3ad3aa9c0021749a3de53503f5cd9b3d70982336ed15e2a0fa09b582d8326d9",
+  "model": "gpt-6-astra",
+  "repeats": 1,
+  "seed": 42,
+  "budget": {
+    "wall_seconds": 180,
+    "total_tokens": 32000
+  },
+  "required_cost_reduction": 0.25,
+  "trials": [
+    {
+      "trial_id": "clamp:0:keel_protocol",
+      "task_id": "clamp",
+      "repeat": 0,
+      "condition": "keel_protocol"
+    },
+    {
+      "trial_id": "clamp:0:existing_improved",
+      "task_id": "clamp",
+      "repeat": 0,
+      "condition": "existing_improved"
+    },
+    {
+      "trial_id": "deadline:0:keel_text",
+      "task_id": "deadline",
+      "repeat": 0,
+      "condition": "keel_text"
+    },
+    {
+      "trial_id": "sum_inclusive:0:existing_conventional",
+      "task_id": "sum_inclusive",
+      "repeat": 0,
+      "condition": "existing_conventional"
+    },
+    {
+      "trial_id": "sum_inclusive:0:existing_improved",
+      "task_id": "sum_inclusive",
+      "repeat": 0,
+      "condition": "existing_improved"
+    },
+    {
+      "trial_id": "clamp:0:keel_text",
+      "task_id": "clamp",
+      "repeat": 0,
+      "condition": "keel_text"
+    },
+    {
+      "trial_id": "sum_inclusive:0:keel_protocol",
+      "task_id": "sum_inclusive",
+      "repeat": 0,
+      "condition": "keel_protocol"
+    },
+    {
+      "trial_id": "deadline:0:keel_protocol",
+      "task_id": "deadline",
+      "repeat": 0,
+      "condition": "keel_protocol"
+    },
+    {
+      "trial_id": "clamp:0:existing_conventional",
+      "task_id": "clamp",
+      "repeat": 0,
+      "condition": "existing_conventional"
+    },
+    {
+      "trial_id": "deadline:0:existing_conventional",
+      "task_id": "deadline",
+      "repeat": 0,
+      "condition": "existing_conventional"
+    },
+    {
+      "trial_id": "deadline:0:existing_improved",
+      "task_id": "deadline",
+      "repeat": 0,
+      "condition": "existing_improved"
+    },
+    {
+      "trial_id": "sum_inclusive:0:keel_text",
+      "task_id": "sum_inclusive",
+      "repeat": 0,
+      "condition": "keel_text"
+    }
+  ],
+  "integrity_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16"
+}

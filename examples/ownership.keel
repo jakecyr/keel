@@ -1,0 +1,27 @@
+fn decorate(value: take Text) -> Text {
+    return text.concat(value, "!")
+}
+
+fn main() effects { io.stdout } {
+    let greeting = text.clone("hello")
+    let decorated = decorate(take greeting)
+    io.println(decorated)
+}
+
+test "transfers and explicit clones" {
+    let original = text.clone("Keel")
+    let copy = text.clone(original)
+    let decorated = decorate(take copy)
+    assert original == "Keel"
+    assert decorated == "Keel!"
+}
+
+test "loop drops owned text on each iteration" {
+    var index = 0
+    var output = text.clone("")
+    while index < 10 {
+        output = text.concat(output, "x")
+        index = index + 1
+    }
+    assert text.len(output) == 10
+}

@@ -1,0 +1,123 @@
+name: compiler-and-native-e2e
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      full_benchmarks:
+        description: Run full local toolchain measurements and known engineering thresholds
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      CC: clang
+      RUST_BACKTRACE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Formatting
+        run: cargo fmt --all -- --check
+      - name: Lints
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Unit, sanitizer, and isolated native end-to-end tests
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p build/ci-reports
+          cargo test --locked --all-targets 2>&1 | tee build/ci-reports/cargo-tests.log
+      - name: Benchmark methodology and evidence-gate tests
+        run: python3 -m unittest discover -s benchmarks -p 'test_*.py' -v
+      - name: Release build
+        run: cargo build --release --locked
+      - name: Cargo installation smoke in an isolated prefix
+        shell: bash
+        run: |
+          cargo install --locked --path . --root "$RUNNER_TEMP/keel-install"
+          "$RUNNER_TEMP/keel-install/bin/keel" --version
+          "$RUNNER_TEMP/keel-install/bin/keel" check examples/collections.keel --json
+      - name: Package downloadable compiler with checksum
+        shell: bash
+        run: |
+          mkdir -p build/ci-reports
+          archive="keel-${{ runner.os }}-${{ runner.arch }}.tar.gz"
+          tar -czf "build/ci-reports/$archive" -C target/release keel
+          (cd build/ci-reports && shasum -a 256 "$archive" > "$archive.sha256")
+      - name: Release CLI example project validation
+        run: |
+          ./target/release/keel check examples/web_server.keel --json
+          ./target/release/keel test examples/web_server.keel --cases 1000 --seed 42 --json
+          ./target/release/keel build examples/web_server.keel -o build/ci-server --json
+          ./target/release/keel run examples/ownership.keel -o build/ci-ownership --allow-stdout
+          ./target/release/keel test examples/collections.keel --cases 1000 --seed 42 --json
+          ./target/release/keel run examples/collections.keel -o build/ci-collections --allow-stdout
+      - name: Cheap local benchmark smoke (no timing thresholds or live inference)
+        run: |
+          python3 benchmarks/measure.py --repeats 2 --declarations 25 --iterations 1000 --output build/ci-reports/benchmark-smoke.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('build/ci-reports/benchmark-smoke.json').read_text())
+          assert report['schema_version'] == 1
+          assert report['agent_efficiency'] == 'UNKNOWN'
+          assert report['compiler_binary_unchanged'] is True
+          print('Smoke completed. Agent cost advantage remains UNKNOWN; this job does not measure model trials.')
+          PY
+      - name: Retain verification and benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ matrix.os }}
+          path: build/ci-reports/
+          retention-days: 14
+          if-no-files-found: ignore
+  manual-engineering-targets:
+    if: github.event_name == 'workflow_dispatch' && inputs.full_benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CC: clang
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: cargo build --release --locked
+      - name: Measure full reference corpus without paid model calls
+        run: python3 benchmarks/measure.py --repeats 7 --declarations 2500 --iterations 1000000 --output build/ci-reports/benchmark-full.json
+      - name: Gate measured engineering failures; retain UNKNOWN as unestablished
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path('build/ci-reports/benchmark-full.json').read_text())
+          targets = report['engineering_targets']
+          print(json.dumps(targets, indent=2))
+          failed = [name for name, state in targets.items() if state == 'FAIL']
+          unknown = [name for name, state in targets.items() if state.startswith('UNKNOWN')]
+          print('Unestablished targets:', ', '.join(unknown))
+          assert not failed, f'Measured engineering targets failed: {failed}'
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: manual-engineering-measurements
+          path: build/ci-reports/
+          retention-days: 30
+          if-no-files-found: ignore

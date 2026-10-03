@@ -1,0 +1,13 @@
+pub fn unfinished(value: Int) -> Int {
+    return hole("unfinished.body")
+}
+
+fn main() {}
+
+test "unaffected code still runs" {
+    assert 2 + 2 == 4
+}
+
+test "reaching a hole is blocked" {
+    assert unfinished(42) == 42
+}

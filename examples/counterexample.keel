@@ -1,0 +1,10 @@
+// Deliberate boundary bug: expired at the deadline means strictly less than.
+pub fn is_fresh(now: Int, deadline: Int) -> Bool {
+    return now <= deadline
+}
+
+property "expired values are never fresh" (deadline in gen.int(min: 0, max: 1000000)) {
+    assert !is_fresh(deadline, deadline)
+}
+
+fn main() {}

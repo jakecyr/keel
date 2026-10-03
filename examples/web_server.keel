@@ -1,0 +1,60 @@
+// A pure router inside an explicitly permitted, localhost-only HTTP host.
+// Run: keel run examples/web_server.keel --allow-net=127.0.0.1:8080
+
+pub fn square(value: Int) -> Int
+    requires value >= -1000000 && value <= 1000000
+    ensures result >= 0
+{
+    return value * value
+}
+
+pub fn route(path: read Text) -> Text {
+    if path == "/" {
+        return http.response(200, "Hello from Keel!\n")
+    }
+    if path == "/health" {
+        return http.response(200, "ok\n")
+    }
+    if path == "/square" {
+        let value = text.from_int(square(12))
+        let body = text.concat(value, "\n")
+        return http.response(200, body)
+    }
+    return http.response(404, "not found\n")
+}
+
+fn main() effects { net.listen } {
+    http.serve(8080, route)
+}
+
+test "home returns a greeting" {
+    let response = route("/")
+    assert http.status(response) == 200
+    assert http.body(response) == "Hello from Keel!\n"
+}
+
+test "health returns ok" {
+    let response = route("/health")
+    assert http.status(response) == 200
+    assert http.body(response) == "ok\n"
+}
+
+test "square endpoint uses checked arithmetic" {
+    let response = route("/square")
+    assert http.status(response) == 200
+    assert http.body(response) == "144\n"
+}
+
+test "unknown route is a 404" {
+    let response = route("/missing")
+    assert http.status(response) == 404
+    assert http.body(response) == "not found\n"
+}
+
+property "square is nonnegative" (value in gen.int(min: -1000000, max: 1000000)) {
+    assert square(value) >= 0
+}
+
+property "square is symmetric" (value in gen.int(min: -1000000, max: 1000000)) {
+    assert square(value) == square(-value)
+}

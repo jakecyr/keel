@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "scope": "Exploratory scalar bug-repair tasks. Public fixtures, held out from each agent workspace; not secret or contamination-resistant. Broader repository/API/ownership/stateful/performance tasks remain required before an adoption decision.",
+  "tasks": [
+    {
+      "id": "deadline",
+      "function": "is_fresh",
+      "requirement": "Repair is_fresh(now, deadline): a cached value is fresh precisely when now is strictly before deadline. Int arguments are signed 64-bit timestamps. Preserve the function interface.",
+      "keel": "pub fn is_fresh(now: Int, deadline: Int) -> Bool {\n    return now <= deadline\n}\n",
+      "c": "bool is_fresh(int64_t now, int64_t deadline) {\n    return now <= deadline;\n}\n",
+      "public_cases": [{"args": [0, 5], "expected": true}, {"args": [6, 5], "expected": false}],
+      "held_out_cases": [{"args": [5, 5], "expected": false}, {"args": [-1, -1], "expected": false}, {"args": [-8, -7], "expected": true}, {"args": [6, 5], "expected": false}, {"args": [9223372036854775807, 9223372036854775807], "expected": false}]
+    },
+    {
+      "id": "clamp",
+      "function": "clamp",
+      "requirement": "Repair clamp(value, low, high): return low below low, high above high, and value otherwise. Callers guarantee low <= high. Int arguments are signed 64-bit integers. Preserve the function interface.",
+      "keel": "pub fn clamp(value: Int, low: Int, high: Int) -> Int {\n    if value < low { return high }\n    if value > high { return high }\n    return value\n}\n",
+      "c": "int64_t clamp(int64_t value, int64_t low, int64_t high) {\n    if (value < low) { return high; }\n    if (value > high) { return high; }\n    return value;\n}\n",
+      "public_cases": [{"args": [4, 0, 10], "expected": 4}, {"args": [11, 0, 10], "expected": 10}],
+      "held_out_cases": [{"args": [-1, 0, 10], "expected": 0}, {"args": [-100, -8, -3], "expected": -8}, {"args": [0, 0, 0], "expected": 0}, {"args": [10, 0, 10], "expected": 10}, {"args": [99, 1, 2], "expected": 2}]
+    },
+    {
+      "id": "sum_inclusive",
+      "function": "sum_to",
+      "requirement": "Repair sum_to(n): return the sum of all integers from 0 through n inclusive. Callers guarantee 0 <= n <= 10000. Preserve the function interface.",
+      "keel": "pub fn sum_to(n: Int) -> Int {\n    var i = 0\n    var total = 0\n    while i < n {\n        total = total + i\n        i = i + 1\n    }\n    return total\n}\n",
+      "c": "int64_t sum_to(int64_t n) {\n    int64_t i = 0;\n    int64_t total = 0;\n    while (i < n) {\n        total = total + i;\n        i = i + 1;\n    }\n    return total;\n}\n",
+      "public_cases": [{"args": [0], "expected": 0}],
+      "held_out_cases": [{"args": [0], "expected": 0}, {"args": [1], "expected": 1}, {"args": [2], "expected": 3}, {"args": [17], "expected": 153}, {"args": [10000], "expected": 50005000}]
+    }
+  ]
+}
