@@ -1,0 +1,26 @@
+// Approved behavior belongs here, separate from implementation source.
+test "home" {
+    let response = route("/")
+    assert http.status(response) == 200
+    assert http.body(response) == "Hello from Keel!\n"
+}
+
+test "health" {
+    let response = route("/health")
+    assert http.status(response) == 200
+    assert http.body(response) == "ok\n"
+}
+
+test "square route" {
+    let response = route("/square")
+    assert http.body(response) == "144\n"
+}
+
+test "missing route" {
+    let response = route("/missing")
+    assert http.status(response) == 404
+}
+
+property "square is symmetric" (n in gen.int(min: -1000000, max: 1000000)) {
+    assert square(n) == square(-n)
+}

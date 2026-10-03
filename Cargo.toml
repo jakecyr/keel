@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 description = "An experimental agent-oriented language and native development protocol"
 license = "MIT"
+repository = "https://github.com/jakecyr/keel"
+readme = "README.md"
+include = ["src/**", "examples/**", "docs/**", "tests/**", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE"]
 
 [dependencies]
 serde = { version = "=1.0.229", features = ["derive"] }

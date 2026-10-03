@@ -1,37 +1,96 @@
-# Prototype validation
+# Validation evidence
 
-Validated on macOS ARM64 with Rust 1.98.1, Cargo 1.98.1, and Apple Clang 21.0.0. These results concern this small prototype and its examples, not the performance or soundness of the full proposed language.
+Local validation uses macOS ARM64, Rust/Cargo 1.98.1, and Apple Clang 21.0.0.
+Keel is experimental: these results concern the implemented subset, not the
+soundness or completeness of the original design.
 
-## Automated checks
-
-`cargo test --offline` passes 17 regression tests. Several are table-driven and execute multiple independent rejection/runtime cases:
-
-- Static mismatches, invalid parameters, immutable assignments, unknown names, missing returns, untyped holes, invalid entrypoints, forbidden early test returns, and out-of-range integer literals.
-- Implicit Text copies, use after move, escaping borrows, loop/branch ownership, overlapping read/take arguments, and equality operand borrow conflicts.
-- Direct/transitive effect violations, invalid host handlers, impure contracts, and holes in contracts.
-- Native overflow traps for addition, subtraction, multiplication, negation, division, and remainder, plus division/remainder by zero.
-- 500 generated integer arithmetic comparisons against Rust-computed expected values across signed inputs.
-- Left-to-right argument failure order, Boolean short-circuiting, conditional ownership returns, and restoring moved values in loops.
-- Runtime precondition/postcondition enforcement.
-- Typed-hole context and a blocked test alongside an unaffected passing test.
-- Full-width and singleton integer generators; a counterexample shrunk from 1,000 to 10 and replayed with the same failure.
-- A hung worker timing out as UNKNOWN; an empty test selection never succeeding.
-- Successful structural body replacement, unchanged interface/contracts/test source, stale-revision rejection, failed-candidate rollback, and declaration/effect injection rejection.
-- HTTP listener permission denial, exact permission binding, actual TCP requests for all routes, query stripping, correct Content-Length, unsupported method handling, and malformed/incomplete request handling.
-- 1,000 iterations of Text movement/rebinding, nested transfers, early ownership returns in other native tests, and UTF-8 values under AddressSanitizer and UndefinedBehaviorSanitizer.
-
-## Example projects
+## Reproduce the checks
 
 ```sh
-./target/debug/keel test examples/web_server.keel --cases 1000 --seed 42 --json
+cargo fmt --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked --all-targets
+python3 -m unittest discover -s benchmarks -p 'test_*.py'
+python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 ```
 
-Passes four example tests and two properties with 1,000 inputs each: **2,004 executed cases**. The HTTP regression test separately launches a real native server on an available loopback port and verifies its responses over TCP.
+The Rust suite has 50 unit/audit/tooling tests, 10 developer/agent-workflow
+integration tests, and 19 CLI/native/HTTP end-to-end tests. Many are table-driven
+and exercise multiple programs. The Python suites have 38 benchmark-methodology
+tests and 16 offline installer tests.
 
-`examples/ownership.keel` passes both examples. `examples/holes.keel` intentionally reports one TESTED and one BLOCKED test. `examples/counterexample.keel` intentionally fails at `now == deadline == 0` and supplies a replay value. These nonzero exits are expected behavior.
+Coverage includes:
 
-## What this evidence does not establish
+- Type/effect errors, missing returns, exhaustive matches, holes, and bounded
+  malformed-source parsing.
+- Owned Text/List/Result lifetimes, explicit moves, exclusive edit borrows,
+  argument evaluation order, branch/loop ownership, and destructor paths.
+- Checked arithmetic, safe indexing, recoverable integer parsing, independent
+  deduplication oracles, and native/reference differential execution.
+- AddressSanitizer/UndefinedBehaviorSanitizer executions of text and collection
+  lifetimes. These cover exercised executions, not every possible program.
+- Contract failures, generated integer boundaries, shrinking, replay, blocked
+  holes, and time/resource exhaustion retaining UNKNOWN rather than passing.
+- Actual native HTTP servers, fragmented/malformed requests, routes, response
+  lengths, and runtime listener-permission checks.
+- Revision-bound edit transactions, rollback, protected acceptance helpers,
+  source/output aliases, symlinks, policy preservation, and staging-file safety.
+- Compiler/worker deadlines, bounded diagnostic pipes, detached descendants,
+  nonregular input rejection, service cache invalidation/eviction, and JSON errors.
+- Init/build/run/test workflows, preserved human agent instructions, idempotent
+  reinitialization, offline agent references, focused context, lint, and formatting.
+- Installer checksums, archive-member validation, supported platform mappings,
+  pipe-style execution, and preservation of existing binaries on failure.
+- Benchmark ledger integrity, budget handling, paired comparison requirements,
+  missing evidence, and refusal to turn UNKNOWN economics into a passing result.
 
-No formal type/ownership soundness proof, full-language reference evaluator, fuzzed frontend corpus, distributed simulation, production HTTP compliance, cross-platform certification, memory-budget isolation, or economic agent benchmark is supplied. Native sanitizers cover the exercised executions only; they are not a proof of all possible programs. Tests and acceptance criteria in this repository remain writable by anyone with repository write access.
+Linux/macOS GitHub Actions configuration is in
+[ci.yml](../.github/workflows/ci.yml). Local checks do not establish that remote CI
+has run; no GitHub run or release was performed during this implementation.
+Linux memory enforcement is configured through RLIMIT_AS; it has not been
+validated on Linux by this local macOS run. macOS worker memory is not enforced.
 
-The tiny example's successful native compilation does not establish the original cold/warm build targets on a 10,000-line project. No latency, memory, binary-size, or cost improvement is claimed without a matching benchmark protocol.
+## Example projects and installation
+
+```sh
+cargo build --release --locked
+./target/release/keel test examples/web --engine both --cases 1000 --seed 42
+./target/release/keel test examples/collections.keel --engine both --cases 1000 --seed 42
+./target/release/keel build examples/web -o build/server
+```
+
+The manifest web project has four examples and one integer property: 1,004 cases
+per engine at the above budget. The original single-file `web_server.keel`
+fixture has an additional property, for 2,004 cases. Actual TCP behavior is tested separately by the host
+integration suite. `examples/holes.keel` deliberately reports BLOCKED and
+`examples/counterexample.keel` deliberately fails; their nonzero exits are
+expected and regression-tested.
+
+The installer tests are offline fixture tests, not downloads from a published
+release. CI packages archives and checksums but does not publish them. The source
+installation smoke uses a temporary Cargo prefix, leaving the user's normal
+installation and shell configuration untouched.
+
+## Measured performance and agent trials
+
+[Recorded results](../benchmarks/results/README.md) include raw timing and real
+agent-pilot evidence. On the specified approximately 10,000-line fixture,
+resident-service body-edit feedback had p95 5.305 ms; this was a whole-source
+cache miss, not declaration-level incrementality. Cold-cache and affected-test
+targets remain unestablished.
+
+All 12 real-agent pilot repairs passed independent native assertions, but all
+exceeded the preregistered aggregate-token budget. Consequently none was accepted
+under that experiment's rules. Keel's protocol condition used more reported
+tokens than the improved C baseline. Actual monetary costs and enforced
+condition isolation were unavailable. The 25% cost-reduction goal is **UNKNOWN,
+not achieved**; thresholds and failed attempts have not been rewritten.
+
+## Remaining limits
+
+There is no soundness proof, sustained frontend/native fuzz campaign, external
+security review, distributed simulation, production HTTP certification, signed
+release, or comprehensive platform validation. The reference evaluator supports
+the current test subset, not arbitrary external host effects. Acceptance files
+are protected by structural-edit policy, not against arbitrary filesystem access.
+See [release gaps](release-gaps.md) and [machine-readable status](design-status.json).

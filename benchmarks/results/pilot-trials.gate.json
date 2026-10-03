@@ -1,0 +1,81 @@
+{
+  "status": "UNKNOWN",
+  "reasons": [
+    "clamp:0:keel_protocol: missing inference/tool dollar costs",
+    "clamp:0:keel_protocol: tool-condition isolation unverified",
+    "clamp:0:existing_improved: missing inference/tool dollar costs",
+    "clamp:0:existing_improved: tool-condition isolation unverified",
+    "deadline:0:keel_text: missing inference/tool dollar costs",
+    "deadline:0:keel_text: tool-condition isolation unverified",
+    "sum_inclusive:0:existing_conventional: missing inference/tool dollar costs",
+    "sum_inclusive:0:existing_conventional: tool-condition isolation unverified",
+    "sum_inclusive:0:existing_improved: missing inference/tool dollar costs",
+    "sum_inclusive:0:existing_improved: tool-condition isolation unverified",
+    "clamp:0:keel_text: missing inference/tool dollar costs",
+    "clamp:0:keel_text: tool-condition isolation unverified",
+    "sum_inclusive:0:keel_protocol: missing inference/tool dollar costs",
+    "sum_inclusive:0:keel_protocol: tool-condition isolation unverified",
+    "deadline:0:keel_protocol: missing inference/tool dollar costs",
+    "deadline:0:keel_protocol: tool-condition isolation unverified",
+    "clamp:0:existing_conventional: missing inference/tool dollar costs",
+    "clamp:0:existing_conventional: tool-condition isolation unverified",
+    "deadline:0:existing_conventional: missing inference/tool dollar costs",
+    "deadline:0:existing_conventional: tool-condition isolation unverified",
+    "deadline:0:existing_improved: missing inference/tool dollar costs",
+    "deadline:0:existing_improved: tool-condition isolation unverified",
+    "sum_inclusive:0:keel_text: missing inference/tool dollar costs",
+    "sum_inclusive:0:keel_text: tool-condition isolation unverified"
+  ],
+  "conditions": {
+    "existing_conventional": {
+      "attempts": 3,
+      "accepted": 0,
+      "success_rate": 0.0,
+      "native_assertions_passed_before_policy": 3,
+      "total_cost_usd_including_failures": null,
+      "cost_per_accepted_change_usd": null,
+      "total_input_tokens": 204678,
+      "total_cached_input_tokens": 176768,
+      "total_output_tokens": 861,
+      "total_elapsed_seconds": 67.2829992499901
+    },
+    "existing_improved": {
+      "attempts": 3,
+      "accepted": 0,
+      "success_rate": 0.0,
+      "native_assertions_passed_before_policy": 3,
+      "total_cost_usd_including_failures": null,
+      "cost_per_accepted_change_usd": null,
+      "total_input_tokens": 152459,
+      "total_cached_input_tokens": 133120,
+      "total_output_tokens": 1091,
+      "total_elapsed_seconds": 77.77852391600027
+    },
+    "keel_text": {
+      "attempts": 3,
+      "accepted": 0,
+      "success_rate": 0.0,
+      "native_assertions_passed_before_policy": 3,
+      "total_cost_usd_including_failures": null,
+      "cost_per_accepted_change_usd": null,
+      "total_input_tokens": 181036,
+      "total_cached_input_tokens": 163328,
+      "total_output_tokens": 1208,
+      "total_elapsed_seconds": 79.13130941599957
+    },
+    "keel_protocol": {
+      "attempts": 3,
+      "accepted": 0,
+      "success_rate": 0.0,
+      "native_assertions_passed_before_policy": 3,
+      "total_cost_usd_including_failures": null,
+      "cost_per_accepted_change_usd": null,
+      "total_input_tokens": 214974,
+      "total_cached_input_tokens": 181376,
+      "total_output_tokens": 1037,
+      "total_elapsed_seconds": 78.95995750000293
+    }
+  },
+  "required_cost_reduction": 0.25,
+  "adoption_readiness": "UNKNOWN: this public microtask suite does not establish representative repository, API, ownership, stateful, or performance-task results"
+}

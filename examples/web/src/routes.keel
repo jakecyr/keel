@@ -1,0 +1,21 @@
+pub fn route(path: read Text) -> Text {
+    if path == "/" {
+        return http.response(200, "Hello from Keel!\n")
+    }
+    if path == "/health" {
+        return http.response(200, "ok\n")
+    }
+    if path == "/square" {
+        let value = text.from_int(square(12))
+        let body = text.concat(value, "\n")
+        return http.response(200, body)
+    }
+    return http.response(404, "not found\n")
+}
+
+pub fn square(value: Int) -> Int
+requires value >= -1000000 && value <= 1000000
+ensures result >= 0
+{
+    return value * value
+}

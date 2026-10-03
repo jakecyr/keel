@@ -120,6 +120,35 @@ impl Drop for ChildGuard {
 }
 
 #[test]
+fn help_is_discoverable_and_init_prints_next_steps() {
+    let work = Work::new();
+    for args in [
+        vec!["--help"],
+        vec!["init", "--help"],
+        vec!["agent", "context", "--help"],
+    ] {
+        let output = work.run(".", &args, true);
+        assert!(output.status.success());
+        let help = String::from_utf8(output.stdout).unwrap();
+        for command in [
+            "keel init",
+            "keel lint",
+            "keel agent context",
+            "--engine native|reference|both",
+        ] {
+            assert!(help.contains(command), "missing {command}");
+        }
+    }
+    let output = work.run(".", &["init", "starter"], true);
+    assert!(output.status.success());
+    let message = String::from_utf8(output.stdout).unwrap();
+    assert!(message.contains("Run these commands from"));
+    assert!(message.contains("starter"));
+    assert!(message.contains("keel test . --engine both"));
+    assert!(!work.path("--help").exists());
+}
+
+#[test]
 fn installed_binary_supplies_versioned_references_without_external_tools() {
     let work = Work::new();
     let commands = work.json_mode(".", &["agent", "commands", "--json"], true, true);
@@ -416,6 +445,11 @@ fn context_preserves_offline_reference_when_project_has_static_errors() {
         )
         .ends_with("broken.keel")
     );
+    let human = work.run(".", &["agent", "context", "broken.keel"], true);
+    assert!(!human.status.success());
+    let human_text = String::from_utf8(human.stdout).unwrap();
+    assert!(human_text.contains("type_mismatch"));
+    assert!(human_text.contains("language_reference"));
     for args in [
         vec!["agent", "context", "--symbol", "answer", "--json"],
         vec!["agent", "context", "broken.keel", "--unknown", "--json"],
@@ -424,4 +458,35 @@ fn context_preserves_offline_reference_when_project_has_static_errors() {
     ] {
         work.json_mode(".", &args, false, true);
     }
+}
+
+#[test]
+fn context_retains_bootstrap_help_when_project_file_does_not_parse() {
+    let work = Work::new();
+    work.json(".", &["init", "broken-project", "--json"], true);
+    work.write(
+        "broken-project/src/main.keel",
+        "fn greet() -> Text { return",
+    );
+    let context = work.json_mode(
+        "broken-project",
+        &["agent", "context", ".", "--json"],
+        false,
+        true,
+    );
+    assert_eq!(context["status"], "FAILED");
+    assert_eq!(context["version"], env!("CARGO_PKG_VERSION"));
+    assert!(
+        context["language_reference"]
+            .as_str()
+            .unwrap()
+            .contains("Syntax")
+    );
+    assert_eq!(context["diagnostics"]["kind"], "project_load");
+    assert!(
+        context["diagnostics"]["message"]
+            .as_str()
+            .unwrap()
+            .contains("main.keel")
+    );
 }

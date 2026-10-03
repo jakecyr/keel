@@ -118,6 +118,8 @@ def evaluate(plan, suite, records):
             oracle = record["acceptance"]
             if type(oracle["accepted"]) is not bool or oracle["evaluator"] != "independent_native_assertions_v1" or oracle["oracle_sha256"] != digest(task["held_out_cases"]):
                 raise ValueError("acceptance was not scored against the registered oracle")
+            if "accepted_before_budget_and_integrity_checks" in oracle and type(oracle["accepted_before_budget_and_integrity_checks"]) is not bool:
+                raise ValueError("pre-policy assertion result must be Boolean")
             if hashlib.sha256(record["source"].encode()).hexdigest() != oracle["source_sha256"]:
                 raise ValueError("artifact differs from independently tested source")
             if record.get("events_sha256") != digest(record["events"]):
@@ -161,8 +163,12 @@ def evaluate(plan, suite, records):
             known_cost = all(r.get("costs") and r["costs"].get("inference_usd") is not None and r["costs"].get("tool_usd") is not None for r in group)
             cost = sum(r["costs"]["inference_usd"] + r["costs"]["tool_usd"] for r in group) if known_cost else None
             by_condition[condition] = {"attempts": len(group), "accepted": accepted, "success_rate": accepted / len(group),
+                                       "native_assertions_passed_before_policy": sum(r["acceptance"].get("accepted_before_budget_and_integrity_checks", r["acceptance"]["accepted"]) for r in group),
                                        "total_cost_usd_including_failures": cost,
                                        "cost_per_accepted_change_usd": cost / accepted if cost is not None and accepted else None}
+            for key in ("input_tokens", "cached_input_tokens", "output_tokens", "elapsed_seconds"):
+                values = [r.get(key) for r in group]
+                by_condition[condition]["total_" + key] = sum(values) if all(value is not None for value in values) else None
         summary = {"conditions": by_condition, "required_cost_reduction": plan["required_cost_reduction"],
                    "adoption_readiness": "UNKNOWN: this public microtask suite does not establish representative repository, API, ownership, stateful, or performance-task results"}
         if unknown:

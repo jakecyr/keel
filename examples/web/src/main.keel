@@ -1,0 +1,3 @@
+fn main() effects { net.listen } {
+    http.serve(8080, route)
+}

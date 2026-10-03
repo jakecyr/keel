@@ -8,10 +8,13 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+from contextlib import redirect_stdout
+import io
 
 from agent_eval import CONDITIONS, acceptance, digest, evaluate, load_suite, make_plan, seal
 from codex_pilot import extract_usage, instructions
-from measure import corpus, measure, percentile, runtime_source, summarize
+from measure import corpus, main as measurement_main, measure, percentile, runtime_source, summarize
 
 
 class GateTests(unittest.TestCase):
@@ -185,6 +188,19 @@ class GateTests(unittest.TestCase):
 
 
 class MeasurementTests(unittest.TestCase):
+    def test_strict_measurement_gate_requires_every_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for status, expected in (("PASS", 0), ("FAIL", 1), ("UNKNOWN: unavailable evidence", 2)):
+                report = {"compiler_binary_unchanged": True, "languages": {},
+                          "web_example_native_test": {"failures": 0},
+                          "engineering_targets": {"target": status},
+                          "service": {"returncode": 0, "cache_behavior_verified": True,
+                                      "first_check": {"returncode": 0},
+                                      "exact_source_cache_hits": {"failures": 0},
+                                      "unique_body_edit_cache_misses": {"failures": 0}}}
+                with patch("measure.local_benchmarks", return_value=report), patch.object(sys, "argv", ["measure.py", "--output", str(Path(directory) / "result.json"), "--strict"]), redirect_stdout(io.StringIO()):
+                    self.assertEqual(measurement_main(), expected)
+
     def test_nearest_rank_percentile(self):
         self.assertEqual(percentile(list(range(1, 101)), 95), 95)
         with self.assertRaises(ValueError):

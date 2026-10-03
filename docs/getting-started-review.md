@@ -76,10 +76,11 @@ complete target before proposing edits. Acceptance source and failing case
 evidence may still require separate file reads and test commands; the context
 command does not automatically run tests or infer approved requirements.
 
-Errors should remain useful during repair: nonzero exit, source-linked diagnostic,
-and installed language guidance where possible. In particular, malformed project
-syntax and human-readable context commands should not collapse into an unexplained
-`FAILED` line. The machine-readable `--json` workflow is the tested agent path.
+Errors remain useful during repair: a nonzero exit and the installed language
+guide accompany static errors and project-load failures. Static diagnostics have
+source locations; project-load errors identify the offending file in their
+message. Context output without `--json` also retains these details instead of
+collapsing into an unexplained `FAILED` line.
 
 ## Verification added in this review
 
@@ -94,13 +95,17 @@ temporary directories. It covers:
   and preservation of source, tests, policy, manifest, and unrelated files.
 - Conflicting source and ambiguous managed markers rejected before partial writes.
 - Unicode-safe context truncation, revision-bound edit using context output,
-  approved test execution, and static-error diagnostics alongside the guide.
+  approved test execution, and static/project-load diagnostics alongside the guide
+  in both JSON and default context output.
 
 Empty PATH demonstrates that documentation and static context do not invoke an
 external compiler or repository tooling. It is not a network sandbox or a formal
 proof that all possible command paths are offline.
 
-Future distribution work includes signed release artifacts, supported-platform
-installers, upgrade/rollback instructions, protocol compatibility tests across
-versions, and editor integrations. The current source installation and local
-agent CLI can be useful before those release criteria are complete.
+The repository includes an offline-tested release-download installer and CI
+archive/checksum packaging. Downloads still require published release assets;
+this implementation did not publish them. Future distribution work includes
+signed release artifacts, broader platform validation, rollback instructions,
+protocol compatibility tests across versions, and editor integrations. The
+current source installation and local agent CLI can be useful before those
+release criteria are complete.

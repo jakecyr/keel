@@ -27,7 +27,7 @@ claims that those criteria have already been met.
 | Observability | Structured failures and basic service startup message | No bounded structured production events, build/source-linked telemetry, dropped-event counters, sampling semantics, secret-bearing types, or field allowlists. Add explicit value-capture approval and redaction tests before telemetry captures application data. |
 | Projects and dependencies | Explicit manifest combines named source files in one namespace; Rust implementation dependencies are pinned | This is not a module system or Keel package manager. Namespaces/import resolution, Keel lockfiles/artifact hashes, signature packages, typed FFI, ABI stability, dependency supply-chain policy, and cross-compilation remain absent. Never download dependencies during ordinary compilation. |
 | Adoption and compatibility | Example CLI/HTTP/collection programs; agent instructions and CLI/service interfaces | Versioned protocol compatibility, migration guidance, release packaging/signing, long-running service operations, supported platform/ABI matrix, and sustained external user testing remain release work. The HTTP adapter is a small example host, not a production HTTP stack. |
-| Agent advantage | Reproducible local measurements can be collected by the benchmark harness | No synthetic or scripted fixture establishes a model's cost per accepted change. The four-condition, repeated-trial, independent-acceptance experiment must be run with real agents before claiming superiority. |
+| Agent advantage | Recorded local toolchain measurements and a 12-trial real-agent pilot across four conditions | The pilot did not establish an advantage: all trials exceeded their registered token budget, actual costs are missing, and Keel protocol used more reported tokens than improved C. Broader repeated trials with enforced conditions and independent acceptance are required. See [results](../benchmarks/results/README.md). |
 
 ## A release gate for the supported subset
 
@@ -86,8 +86,9 @@ the gate. Claims also require no decline in independently assessed acceptance.
 Compiler microbenchmarks and deterministic agent-workflow fixtures are useful
 regressions; neither substitutes for this experiment.
 
-Original numerical engineering targets remain unestablished until measured on
-the specified 10,000-line reference project: p95 warm edit feedback under 50 ms,
-p95 small edit to affected native test under 500 ms, cold build under 2 seconds,
-daemon under 256 MiB, and stripped minimal CLI under 1 MiB. Include generic
-instantiations, actual linked libraries, invalidation work, and failed runs.
+The [recorded local measurements](../benchmarks/results/README.md) met the warm
+feedback, resident-process memory, and minimal application binary-size numerical
+targets on the specified synthetic 10,000-line fixture. Cold-cache build and
+first-affected-test targets remain UNKNOWN. This does not establish the same
+results for representative applications: include generic instantiations when
+supported, actual linked libraries, invalidation work, and failed runs.

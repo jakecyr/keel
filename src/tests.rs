@@ -3,7 +3,7 @@ use super::*;
 mod feature_tests;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::{process::Stdio,thread};
+use std::{process::Stdio, thread};
 
 fn options() -> TestOptions {
     TestOptions {
@@ -366,7 +366,8 @@ fn native_text_lifetimes_under_address_and_undefined_behavior_sanitizers() {
         "sanitizer compiler failed: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    let mut limits=options(); limits.memory_mib=0;
+    let mut limits = options();
+    limits.memory_mib = 0;
     let (state, failure) = run_worker(&binary, 0, &limits, None).unwrap();
     assert_eq!(state, "TESTED", "{failure:?}");
 }

@@ -1,0 +1,2602 @@
+[
+  {
+    "trial_id": "clamp:0:keel_protocol",
+    "task_id": "clamp",
+    "repeat": 0,
+    "condition": "keel_protocol",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "pub fn clamp(value: Int, low: Int, high: Int) -> Int {\n    if value < low { return low }\n    if value > high { return high }\n    return value\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "33c4594e297e8a3bbda792dd2b6ab0397cb231dde531ae6cb61edc6110fa82e4",
+      "oracle_sha256": "dc6336f336a1f229168f5cdaba281af82632fe2b835fafa2de3114877b6311b4",
+      "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r47618578ec622a1b\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"independent acceptance\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-hvcyyngx",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "8dd23aa53d3cc84deadb29f8ed6faa2c16cb4b6c0e2649d6384f7c242fc36221",
+    "elapsed_seconds": 32.69566579100501,
+    "input_tokens": 94144,
+    "cached_input_tokens": 80896,
+    "output_tokens": 367,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9a-089c-78e2-b2c1-855407b871eb"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `clamp`, replace its body using the semantic edit tool, then run type checks and the public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel inspect solution.keel --symbol clamp --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel inspect solution.keel --symbol clamp --json'",
+          "aggregated_output": "{\n  \"functions\": [\n    {\n      \"callers\": [],\n      \"contracts\": {\n        \"assurance\": \"ENFORCED when executed\",\n        \"ensures\": 0,\n        \"requires\": 0\n      },\n      \"dependencies\": [],\n      \"effects\": [],\n      \"name\": \"clamp\",\n      \"parameters\": [\n        {\n          \"mode\": \"Value\",\n          \"name\": \"value\",\n          \"ty\": \"Int\"\n        },\n        {\n          \"mode\": \"Value\",\n          \"name\": \"low\",\n          \"ty\": \"Int\"\n        },\n        {\n          \"mode\": \"Value\",\n          \"name\": \"high\",\n          \"ty\": \"Int\"\n        }\n      ],\n      \"public\": true,\n      \"result\": \"Int\",\n      \"source\": \"pub fn clamp(value: Int, low: Int, high: Int) -> Int {\\n    if value < low { return high }\\n    if value > high { return high }\\n    return value\\n}\",\n      \"target\": \"fn:clamp\"\n    }\n  ],\n  \"holes\": [],\n  \"incomplete\": false,\n  \"resource_behavior\": {\n    \"allocation\": \"Text clone, concat, conversion, response, and body allocate; transitive costs not analyzed\",\n    \"deep_copies\": \"only explicit library operations\",\n    \"external_behavior\": \"HTTP adapter is trusted native code\"\n  },\n  \"revision\": \"re486bffb5c1e37a5\",\n  \"source_character_budget\": 12000,\n  \"tests\": []\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "pub fn clamp(value: Int, low: Int, high: Int) -> Int {\n    if value < low { return high }\n    if value > high { return high }\n    return value\n}\ntest \"public examples\" {\n    assert clamp(4, 0, 10) == 4\n    assert clamp(11, 0, 10) == 10\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"re486bffb5c1e37a5\\\",\\\"target\\\":\\\"fn:clamp\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    if value < low { return low }\\\\n    if value > high { return high }\\\\n    return value\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit solution.keel --request request.json --json\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"re486bffb5c1e37a5\\\",\\\"target\\\":\\\"fn:clamp\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    if value < low { return low }\\\\n    if value > high { return high }\\\\n    return value\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit solution.keel --request request.json --json\"",
+          "aggregated_output": "{\n  \"base_revision\": \"re486bffb5c1e37a5\",\n  \"evidence\": null,\n  \"file\": \"solution.keel\",\n  \"message\": \"Function bodies replaced atomically; interfaces, contracts, and test source preserved.\",\n  \"revision\": \"r56143e4109fb735f\",\n  \"status\": \"APPLIED\",\n  \"target\": \"fn:clamp\",\n  \"targets\": [\n    \"clamp\"\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json'",
+          "aggregated_output": "{\n  \"functions\": 1,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"r56143e4109fb735f\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"rf8f28e13bbaf2962\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rm request.json trial.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rm request.json trial.keel'",
+          "aggregated_output": "",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_7",
+          "type": "agent_message",
+          "text": "Repaired `solution.keel`: values below `low` now return `low`. The exact function interface is preserved, and comparisons avoid integer overflow.\n\nType checking and public tests passed."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 94144,
+          "cached_input_tokens": 80896,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 367,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "d150312e32ec8f4d442034e7c8481fe4934aef157fba910464f836329c8994a1",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "5fb4796a62ef1be1454233549b0544bac4936206029e7bc94382c7e22d7c3902"
+  },
+  {
+    "trial_id": "clamp:0:existing_improved",
+    "task_id": "clamp",
+    "repeat": 0,
+    "condition": "existing_improved",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "#include <stdint.h>\n#include <stdbool.h>\nint64_t clamp(int64_t value, int64_t low, int64_t high) {\n    if (value < low) { return low; }\n    if (value > high) { return high; }\n    return value;\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "369bbee6327b06463307961348c53494af8bcd22d4dbd388be6c9f7e69091e9c",
+      "oracle_sha256": "dc6336f336a1f229168f5cdaba281af82632fe2b835fafa2de3114877b6311b4",
+      "stdout": "",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-11vn8usx",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "f59a076f3777916edee66970c9f5c0372198668b928057a00a1cef3b381dc37b",
+    "elapsed_seconds": 24.26801895799872,
+    "input_tokens": 45686,
+    "cached_input_tokens": 39680,
+    "output_tokens": 296,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9a-864b-7ae0-bf5d-9595f3000ace"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `solution.c`, repair `clamp` while preserving its interface, and run the available validation.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.c' -g 'tools.py' -g 'public*'\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.c' -g 'tools.py' -g 'public*'\"",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-11vn8usx\nsolution.c\ntools.py\npublic_tests.c\npublic_task.json\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py inspect'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py inspect'",
+          "aggregated_output": "{\"revision\": \"213de8dd01e00804f7dc73c5552f25757e5485abdf3ee29346904ab0c688fc09\", \"target\": \"fn:clamp\", \"source\": \"#include <stdint.h>\\n#include <stdbool.h>\\nint64_t clamp(int64_t value, int64_t low, int64_t high) {\\n    if (value < low) { return high; }\\n    if (value > high) { return high; }\\n    return value;\\n}\\n\", \"requirements\": \"Repair clamp(value, low, high): return low below low, high above high, and value otherwise. Callers guarantee low <= high. Int arguments are signed 64-bit integers. Preserve the function interface.\", \"public_cases\": [{\"args\": [4, 0, 10], \"expected\": 4}, {\"args\": [11, 0, 10], \"expected\": 10}], \"effects\": [], \"incomplete\": false}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-11vn8usx/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-11vn8usx/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py check'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py check'",
+          "aggregated_output": "{\"status\": \"PASSED\", \"stdout\": \"\", \"stderr\": \"\", \"assurance\": \"Public examples only; independent acceptance not run\"}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py test'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py test'",
+          "aggregated_output": "{\"status\": \"PASSED\", \"stdout\": \"\", \"stderr\": \"\", \"assurance\": \"Public examples only; independent acceptance not run\"}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "agent_message",
+          "text": "Fixed `solution.c` so values below `low` return `low`. The exact function interface is preserved.\n\n`python3 tools.py check` and `python3 tools.py test` passed. Hidden acceptance assertions were not run."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 45686,
+          "cached_input_tokens": 39680,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 296,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "8175ca018c236f016f5f396ab9aaf6f6a003e82b9b7b0bd9edada3723f2eee09",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "cf02c1a6933654b5e7c8a5a6630a33391ab0ec154d1b0bba94cb96fcd939808b"
+  },
+  {
+    "trial_id": "deadline:0:keel_text",
+    "task_id": "deadline",
+    "repeat": 0,
+    "condition": "keel_text",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "pub fn is_fresh(now: Int, deadline: Int) -> Bool {\n    return now < deadline\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "93254570070d84bbf85edee38544137d7c06f04ed930ec49a510557342d9355d",
+      "oracle_sha256": "df62a263d3dcd82eb863c152d3c6c9ff1690a52157b5916e04377cf076cb403e",
+      "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r51f0aece6c62db12\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"independent acceptance\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-lwk_u_7c",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "8064487299aa75dbdbcf9297da32cc5586af3c2be3c8d6933fa144eaa032a508",
+    "elapsed_seconds": 33.112589833006496,
+    "input_tokens": 73722,
+    "cached_input_tokens": 66432,
+    "output_tokens": 468,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9a-e67f-7d00-add7-131e9931295e"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect the function, make the repair in `solution.keel`, then run the type check and public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.keel -g public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.keel -g public_tests.keel'",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-lwk_u_7c\npublic_tests.keel\nsolution.keel\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "pub fn is_fresh(now: Int, deadline: Int) -> Bool {\n    return now <= deadline\n}\ntest \"public examples\" {\n    assert is_fresh(0, 5) == true\n    assert is_fresh(6, 5) == false\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-lwk_u_7c/solution.keel",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-lwk_u_7c/solution.keel",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json\ncat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json\ncat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "{\n  \"functions\": 1,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"r94d97cbcc569d671\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"rdd2807d64723f14a\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat >> trial.keel <<'EOF'\ntest \\\"strict deadline boundary\\\" {\n    assert is_fresh(5, 5) == false\n    assert is_fresh(-5, -4) == true\n    assert is_fresh(-4, -5) == false\n    assert is_fresh(9223372036854775806, 9223372036854775807) == true\n    assert is_fresh(9223372036854775807, 9223372036854775807) == false\n}\nEOF\n./keel test trial.keel --json\nrm trial.keel\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat >> trial.keel <<'EOF'\ntest \\\"strict deadline boundary\\\" {\n    assert is_fresh(5, 5) == false\n    assert is_fresh(-5, -4) == true\n    assert is_fresh(-4, -5) == false\n    assert is_fresh(9223372036854775806, 9223372036854775807) == true\n    assert is_fresh(9223372036854775807, 9223372036854775807) == false\n}\nEOF\n./keel test trial.keel --json\nrm trial.keel\"",
+          "aggregated_output": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r112db9c41e5bd90b\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"strict deadline boundary\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "agent_message",
+          "text": "Updated `solution.keel` to return `now < deadline`, preserving the exact interface.\n\nValidation passed: type check, public tests, and additional equality, negative timestamp, and signed 64-bit upper-bound cases. Temporary test file removed."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 73722,
+          "cached_input_tokens": 66432,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 468,
+          "reasoning_output_tokens": 24
+        }
+      }
+    ],
+    "events_sha256": "2fbe12a101f27a0665ed8a38aec7dc1fdfbefa934773fa58b88916b4110c0a3b",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "541a2422314c1549cc8e7ad6b3a2fc2f57c4d64fd6ec5d19fa0e9cb506f4e6a7"
+  },
+  {
+    "trial_id": "sum_inclusive:0:existing_conventional",
+    "task_id": "sum_inclusive",
+    "repeat": 0,
+    "condition": "existing_conventional",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "#include <stdint.h>\n#include <stdbool.h>\nint64_t sum_to(int64_t n) {\n    int64_t i = 0;\n    int64_t total = 0;\n    while (i <= n) {\n        total = total + i;\n        i = i + 1;\n    }\n    return total;\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "367d4f76dd92ef564946bee0ba328518d8ab7d54bfdb06699065b3bbfe9064b1",
+      "oracle_sha256": "c7970f70a955e0637667fbc83ad74c35204f1a4deeb95a342bf05789615a0fb6",
+      "stdout": "",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-2snvkeq8",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "60dc3a24e3f0a01395bb7fd9fd0e9cd4530cb4c7c8f3ba73c70caa65bb584a46",
+    "elapsed_seconds": 22.818726124998648,
+    "input_tokens": 72229,
+    "cached_input_tokens": 59904,
+    "output_tokens": 294,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9b-67f5-7301-bff7-780e099280a9"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `solution.c`, fix `sum_to` while preserving its interface, and run the public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.c -g public_tests.c'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.c -g public_tests.c'",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-2snvkeq8\nsolution.c\npublic_tests.c\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.c public_tests.c'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.c public_tests.c'",
+          "aggregated_output": "#include <stdint.h>\n#include <stdbool.h>\nint64_t sum_to(int64_t n) {\n    int64_t i = 0;\n    int64_t total = 0;\n    while (i < n) {\n        total = total + i;\n        i = i + 1;\n    }\n    return total;\n}\n#include \"solution.c\"\nint main(void) {\nif (sum_to(0) != 0LL) return 1;\nreturn 0;\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-2snvkeq8/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-2snvkeq8/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests'",
+          "aggregated_output": "",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "agent_message",
+          "text": "Updated `solution.c` to include `n` in the sum by changing `i < n` to `i <= n`. The function interface is unchanged.\n\nValidation passed: `cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests`."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 72229,
+          "cached_input_tokens": 59904,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 294,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "b8281fcdff9f54f519d03bcb777281c0e01fb516484446ef0ce8a38d9bfd1f24",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "a8727c37c72d748dbfee387f26948b4bab015487a39608a5bb28e93cb7259cec"
+  },
+  {
+    "trial_id": "sum_inclusive:0:existing_improved",
+    "task_id": "sum_inclusive",
+    "repeat": 0,
+    "condition": "existing_improved",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "#include <stdint.h>\n#include <stdbool.h>\nint64_t sum_to(int64_t n) {\n    int64_t i = 0;\n    int64_t total = 0;\n    while (i <= n) {\n        total = total + i;\n        i = i + 1;\n    }\n    return total;\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "367d4f76dd92ef564946bee0ba328518d8ab7d54bfdb06699065b3bbfe9064b1",
+      "oracle_sha256": "c7970f70a955e0637667fbc83ad74c35204f1a4deeb95a342bf05789615a0fb6",
+      "stdout": "",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-a47m9lwu",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "83d1ae24fe4751b5fdf3f14091cad0c6010b9cd07ea2d43d13b374333beb6724",
+    "elapsed_seconds": 32.42977229200187,
+    "input_tokens": 61405,
+    "cached_input_tokens": 54272,
+    "output_tokens": 533,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9b-c18f-70f0-a215-2e251e96759c"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `solution.c`, repair `sum_to` while preserving its interface, and run the available checks.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'solution.c' -g 'tools.py' -g 'public_task.json'\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd && rg --files -g 'AGENTS.md' -g 'solution.c' -g 'tools.py' -g 'public_task.json'\"",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-a47m9lwu\nsolution.c\ntools.py\npublic_task.json\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py inspect'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py inspect'",
+          "aggregated_output": "{\"revision\": \"ac9df514bc68b0f5b90d5f33bf96a500892caa1b35d7853c3a5db5b47dec2141\", \"target\": \"fn:sum_to\", \"source\": \"#include <stdint.h>\\n#include <stdbool.h>\\nint64_t sum_to(int64_t n) {\\n    int64_t i = 0;\\n    int64_t total = 0;\\n    while (i < n) {\\n        total = total + i;\\n        i = i + 1;\\n    }\\n    return total;\\n}\\n\", \"requirements\": \"Repair sum_to(n): return the sum of all integers from 0 through n inclusive. Callers guarantee 0 <= n <= 10000. Preserve the function interface.\", \"public_cases\": [{\"args\": [0], \"expected\": 0}], \"effects\": [], \"incomplete\": false}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-a47m9lwu/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-a47m9lwu/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py check'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py check'",
+          "aggregated_output": "{\"status\": \"PASSED\", \"stdout\": \"\", \"stderr\": \"\", \"assurance\": \"Public examples only; independent acceptance not run\"}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py test'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py test'",
+          "aggregated_output": "{\"status\": \"PASSED\", \"stdout\": \"\", \"stderr\": \"\", \"assurance\": \"Public examples only; independent acceptance not run\"}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"python3 - <<'PY'\nimport ctypes\nimport pathlib\nimport subprocess\nimport tempfile\nwith tempfile.TemporaryDirectory() as directory:\n    library = pathlib.Path(directory) / 'solution.dylib'\n    subprocess.run(['cc', '-shared', '-fPIC', '-Wall', '-Wextra', '-Werror', 'solution.c', '-o', str(library)], check=True)\n    function = ctypes.CDLL(str(library)).sum_to\n    function.argtypes = [ctypes.c_int64]\n    function.restype = ctypes.c_int64\n    for n in range(10001):\n        assert function(n) == n * (n + 1) // 2, n\nprint('Passed all 10,001 valid inputs.')\nPY\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"python3 - <<'PY'\nimport ctypes\nimport pathlib\nimport subprocess\nimport tempfile\nwith tempfile.TemporaryDirectory() as directory:\n    library = pathlib.Path(directory) / 'solution.dylib'\n    subprocess.run(['cc', '-shared', '-fPIC', '-Wall', '-Wextra', '-Werror', 'solution.c', '-o', str(library)], check=True)\n    function = ctypes.CDLL(str(library)).sum_to\n    function.argtypes = [ctypes.c_int64]\n    function.restype = ctypes.c_int64\n    for n in range(10001):\n        assert function(n) == n * (n + 1) // 2, n\nprint('Passed all 10,001 valid inputs.')\nPY\"",
+          "aggregated_output": "Passed all 10,001 valid inputs.\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_7",
+          "type": "agent_message",
+          "text": "Fixed `solution.c` by changing the loop condition to `i <= n`, including `n` in the sum. Preserved the exact function interface.\n\nValidation passed: provided checks and exhaustive testing of all 10,001 valid inputs."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 61405,
+          "cached_input_tokens": 54272,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 533,
+          "reasoning_output_tokens": 49
+        }
+      }
+    ],
+    "events_sha256": "af5e184d085c379f18f7880402186015523ae72f6069db5b2025c142dd81b566",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "5769de7b506f83e1fa4050d4713b8e76118ed3a16e072d19d403ab48068cc77c"
+  },
+  {
+    "trial_id": "clamp:0:keel_text",
+    "task_id": "clamp",
+    "repeat": 0,
+    "condition": "keel_text",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "pub fn clamp(value: Int, low: Int, high: Int) -> Int {\n    if value < low { return low }\n    if value > high { return high }\n    return value\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "33c4594e297e8a3bbda792dd2b6ab0397cb231dde531ae6cb61edc6110fa82e4",
+      "oracle_sha256": "dc6336f336a1f229168f5cdaba281af82632fe2b835fafa2de3114877b6311b4",
+      "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r47618578ec622a1b\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"independent acceptance\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-n4gei99j",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "90c49f596ecf0c39392e8c6efeee646475d6c4a5f3c65e9beb8554def4164cf1",
+    "elapsed_seconds": 20.148140457997215,
+    "input_tokens": 45783,
+    "cached_input_tokens": 41984,
+    "output_tokens": 311,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9c-40e5-7de1-8065-e12e4ed25321"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `solution.keel`, repair the clamp logic, and run the type check and public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.keel -g public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.keel -g public_tests.keel'",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-n4gei99j\npublic_tests.keel\nsolution.keel\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "pub fn clamp(value: Int, low: Int, high: Int) -> Int {\n    if value < low { return high }\n    if value > high { return high }\n    return value\n}\ntest \"public examples\" {\n    assert clamp(4, 0, 10) == 4\n    assert clamp(11, 0, 10) == 10\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-n4gei99j/solution.keel",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-n4gei99j/solution.keel",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"rf8f28e13bbaf2962\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json'",
+          "aggregated_output": "{\n  \"functions\": 1,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"r56143e4109fb735f\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rm trial.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rm trial.keel'",
+          "aggregated_output": "",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_7",
+          "type": "agent_message",
+          "text": "Fixed `solution.keel` so values below `low` return `low`. The exact function interface is preserved.\n\nValidation: type check and public tests passed."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 45783,
+          "cached_input_tokens": 41984,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 311,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "7ac509ff3b74fbaad8601b1b804ccb86d404474061cd19361327573964d046b0",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "2a9e022ae24495c7a9568d4c5d4ba06fa69ec663d5f5e8258d12ff304929cebb"
+  },
+  {
+    "trial_id": "sum_inclusive:0:keel_protocol",
+    "task_id": "sum_inclusive",
+    "repeat": 0,
+    "condition": "keel_protocol",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "pub fn sum_to(n: Int) -> Int {\n    var i = 0\n    var total = 0\n    while i <= n {\n        total = total + i\n        i = i + 1\n    }\n    return total\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "ff53c3fe04e236b64fb6ad52cb20a68824a5117b1fc40a8c8a72dfb2ae82c60b",
+      "oracle_sha256": "c7970f70a955e0637667fbc83ad74c35204f1a4deeb95a342bf05789615a0fb6",
+      "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r3f8504d8197d98bf\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"independent acceptance\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-ekh34xb3",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "0a05645b23259cd5e0fcb226584ed4f1b52a5c04621b3b3a50c6d4c37f3ebe4f",
+    "elapsed_seconds": 24.726255999994464,
+    "input_tokens": 74232,
+    "cached_input_tokens": 60544,
+    "output_tokens": 347,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9c-9030-7da2-bc3c-d9383393db4a"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `sum_to`, replace its body using the semantic edit protocol, and run the type check and public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.keel' -g 'public_tests.keel'; ./keel inspect solution.keel --symbol sum_to --json\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.keel' -g 'public_tests.keel'; ./keel inspect solution.keel --symbol sum_to --json\"",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-ekh34xb3\npublic_tests.keel\nsolution.keel\n{\n  \"functions\": [\n    {\n      \"callers\": [],\n      \"contracts\": {\n        \"assurance\": \"ENFORCED when executed\",\n        \"ensures\": 0,\n        \"requires\": 0\n      },\n      \"dependencies\": [],\n      \"effects\": [],\n      \"name\": \"sum_to\",\n      \"parameters\": [\n        {\n          \"mode\": \"Value\",\n          \"name\": \"n\",\n          \"ty\": \"Int\"\n        }\n      ],\n      \"public\": true,\n      \"result\": \"Int\",\n      \"source\": \"pub fn sum_to(n: Int) -> Int {\\n    var i = 0\\n    var total = 0\\n    while i < n {\\n        total = total + i\\n        i = i + 1\\n    }\\n    return total\\n}\",\n      \"target\": \"fn:sum_to\"\n    }\n  ],\n  \"holes\": [],\n  \"incomplete\": false,\n  \"resource_behavior\": {\n    \"allocation\": \"Text clone, concat, conversion, response, and body allocate; transitive costs not analyzed\",\n    \"deep_copies\": \"only explicit library operations\",\n    \"external_behavior\": \"HTTP adapter is trusted native code\"\n  },\n  \"revision\": \"rbb276521e449d774\",\n  \"source_character_budget\": 12000,\n  \"tests\": []\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"rbb276521e449d774\\\",\\\"target\\\":\\\"fn:sum_to\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    var i = 0\\\\n    var total = 0\\\\n    while i <= n {\\\\n        total = total + i\\\\n        i = i + 1\\\\n    }\\\\n    return total\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit solution.keel --request request.json --json\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"rbb276521e449d774\\\",\\\"target\\\":\\\"fn:sum_to\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    var i = 0\\\\n    var total = 0\\\\n    while i <= n {\\\\n        total = total + i\\\\n        i = i + 1\\\\n    }\\\\n    return total\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit solution.keel --request request.json --json\"",
+          "aggregated_output": "{\n  \"base_revision\": \"rbb276521e449d774\",\n  \"evidence\": null,\n  \"file\": \"solution.keel\",\n  \"message\": \"Function bodies replaced atomically; interfaces, contracts, and test source preserved.\",\n  \"revision\": \"r22e5a7c236f91b65\",\n  \"status\": \"APPLIED\",\n  \"target\": \"fn:sum_to\",\n  \"targets\": [\n    \"sum_to\"\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json\ncat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json\nrm request.json trial.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json\ncat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json\nrm request.json trial.keel'",
+          "aggregated_output": "{\n  \"functions\": 1,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"r22e5a7c236f91b65\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r53cce3376a87982b\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "agent_message",
+          "text": "Repaired `solution.keel` by changing the loop condition to `i <= n`, including `n` in the sum. The exact function interface is preserved.\n\nType checking and the public test passed."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 74232,
+          "cached_input_tokens": 60544,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 347,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "4673af16dfba29d03f5729e62b0eb4687bd3b97cc0e90b498c0bbb36a24c3e1d",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "9142702358a383222ae4212552640cbb5960d692e5ac4995b3c03e4f8c5674e5"
+  },
+  {
+    "trial_id": "deadline:0:keel_protocol",
+    "task_id": "deadline",
+    "repeat": 0,
+    "condition": "keel_protocol",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "pub fn is_fresh(now: Int, deadline: Int) -> Bool {\n    return now < deadline\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "93254570070d84bbf85edee38544137d7c06f04ed930ec49a510557342d9355d",
+      "oracle_sha256": "df62a263d3dcd82eb863c152d3c6c9ff1690a52157b5916e04377cf076cb403e",
+      "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r51f0aece6c62db12\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"independent acceptance\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-2rz7nosk",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "b3e0af41505764b96072e317be81a436125c7f9ee8b50df560d756361f799cce",
+    "elapsed_seconds": 21.538035709003452,
+    "input_tokens": 46598,
+    "cached_input_tokens": 39936,
+    "output_tokens": 323,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9c-f179-7bc2-9a88-1fd877cacf8b"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `is_fresh`, replace its body with a strict comparison, and run the type check and public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel inspect solution.keel --symbol is_fresh --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel inspect solution.keel --symbol is_fresh --json'",
+          "aggregated_output": "{\n  \"functions\": [\n    {\n      \"callers\": [],\n      \"contracts\": {\n        \"assurance\": \"ENFORCED when executed\",\n        \"ensures\": 0,\n        \"requires\": 0\n      },\n      \"dependencies\": [],\n      \"effects\": [],\n      \"name\": \"is_fresh\",\n      \"parameters\": [\n        {\n          \"mode\": \"Value\",\n          \"name\": \"now\",\n          \"ty\": \"Int\"\n        },\n        {\n          \"mode\": \"Value\",\n          \"name\": \"deadline\",\n          \"ty\": \"Int\"\n        }\n      ],\n      \"public\": true,\n      \"result\": \"Bool\",\n      \"source\": \"pub fn is_fresh(now: Int, deadline: Int) -> Bool {\\n    return now <= deadline\\n}\",\n      \"target\": \"fn:is_fresh\"\n    }\n  ],\n  \"holes\": [],\n  \"incomplete\": false,\n  \"resource_behavior\": {\n    \"allocation\": \"Text clone, concat, conversion, response, and body allocate; transitive costs not analyzed\",\n    \"deep_copies\": \"only explicit library operations\",\n    \"external_behavior\": \"HTTP adapter is trusted native code\"\n  },\n  \"revision\": \"r656c3c74a8b891b2\",\n  \"source_character_budget\": 12000,\n  \"tests\": []\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "pub fn is_fresh(now: Int, deadline: Int) -> Bool {\n    return now <= deadline\n}\ntest \"public examples\" {\n    assert is_fresh(0, 5) == true\n    assert is_fresh(6, 5) == false\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"r656c3c74a8b891b2\\\",\\\"target\\\":\\\"fn:is_fresh\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    return now < deadline\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit solution.keel --request request.json --json\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat > request.json <<'EOF'\n{\\\"base_revision\\\":\\\"r656c3c74a8b891b2\\\",\\\"target\\\":\\\"fn:is_fresh\\\",\\\"operation\\\":\\\"replace_body\\\",\\\"source\\\":\\\"{\\\\n    return now < deadline\\\\n}\\\",\\\"run\\\":\\\"check\\\"}\nEOF\n./keel edit solution.keel --request request.json --json\"",
+          "aggregated_output": "{\n  \"base_revision\": \"r656c3c74a8b891b2\",\n  \"evidence\": null,\n  \"file\": \"solution.keel\",\n  \"message\": \"Function bodies replaced atomically; interfaces, contracts, and test source preserved.\",\n  \"revision\": \"r94d97cbcc569d671\",\n  \"status\": \"APPLIED\",\n  \"target\": \"fn:is_fresh\",\n  \"targets\": [\n    \"is_fresh\"\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"rdd2807d64723f14a\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json'",
+          "aggregated_output": "{\n  \"functions\": 1,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"r94d97cbcc569d671\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rm request.json trial.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rm request.json trial.keel'",
+          "aggregated_output": "",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_7",
+          "type": "agent_message",
+          "text": "Updated `solution.keel` to return `now < deadline`, preserving the exact interface. Direct comparison handles all signed 64-bit timestamps without arithmetic overflow.\n\nType check and public tests passed."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 46598,
+          "cached_input_tokens": 39936,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 323,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "8451f3bd8caa1c6b8814d43811c7761663415a99f226171be4addfce20c6327a",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "b2fc2fa00de78cab906e33cfe3d7398dedf1cfe3a66b9784014013447ac3b6ef"
+  },
+  {
+    "trial_id": "clamp:0:existing_conventional",
+    "task_id": "clamp",
+    "repeat": 0,
+    "condition": "existing_conventional",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "#include <stdint.h>\n#include <stdbool.h>\nint64_t clamp(int64_t value, int64_t low, int64_t high) {\n    if (value < low) { return low; }\n    if (value > high) { return high; }\n    return value;\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "369bbee6327b06463307961348c53494af8bcd22d4dbd388be6c9f7e69091e9c",
+      "oracle_sha256": "dc6336f336a1f229168f5cdaba281af82632fe2b835fafa2de3114877b6311b4",
+      "stdout": "",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-kka1brok",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "edb8b7b599e51e7fa9f22dc464c29af73d6f1b48b27a7b1bfaf08f1aa0e33d53",
+    "elapsed_seconds": 20.87169499999436,
+    "input_tokens": 60233,
+    "cached_input_tokens": 56576,
+    "output_tokens": 289,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9d-4646-7522-ba97-c74d6272ea15"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `solution.c`, fix the clamp logic, and run the public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.c' -g 'public_tests.c'\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.c' -g 'public_tests.c'\"",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-kka1brok\nsolution.c\npublic_tests.c\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.c public_tests.c'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.c public_tests.c'",
+          "aggregated_output": "#include <stdint.h>\n#include <stdbool.h>\nint64_t clamp(int64_t value, int64_t low, int64_t high) {\n    if (value < low) { return high; }\n    if (value > high) { return high; }\n    return value;\n}\n#include \"solution.c\"\nint main(void) {\nif (clamp(4, 0, 10) != 4LL) return 1;\nif (clamp(11, 0, 10) != 10LL) return 1;\nreturn 0;\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-kka1brok/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-kka1brok/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests'",
+          "aggregated_output": "",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "agent_message",
+          "text": "Fixed `solution.c` to return `low` when `value < low`, preserving the exact function interface.\n\nValidation passed: `cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests`."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 60233,
+          "cached_input_tokens": 56576,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 289,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "8fcfeff29c0f1dee203d2d5a8ca7cf779dc3e47c79ab8a95664aba30cd9e0554",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "7f3f79198338aba0656fa4e44d696afa7a99b0c941e0627602f44e8012c142f3"
+  },
+  {
+    "trial_id": "deadline:0:existing_conventional",
+    "task_id": "deadline",
+    "repeat": 0,
+    "condition": "existing_conventional",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "#include <stdint.h>\n#include <stdbool.h>\nbool is_fresh(int64_t now, int64_t deadline) {\n    return now < deadline;\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "2695dbafb9f001c9dad46e724eaee63536a8ad94e460707a007a0d22c0da937a",
+      "oracle_sha256": "df62a263d3dcd82eb863c152d3c6c9ff1690a52157b5916e04377cf076cb403e",
+      "stdout": "",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-6ma_cjfj",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "938542cadfb6a477f1baa9dc2dc2c9ab74014b881192186b62004dee58863a30",
+    "elapsed_seconds": 23.59257812499709,
+    "input_tokens": 72216,
+    "cached_input_tokens": 60288,
+    "output_tokens": 278,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9d-986c-72b1-9d2d-8220239beb65"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `solution.c`, update the comparison, and run the public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.c' -g 'public_tests.c'\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"pwd; rg --files -g 'AGENTS.md' -g 'solution.c' -g 'public_tests.c'\"",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-6ma_cjfj\nsolution.c\npublic_tests.c\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.c public_tests.c'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.c public_tests.c'",
+          "aggregated_output": "#include <stdint.h>\n#include <stdbool.h>\nbool is_fresh(int64_t now, int64_t deadline) {\n    return now <= deadline;\n}\n#include \"solution.c\"\nint main(void) {\nif (is_fresh(0, 5) != 1LL) return 1;\nif (is_fresh(6, 5) != 0LL) return 1;\nreturn 0;\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-6ma_cjfj/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-6ma_cjfj/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cc -std=c11 -O2 public_tests.c -o public_tests && ./public_tests'",
+          "aggregated_output": "",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "agent_message",
+          "text": "Updated `solution.c` to return `now < deadline`, preserving the exact interface. Equal timestamps now correctly return false, and comparison handles the full signed 64-bit range without overflow.\n\nPublic tests passed using the specified command."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 72216,
+          "cached_input_tokens": 60288,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 278,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "3891a54da881cac72d4eeabdacef505dc635f57aabd789a536427ca7ddf270fe",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "3dab72f9f4aef3a46130dc6dfc7cd12d1fea2362c454c4371a8e21179d96352c"
+  },
+  {
+    "trial_id": "deadline:0:existing_improved",
+    "task_id": "deadline",
+    "repeat": 0,
+    "condition": "existing_improved",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "#include <stdint.h>\n#include <stdbool.h>\nbool is_fresh(int64_t now, int64_t deadline) {\n    return now < deadline;\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "2695dbafb9f001c9dad46e724eaee63536a8ad94e460707a007a0d22c0da937a",
+      "oracle_sha256": "df62a263d3dcd82eb863c152d3c6c9ff1690a52157b5916e04377cf076cb403e",
+      "stdout": "",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-lyqs_kzy",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "4c3f4fe5ffa4d37fe0955daf97d85a95afab8b590ad2e98dfa5330fa5d713fa9",
+    "elapsed_seconds": 21.080732665999676,
+    "input_tokens": 45368,
+    "cached_input_tokens": 39168,
+    "output_tokens": 262,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9d-f4e4-7e63-b051-1ab06c0619a6"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect `solution.c`, fix the comparison, and run the available validation.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py inspect'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py inspect'",
+          "aggregated_output": "{\"revision\": \"a2b1c654584652f1db69f86481f6ba5123dd4af9ea560ee8a0651d364fa422b1\", \"target\": \"fn:is_fresh\", \"source\": \"#include <stdint.h>\\n#include <stdbool.h>\\nbool is_fresh(int64_t now, int64_t deadline) {\\n    return now <= deadline;\\n}\\n\", \"requirements\": \"Repair is_fresh(now, deadline): a cached value is fresh precisely when now is strictly before deadline. Int arguments are signed 64-bit timestamps. Preserve the function interface.\", \"public_cases\": [{\"args\": [0, 5], \"expected\": true}, {\"args\": [6, 5], \"expected\": false}], \"effects\": [], \"incomplete\": false}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rg --files -g AGENTS.md -g solution.c'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'rg --files -g AGENTS.md -g solution.c'",
+          "aggregated_output": "solution.c\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-lyqs_kzy/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-lyqs_kzy/solution.c",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py check'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py check'",
+          "aggregated_output": "{\"status\": \"PASSED\", \"stdout\": \"\", \"stderr\": \"\", \"assurance\": \"Public examples only; independent acceptance not run\"}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py test'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'python3 tools.py test'",
+          "aggregated_output": "{\"status\": \"PASSED\", \"stdout\": \"\", \"stderr\": \"\", \"assurance\": \"Public examples only; independent acceptance not run\"}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "agent_message",
+          "text": "Updated `solution.c` to return `now < deadline`, preserving the exact interface. Equal timestamps now correctly return false.\n\nBoth `python3 tools.py check` and `python3 tools.py test` passed. Hidden acceptance assertions were not run."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 45368,
+          "cached_input_tokens": 39168,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 262,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "events_sha256": "3015d437523a1ec3cac802aa7fdad521b8a92d27d1f1815f87f96527682c9725",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "189d492cc5b17d038acc623c88b523e42b973e8748b333fda934ab8d0d185a87"
+  },
+  {
+    "trial_id": "sum_inclusive:0:keel_text",
+    "task_id": "sum_inclusive",
+    "repeat": 0,
+    "condition": "keel_text",
+    "plan_sha256": "215437a3bf07342f0815d8dd7fb778cecd2b748e66282adede8bcfabe62b9c16",
+    "model": "gpt-6-astra",
+    "budget": {
+      "wall_seconds": 180,
+      "total_tokens": 32000
+    },
+    "source": "pub fn sum_to(n: Int) -> Int {\n    var i = 0\n    var total = 0\n    while i <= n {\n        total = total + i\n        i = i + 1\n    }\n    return total\n}\n",
+    "acceptance": {
+      "accepted": false,
+      "returncode": 0,
+      "evaluator": "independent_native_assertions_v1",
+      "source_sha256": "ff53c3fe04e236b64fb6ad52cb20a68824a5117b1fc40a8c8a72dfb2ae82c60b",
+      "oracle_sha256": "c7970f70a955e0637667fbc83ad74c35204f1a4deeb95a342bf05789615a0fb6",
+      "stdout": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r3f8504d8197d98bf\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"independent acceptance\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+      "stderr": "",
+      "accepted_before_budget_and_integrity_checks": true
+    },
+    "command": [
+      "codex",
+      "exec",
+      "--json",
+      "--ignore-user-config",
+      "--ephemeral",
+      "--sandbox",
+      "workspace-write",
+      "--skip-git-repo-check",
+      "-C",
+      "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-_2vcdysk",
+      "--model",
+      "gpt-6-astra",
+      "-c",
+      "approval_policy=\"never\"",
+      "-"
+    ],
+    "prompt_sha256": "d99cf05e5a86387215cb428fa6c66701f3487fdab4ca4a07e883765b57b699ad",
+    "elapsed_seconds": 25.870579124995857,
+    "input_tokens": 61531,
+    "cached_input_tokens": 54912,
+    "output_tokens": 429,
+    "timed_out": false,
+    "budget_exceeded": true,
+    "returncode": 0,
+    "protected_files_changed": [],
+    "stderr": "",
+    "events": [
+      {
+        "type": "thread.started",
+        "thread_id": "01a0ff9e-47c8-7033-9154-be1dfddf7eb1"
+      },
+      {
+        "type": "turn.started"
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_0",
+          "type": "agent_message",
+          "text": "I\u2019ll inspect the function, repair it in `solution.keel`, then run the type check and public tests.\n"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.keel -g public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_1",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'pwd; rg --files -g AGENTS.md -g solution.keel -g public_tests.keel'",
+          "aggregated_output": "/private/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-_2vcdysk\npublic_tests.keel\nsolution.keel\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_2",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc 'cat solution.keel public_tests.keel'",
+          "aggregated_output": "pub fn sum_to(n: Int) -> Int {\n    var i = 0\n    var total = 0\n    while i < n {\n        total = total + i\n        i = i + 1\n    }\n    return total\n}\ntest \"public examples\" {\n    assert sum_to(0) == 0\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-_2vcdysk/solution.keel",
+              "kind": "update"
+            }
+          ],
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_3",
+          "type": "file_change",
+          "changes": [
+            {
+              "path": "/var/folders/bb/kxz5tr054xz1988ss43gh7hh0000gn/T/keel-agent-pilot-_2vcdysk/solution.keel",
+              "kind": "update"
+            }
+          ],
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json\ncat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_4",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc './keel check solution.keel --json\ncat solution.keel public_tests.keel > trial.keel && ./keel test trial.keel --json'",
+          "aggregated_output": "{\n  \"functions\": 1,\n  \"holes\": [],\n  \"message\": \"Parsing, types, ownership, and declared effects checked. No behavioral proof or tests implied.\",\n  \"revision\": \"r22e5a7c236f91b65\",\n  \"status\": \"CHECKED\",\n  \"tests\": 0\n}\n{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r53cce3376a87982b\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.started",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat >> trial.keel <<'EOF'\ntest \\\"inclusive sums and upper bound\\\" {\n    assert sum_to(1) == 1\n    assert sum_to(2) == 3\n    assert sum_to(10) == 55\n    assert sum_to(10000) == 50005000\n}\nEOF\n./keel test trial.keel --json\nrm trial.keel\"",
+          "aggregated_output": "",
+          "exit_code": null,
+          "status": "in_progress"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_5",
+          "type": "command_execution",
+          "command": "/bin/zsh -lc \"cat >> trial.keel <<'EOF'\ntest \\\"inclusive sums and upper bound\\\" {\n    assert sum_to(1) == 1\n    assert sum_to(2) == 3\n    assert sum_to(10) == 55\n    assert sum_to(10000) == 50005000\n}\nEOF\n./keel test trial.keel --json\nrm trial.keel\"",
+          "aggregated_output": "{\n  \"assurance\": \"TESTED means only the recorded cases passed; contracts are ENFORCED at runtime, never PROVEN\",\n  \"holes\": [],\n  \"limits\": {\n    \"memory_enforced\": false,\n    \"memory_mib\": 256,\n    \"suite_ms\": 30000,\n    \"worker_ms\": 2000\n  },\n  \"revision\": \"r1d73ddcce25e439b\",\n  \"status\": \"TESTED\",\n  \"tests\": [\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"public examples\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    },\n    {\n      \"case_count_is_budget\": false,\n      \"cases\": 1,\n      \"name\": \"inclusive sums and upper bound\",\n      \"seed\": 1,\n      \"status\": \"TESTED\"\n    }\n  ]\n}\n",
+          "exit_code": 0,
+          "status": "completed"
+        }
+      },
+      {
+        "type": "item.completed",
+        "item": {
+          "id": "item_6",
+          "type": "agent_message",
+          "text": "Repaired `solution.keel` by changing `i < n` to `i <= n`, including `n` in the sum. The function interface is unchanged.\n\nValidation passed: type check, public test, and additional cases for 1, 2, 10, and 10000. Temporary test file removed."
+        }
+      },
+      {
+        "type": "turn.completed",
+        "usage": {
+          "input_tokens": 61531,
+          "cached_input_tokens": 54912,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 429,
+          "reasoning_output_tokens": 12
+        }
+      }
+    ],
+    "events_sha256": "a710fd555af6ae9a2ba42b32388d64c0900109681e55741be07aefdecd98b2c5",
+    "condition_isolation_verified": false,
+    "compiler_sha256": "d6f8767c9b1ad02b70a4acff75d08cc8de8e892240e3a5a5f41c098be1cdc218",
+    "environment": {
+      "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+      "python": "3.13.2"
+    },
+    "costs": {
+      "inference_usd": null,
+      "tool_usd": null,
+      "metering_evidence": null
+    },
+    "limitations": [
+      "Subscription token usage is not a dollar cost.",
+      "Tool conditions are instructed, not sandbox-enforced; this is an exploratory pilot.",
+      "Total-token budget is evaluated after the turn; over-budget repairs are rejected.",
+      "Model selection is pinned by CLI argument; backend identity is not independently attested."
+    ],
+    "integrity_sha256": "fccfda92eeee6158c7fba15d41f7b5dc2000b8c85e666748d91eb7c61b8e901f"
+  }
+]

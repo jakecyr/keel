@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "release_status": "NOT_PRODUCTION_READY",
+  "original_design_complete": false,
+  "supported_subset": [
+    "readable statically checked functions and control flow",
+    "checked Int, Bool, Text, List<Int>, Option<Int>, Result<Int, Text>",
+    "restricted read/edit/take ownership and deterministic cleanup",
+    "runtime contracts, effects, host permission gates",
+    "example/property tests, shrinking, replay, native/reference comparison",
+    "revision-bound single-file body transactions and acceptance-file protection",
+    "project init, build, check, lint, format, test, doctor",
+    "embedded agent guides and generated AGENTS.md/CLAUDE.md",
+    "whole-source cached JSON-lines service",
+    "bounded child processes and Linux worker memory limits",
+    "source installation, release installer, CI packaging and tests"
+  ],
+  "remaining_original_design_work": [
+    "nominal records and user-defined tagged unions",
+    "arbitrary simple generics and general Option/Result",
+    "Shared<T> and owner-managed graph handles",
+    "structured concurrency, bounded channels, cancellation",
+    "typed capability objects and controlled-world simulations",
+    "generic generators, stateful shrinking, fault injection and mutation testing",
+    "expression-level structural edits and multi-file transactions",
+    "declaration-level incrementality and Cranelift",
+    "modules, dependency lockfiles, artifact hashes and typed FFI",
+    "bounded structured production telemetry and secret-bearing types",
+    "formal ownership model, sustained fuzzing and external security review",
+    "signed reproducible releases and published compatibility guarantees"
+  ],
+  "local_validation_platform": "macOS ARM64",
+  "ci_configured_platforms": ["Linux", "macOS"],
+  "remote_ci_executed_by_this_session": false,
+  "release_published_by_this_session": false,
+  "efficiency_target": {
+    "required_cost_reduction": 0.25,
+    "status": "UNKNOWN",
+    "evidence": "../benchmarks/results/README.md",
+    "limitations": [
+      "12 exploratory trials on only three microtasks",
+      "all trials exceeded the preregistered token budget",
+      "actual monetary costs absent and condition isolation not attested",
+      "Keel protocol token usage exceeded the improved-C baseline"
+    ]
+  },
+  "release_criteria": "release-gaps.md"
+}

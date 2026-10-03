@@ -1,136 +1,174 @@
 # Keel
 
-A working, experimental implementation of an agent-oriented language: readable source, static checks, native executables, and structured development feedback.
+Readable code. Native executables. A compiler that helps both developers and coding agents inspect, change, and test small units of code.
 
-The repository contains a Rust compiler, a small trusted C runtime, a localhost web server written in Keel, and compiler/runtime regression tests. It implements a deliberately small **v0**, not the entire proposed language. The exact semantics and remaining design are in [docs/language.md](docs/language.md) and [docs/architecture.md](docs/architecture.md).
+**Status:** working experimental language. Use it to evaluate the language and build small projects; it is not yet a production-certified toolchain. [Supported features](#what-can-i-write-today) and [release gaps](docs/release-gaps.md) are explicit.
 
-## Run the web server
+## 1. Install the CLI
 
-Requires Rust/Cargo and a POSIX environment with a GCC/Clang-compatible C compiler. Tested on macOS ARM64. The regression suite also uses AddressSanitizer and UndefinedBehaviorSanitizer.
+From an existing checkout, run `cargo install --path . --locked`. Once the
+repository is published on GitHub, a fresh installation is:
 
 ```sh
-cargo build --release --locked
-./target/release/keel check examples/web_server.keel
-./target/release/keel test examples/web_server.keel --cases 1000 --seed 42
-./target/release/keel run examples/web_server.keel --allow-net=127.0.0.1:8080
+git clone https://github.com/jakecyr/keel.git
+cd keel
+cargo install --path . --locked
+keel --version
+keel doctor
 ```
 
-From another terminal:
+You need **Rust/Cargo and a C compiler**. On macOS, install the Xcode Command Line Tools with `xcode-select --install`. On Linux, install your distribution's C compiler toolchain. `keel doctor` checks that native compilation works. macOS and Linux are the current target platforms; Windows is not supported yet.
+
+Cargo normally installs `keel` into `~/.cargo/bin`. If your shell cannot find it:
 
 ```sh
-curl -i http://127.0.0.1:8080/
-curl -i http://127.0.0.1:8080/health
-curl -i http://127.0.0.1:8080/square
+export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+```
+
+Add that line to your shell's configuration if needed. Re-run `cargo install --path . --locked --force` after pulling compiler updates. To uninstall a Cargo installation, use `cargo uninstall keel`.
+
+### Download installation — after a GitHub release is published
+
+Release installation requires published assets in [jakecyr/keel](https://github.com/jakecyr/keel/releases). This development work does not publish a release. CI builds archives and checksums; those are workflow artifacts, not public releases. You can inspect the installer locally:
+
+```sh
+sh scripts/install.sh --help
+```
+
+After the repository and a release are published:
+
+```sh
+curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/jakecyr/keel/main/scripts/install.sh | sh
+```
+
+Prefer reviewing the script first. To pin a published version, append `-s -- --version VERSION` to `sh`; forks can pass `--repo OWNER/REPOSITORY`. The installer checks the archive checksum, installs without `sudo`, and prints PATH instructions instead of changing your shell configuration. See `sh scripts/install.sh --help` for installation-directory options. Downloaded Keel compilers still need a local C compiler to build programs; the resulting application binaries do not need Rust or Keel to run.
+
+## 2. Create your first project
+
+```sh
+keel init hello-keel
+cd hello-keel
+keel run . --allow-stdout
+```
+
+Output:
+
+```text
+Hello from Keel!
+```
+
+`keel init` creates:
+
+```text
+hello-keel/
+├── keel.json                 # Explicit source and acceptance-test files
+├── keel.policy.json          # Runtime permissions; starts with no grants
+├── src/main.keel             # Your program
+├── tests/acceptance.keel      # Independent behavioral checks
+├── AGENTS.md                 # Instructions for coding agents
+└── CLAUDE.md                 # Same entry point for Claude-based tools
+```
+
+Already in an existing repository? Run `keel init .`. It refuses to overwrite existing source files and preserves human-written agent instructions. Re-running init refreshes the marked Keel guidance without replacing your program or tests.
+
+## 3. Build, format, lint, and test
+
+From your project directory:
+
+```sh
+keel fmt .                         # Format source indentation
+keel check .                       # Types, ownership, and effects
+keel lint .                        # Unused bindings and effects
+keel test .                        # Native examples and properties
+keel test . --engine both           # Compare native and reference execution
+keel build . -o build/hello
+./build/hello --allow-stdout
+```
+
+Each command also accepts a single `.keel` file. Add `--json` for structured diagnostics. Use `keel fmt . --check` and `keel lint . --deny-warnings` in CI.
+
+Property-test budgets and replay are explicit:
+
+```sh
+keel test . --cases 1000 --seed 42 --timeout-ms 2000 --budget-ms 30000
+keel test . --filter "exact property name" --value 17 --json
+```
+
+`TESTED` means the recorded cases passed. Reached holes are `BLOCKED`; timeouts are `UNKNOWN`. Neither counts as a pass. Linux workers enforce the configured memory limit; macOS currently reports that limit as unenforced.
+
+## 4. Use Keel with a coding agent
+
+Tell your agent: **“Read AGENTS.md and run `keel agent context . --json`.”** The generated `AGENTS.md` and `CLAUDE.md` already contain this instruction.
+
+The installed CLI includes versioned, offline language documentation:
+
+```sh
+keel agent context . --json
+keel agent context . --symbol greet --json
+keel agent spec language
+keel agent spec collections
+keel agent commands --json
+keel api list.get --json
+```
+
+Context includes supported syntax, available commands, the current source revision, the requested function, dependency signatures, callers, contracts, and holes. It marks truncated implementation snippets. Agents can ask for more without reading the whole repository.
+
+Agents can use ordinary edits or revision-bound `keel edit` transactions. Test files named in the manifest—including their oracle/helper functions—are protected from structural edits. Stale or invalid transactions leave source unchanged. For integrations that keep a process open, `keel serve` provides a JSON-lines interface with bounded snapshot caching. [Agent protocol and edit examples →](docs/agent-protocol.md)
+
+## Try the web server
+
+From the compiler repository:
+
+```sh
+keel test examples/web --engine both --cases 1000 --seed 42
+keel run examples/web --policy examples/web/keel.policy.json
+```
+
+In another terminal:
+
+```sh
+curl http://127.0.0.1:8080/
+curl http://127.0.0.1:8080/health
+curl http://127.0.0.1:8080/square
 curl -i http://127.0.0.1:8080/missing
 ```
 
-These return a greeting, `ok`, `144`, and a 404. Stop the server with Ctrl-C. The binary is `build/web_server`; it runs independently of the compiler. Running it without the permission flag fails before opening the listening socket.
+The routes return a greeting, `ok`, `144`, and a 404. Stop the server with Ctrl-C. The example has separate implementation and acceptance-test files. Its HTTP host is a small sequential localhost demonstration, not a production web framework.
 
-The router is ordinary Keel:
+## What can I write today?
 
 ```text
-pub fn route(path: read Text) -> Text {
-    if path == "/health" {
-        return http.response(200, "ok\n")
+pub fn unique(values: read List<Int>) -> List<Int> {
+    var output = []
+    for value in values {
+        if !list.contains(output, value) {
+            list.push(edit output, value)
+        }
     }
-    return http.response(404, "not found\n")
+    return output
 }
 
-fn main() effects { net.listen } {
-    http.serve(8080, route)
-}
-
-test "health returns ok" {
-    let response = route("/health")
-    assert http.status(response) == 200
-    assert http.body(response) == "ok\n"
+test "keeps first occurrences" {
+    assert unique([4, 2, 4, 1, 2]) == [4, 2, 1]
 }
 ```
 
-The HTTP adapter is a bounded, sequential demonstration host: localhost only, GET requests, a 16 KiB request-header buffer, two-second socket timeouts, and one response per connection. It is not a production web framework. There is no TLS, request body API, async scheduling, authentication, or graceful shutdown protocol.
+Implemented: functions, checked 64-bit integers, Bool/Text, owned `List<Int>`, `Option<Int>`, `Result<Int, Text>`, exhaustive matching, restricted `read`/`edit`/`take` ownership, effects, executable contracts, holes, native property tests, shrinking/replay, and a reference evaluator.
 
-## Agent development loop
+The collection/result types are built-in specializations. General records/unions/generics, structured concurrency, capability simulation, Cranelift, and declaration-level incremental compilation remain open work. Native builds currently use generated C plus the installed system compiler. [Language reference →](docs/agent-language.md) · [Collection/error examples →](docs/features.md) · [Architecture →](docs/architecture.md)
 
-```sh
-# Small source bundle, signatures, dependencies, callers, effects, and holes.
-./target/release/keel inspect examples/web_server.keel --symbol route --json
-
-# Static checks produce source-linked diagnostics.
-./target/release/keel check examples/web_server.keel --json
-
-# Deterministic boundary-first integer properties; isolated test workers.
-./target/release/keel test examples/web_server.keel --cases 1000 --seed 42 --json
-
-# Emit the readable intermediate C alongside a native executable.
-./target/release/keel build examples/web_server.keel -o build/server --emit-c build/server.c
-```
-
-Structural edits consume JSON and replace one function body. Copy the revision from `inspect` into a request file:
-
-```json
-{
-  "base_revision": "COPY_THE_INSPECT_REVISION_HERE",
-  "target": "fn:is_fresh",
-  "operation": "replace_body",
-  "source": "{\n    return now < deadline\n}",
-  "run": "affected_checks_and_tests"
-}
-```
-
-Then, on a copy of the deliberately broken example:
+## Contribute and evaluate
 
 ```sh
-mkdir -p build
-cp examples/counterexample.keel build/cache.keel
-./target/release/keel inspect build/cache.keel --symbol is_fresh --json
-# Save the request above as build/fix.json with the returned revision.
-./target/release/keel edit build/cache.keel --request build/fix.json --json
-./target/release/keel review build/cache.keel --against examples/counterexample.keel --json
-```
-
-The edit is checked before writing. With `affected_checks_and_tests`, v0 conservatively runs **all** tests. A stale revision, invalid replacement, failed/blocked test, or timeout prevents the write. The operation cannot replace signatures, contracts, or tests; ordinary filesystem access is outside this protection. Comments outside the replaced body are preserved exactly. The new body retains the supplied layout; canonical formatting is not implemented yet.
-
-Other useful examples:
-
-```sh
-./target/release/keel run examples/ownership.keel --allow-stdout
-./target/release/keel test examples/holes.keel --json
-./target/release/keel test examples/counterexample.keel --json
-```
-
-The last two intentionally exit nonzero: one reports a `BLOCKED` test at a typed hole; the other reports the deadline counterexample. Replay a generated failure using its test name and input:
-
-```sh
-./target/release/keel test examples/counterexample.keel \
-  --filter "expired values are never fresh" --value 0 --json
-```
-
-`explain FILE --offset N` shows the surrounding source at a diagnostic's UTF-8 byte offset. It is source context, not an execution trace.
-
-## What works
-
-| Area | Implemented in v0 |
-| --- | --- |
-| Syntax | Functions, explicit signatures, `let`/`var`, `if`/`else`, `while`, return, assertions, comments |
-| Types | Signed 64-bit `Int`, `Bool`, immutable owned `Text`, `Unit`; local inference |
-| Arithmetic | Checked overflow, checked division/remainder, defined left-to-right evaluation, short-circuit Boolean operators |
-| Ownership | Explicit `take`, call-scoped `read`, explicit cloning, move checking, branch joins, conservative loop checks, deterministic cleanup |
-| Effects | Transitive declared-effect checks, pure contracts, runtime network/stdout permission gates |
-| Tests | Native examples and bounded integer properties, seeded replay, counterexample shrinking, per-test process/time isolation |
-| Contracts | Runtime `requires` and `ensures`; never used as optimizer assumptions |
-| Agent tools | `inspect`, `edit`, `check`, `test`, `explain`, `review`, with JSON output |
-| Backend | Rust frontend → C11 → installed native compiler; no interpreter in the executable |
-
-Not implemented: records/unions, `Option`/`Result`, collections/generics, `edit` borrows, closures, modules/packages, Cranelift, incremental compilation, canonical formatting, capability objects, stateful simulation, formal proofs, full traces, or memory-budget enforcement. No claim is made that Keel beats existing languages or meets the original latency targets.
-
-## Verification
-
-```sh
-cargo test --locked
+cargo test --locked --all-targets
 cargo fmt --check
 cargo clippy --locked --all-targets -- -D warnings
+python3 -m unittest discover -s benchmarks -p 'test_*.py'
+python3 -m unittest discover -s scripts/tests -p 'test_*.py'
 ```
 
-Tests cover rejected programs, ownership and effects, native integer semantics against a Rust reference, runtime contracts, hole blocking, shrinking/replay, test timeouts, structural edit rollback, real HTTP requests and permission denial, and text lifetimes under native sanitizers. See [docs/validation.md](docs/validation.md) for the recorded validation and its limits.
+GitHub Actions runs compiler, native/sanitizer, CLI, HTTP, tooling, installer, and benchmark-methodology tests on Linux/macOS. CI also exercises installation and retains compiled CLI archives plus validation reports. It does not run paid agent evaluations or publish releases automatically.
 
-The crate uses pinned Serde/JSON dependencies and `Cargo.lock`. If those crates are already cached, add `--offline` to Cargo commands. Generated application binaries do not link Rust, Serde, the compiler, or the test generator.
+[Benchmark instructions](benchmarks/README.md) separate native/iteration timings from real-agent evaluation. Missing billing, comparable baseline tooling, or independent acceptance evidence remains `UNKNOWN`; faster scripted edits do not prove lower cost per accepted agent change. [Release-readiness audit →](docs/release-gaps.md)
+
+The [recorded pilot](benchmarks/results/README.md) does **not** establish the proposed 25% agent-cost advantage: all 12 repairs passed behavioral assertions but exceeded the registered token budget. Keel's protocol condition used more reported tokens than the improved C baseline. [Validation coverage →](docs/validation.md)
