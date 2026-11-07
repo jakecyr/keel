@@ -1,0 +1,11 @@
+test "average validates and truncates" {
+    assert average([80, 90, 100]) == option.some(90)
+    assert average([0, 1]) == option.some(0)
+    assert average([]) == option.none()
+    assert average([-1, 50]) == option.none()
+    assert average([101]) == option.none()
+}
+test "counts scores at or above threshold" {
+    assert passing_count([80, 90, 100], 90) == 2
+    assert passing_count([], 0) == 0
+}

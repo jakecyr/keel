@@ -1,0 +1,8 @@
+fn main() effects { io.stdout } {
+    let scores = [80, 90, 100]
+    match average(scores) {
+        Some(value) => { io.println(text.from_int(value)) }
+        None => { io.println("Invalid scores") }
+    }
+    io.println(text.from_int(passing_count(scores, 90)))
+}

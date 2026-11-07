@@ -1,0 +1,18 @@
+// Scores are integer percentages. An empty or invalid set has no average.
+pub fn average(scores: read List<Int>) -> Option<Int> {
+    if list.len(scores) == 0 || list.len(scores) > 10000 { return option.none() }
+    var total = 0
+    for score in scores {
+        if score < 0 || score > 100 { return option.none() }
+        total = total + score
+    }
+    return option.some(total / list.len(scores))
+}
+
+pub fn passing_count(scores: read List<Int>, threshold: Int) -> Int {
+    var count = 0
+    for score in scores {
+        if score >= threshold { count = count + 1 }
+    }
+    return count
+}

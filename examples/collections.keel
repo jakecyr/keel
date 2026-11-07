@@ -1,9 +1,9 @@
 // Stable deduplication uses an explicit owned output buffer.
 // Membership is a linear scan: O(n^2) worst case, no hidden hash table.
 pub fn stable_unique(values: read List<Int>) -> List<Int>
-    ensures distinct(result)
-    ensures same_values(result, values)
-    ensures first_occurrence_order(result, values)
+ensures distinct(result)
+ensures same_values(result, values)
+ensures first_occurrence_order(result, values)
 {
     var output = []
     for value in values {

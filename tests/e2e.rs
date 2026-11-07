@@ -906,6 +906,8 @@ fn all_application_examples_check_test_both_engines_and_build_offline() {
         ("web", true),
         ("http_app", true),
         ("catalog_api", true),
+        ("gradebook", true),
+        ("inventory", true),
         ("jev", true),
         ("evolving_arena", true),
         ("jev_pong", true),
@@ -917,6 +919,10 @@ fn all_application_examples_check_test_both_engines_and_build_offline() {
     for (index, (project, has_tests)) in projects.iter().enumerate() {
         let path = root.join(project);
         let path = path.to_str().unwrap();
+        let formatted = work.json(&["fmt", path, "--check", "--json"], true);
+        assert_eq!(formatted["status"], "FORMATTED", "{project}: {formatted}");
+        let linted = work.json(&["lint", path, "--deny-warnings", "--json"], true);
+        assert_eq!(linted["status"], "LINTED", "{project}: {linted}");
         let checked = work.json(&["check", path, "--json"], true);
         assert_eq!(checked["status"], "CHECKED", "{project}: {checked}");
         // Some worker manifests deliberately contain no tests; build them, but

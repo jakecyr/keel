@@ -1,0 +1,15 @@
+// Quantities are indexed by product ID. Invalid IDs or negative quantities fail.
+pub fn restock(stock: edit List<Int>, id: Int, quantity: Int) -> Bool {
+    if id < 0 || id >= list.len(stock) || quantity < 0 || quantity > 1000000 { return false }
+    let current = list.at(stock, id)
+    if current < 0 || current > 1000000 - quantity { return false }
+    list.set(edit stock, id, current + quantity)
+    return true
+}
+pub fn sell(stock: edit List<Int>, id: Int, quantity: Int) -> Bool {
+    if id < 0 || id >= list.len(stock) || quantity < 0 { return false }
+    let current = list.at(stock, id)
+    if current < quantity { return false }
+    list.set(edit stock, id, current - quantity)
+    return true
+}

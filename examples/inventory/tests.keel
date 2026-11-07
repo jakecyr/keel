@@ -1,0 +1,16 @@
+test "sales and restocks update only the selected item" {
+    var stock = [5, 2, 0]
+    assert sell(edit stock, 0, 2)
+    assert restock(edit stock, 2, 10)
+    assert stock == [3, 2, 10]
+}
+test "invalid operations leave stock unchanged" {
+    var stock = [5, 1000000]
+    assert !sell(edit stock, 0, 6)
+    assert !sell(edit stock, -1, 1)
+    assert !sell(edit stock, 0, -1)
+    assert !restock(edit stock, 1, 1)
+    assert !restock(edit stock, 2, 1)
+    assert !restock(edit stock, 0, -1)
+    assert stock == [5, 1000000]
+}

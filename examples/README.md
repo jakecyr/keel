@@ -5,6 +5,8 @@ Start with the README in each directory for build commands and scoped permission
 
 | Example | What it demonstrates |
 | --- | --- |
+| [Gradebook](gradebook/README.md) | Validate scores, compute an integer average, and count passing grades. |
+| [Inventory](inventory/README.md) | Update stock through exclusive borrows and reject invalid transactions. |
 | [Catalog API](catalog_api/README.md) | Request headers/query validation, bounded JSON arrays, checked integer discounts, and JSON replacement. |
 | [HTTP app](http_app/README.md) | A native Keel server serving HTML, CSS, JavaScript, binary assets, and JSON API endpoints on one origin. |
 | [Evolving arena](evolving_arena/README.md) | Two players propose new Keel ability code, validate it, and activate it between rounds; native game/server/worker orchestration with offline and OpenAI modes. |
@@ -22,7 +24,7 @@ Native/reference test agreement is sampled evidence, not formal proof or an
 agent-efficiency benchmark. See [release gaps](../docs/release-gaps.md).
 
 The public CLI regression `all_application_examples_check_test_both_engines_and_build_offline`
-checks/builds every application project and worker manifest and tests application
+checks formatting and lint, then checks/builds every application project and worker manifest and tests application
 logic in both engines. `holes.keel` intentionally reports BLOCKED and
 `counterexample.keel` intentionally reports FAILED; they teach diagnostics and
 must not be changed to pass. Long-running hosts and live integrations have separate

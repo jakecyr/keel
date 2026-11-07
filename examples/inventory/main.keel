@@ -1,0 +1,6 @@
+fn main() effects { io.stdout } {
+    var stock = [5, 2, 0]
+    if sell(edit stock, 0, 2) { io.println("Sale recorded") }
+    if restock(edit stock, 2, 10) { io.println("Stock received") }
+    for quantity in stock { io.println(text.from_int(quantity)) }
+}
