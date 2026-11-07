@@ -72,6 +72,24 @@ jobs:
           archive="keel-${{ runner.os }}-${{ runner.arch }}.tar.gz"
           tar -czf "build/ci-reports/$archive" -C target/release keel
           (cd build/ci-reports && shasum -a 256 "$archive" > "$archive.sha256")
+      - name: Validate a freshly generated project
+        shell: bash
+        run: |
+          set -euo pipefail
+          keel="$PWD/target/release/keel"
+          "$keel" fmt examples/hello --check
+          "$keel" lint examples/hello --deny-warnings
+          "$keel" check examples/hello
+          "$keel" test examples/hello --engine both
+          "$keel" build examples/hello -o build/hello-example
+          "$keel" init "$RUNNER_TEMP/keel-starter"
+          cd "$RUNNER_TEMP/keel-starter"
+          "$keel" fmt --check
+          "$keel" lint --deny-warnings
+          "$keel" check
+          "$keel" test --engine both
+          "$keel" build -o build/hello
+          test "$(./build/hello --allow-stdout)" = 'Hello from Keel!'
       - name: Release CLI example project validation
         run: |
           ./target/release/keel check examples/web_server.keel --json
@@ -133,8 +151,13 @@ jobs:
               assert (assets / (name + '.sha256')).is_file(), name
           PY
           (cd release-assets && sha256sum -c -- *.sha256)
-          gh release create "$RELEASE_TAG" release-assets/*.tar.gz release-assets/*.sha256 \
-            --verify-tag --latest --title "Keel $RELEASE_TAG (experimental)" --notes-file docs/release-notes.md
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release-assets/*.tar.gz release-assets/*.sha256
+            gh release edit "$RELEASE_TAG" --draft=false --latest
+          else
+            gh release create "$RELEASE_TAG" release-assets/*.tar.gz release-assets/*.sha256 \
+              --verify-tag --latest --title "Keel $RELEASE_TAG (experimental)" --notes-file docs/release-notes.md
+          fi
   install-release:
     needs: release
     strategy:

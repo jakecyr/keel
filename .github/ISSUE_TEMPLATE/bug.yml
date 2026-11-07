@@ -1,0 +1,47 @@
+{
+  "name": "Bug report",
+  "description": "Report incorrect behavior",
+  "body": [
+    {
+      "type": "textarea",
+      "id": "problem",
+      "attributes": {
+        "label": "Problem and impact",
+        "description": "Include the affected compiler, runtime, tooling, or documentation component."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "reproduction",
+      "attributes": {
+        "label": "Reproduction or use case",
+        "description": "Minimal Keel code, exact commands, expected versus actual behavior and diagnostics. For proposals, label syntax as unimplemented and describe the workaround."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "environment",
+      "attributes": {
+        "label": "Version and environment",
+        "description": "Keel version or commit, OS/architecture, Rust and C compiler versions."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "evidence",
+      "attributes": {
+        "label": "Evidence and acceptance criteria",
+        "description": "Related issues/source/tests; for performance include workload, raw timings and environment. Distinguish suspicion from measurement. Remove secrets."
+      }
+    }
+  ]
+}

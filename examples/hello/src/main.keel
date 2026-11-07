@@ -1,0 +1,7 @@
+pub fn greet() -> Text {
+    return "Hello from Keel!"
+}
+
+fn main() effects { io.stdout } {
+    io.println(greet())
+}
