@@ -1,6 +1,27 @@
 use super::*;
 use std::net::UdpSocket;
 
+// Fresh native fixtures can encounter Linux ETXTBSY under parallel fork/exec.
+// Retry only failed starts; preserve output and never retry a failing exit status.
+trait FixtureCommand {
+    fn fixture_output(&mut self) -> std::io::Result<std::process::Output>;
+    fn fixture_status(&mut self) -> std::io::Result<std::process::ExitStatus>;
+}
+impl FixtureCommand for Command {
+    fn fixture_output(&mut self) -> std::io::Result<std::process::Output> {
+        process::retry_executable_busy(
+            || self.output(),
+            std::time::Instant::now() + Duration::from_millis(250),
+        )
+    }
+    fn fixture_status(&mut self) -> std::io::Result<std::process::ExitStatus> {
+        process::retry_executable_busy(
+            || self.status(),
+            std::time::Instant::now() + Duration::from_millis(250),
+        )
+    }
+}
+
 const STANDARD: &str = include_str!("../examples/stdlib.keel");
 #[test]
 fn standard_library_native_and_reference() {
@@ -74,7 +95,7 @@ fn standard_library_under_sanitizers() {
         .arg("-o")
         .arg(&binary);
     native_libraries(&mut compiler, &analysis).unwrap();
-    let output = compiler.output().unwrap();
+    let output = compiler.fixture_output().unwrap();
     assert!(
         output.status.success(),
         "{}",
@@ -99,13 +120,13 @@ fn files_environment_permissions_and_utf8() {
         "fn main() effects {{ fs.read }} {{ match fs.read_text({path_literal}) {{ Ok(s)=>{{assert s==\"hello 😀\"}} Err(e)=>{{assert false}} }} }}"
     );
     let binary = application(&source, &temp);
-    let denied = Command::new(&binary).output().unwrap();
+    let denied = Command::new(&binary).fixture_output().unwrap();
     assert!(!denied.status.success());
     assert!(String::from_utf8_lossy(&denied.stderr).contains("permission_denied_fs"));
     assert!(
         Command::new(&binary)
             .arg(format!("--allow-read={}", path.display()))
-            .status()
+            .fixture_status()
             .unwrap()
             .success()
     );
@@ -113,7 +134,7 @@ fn files_environment_permissions_and_utf8() {
     assert!(
         !Command::new(&binary)
             .arg(format!("--allow-read={}", path.display()))
-            .output()
+            .fixture_output()
             .unwrap()
             .status
             .success()
@@ -123,7 +144,7 @@ fn files_environment_permissions_and_utf8() {
     assert!(
         !Command::new(&binary)
             .arg(format!("--allow-read={}", path.display()))
-            .output()
+            .fixture_output()
             .unwrap()
             .status
             .success()
@@ -136,14 +157,14 @@ fn files_environment_permissions_and_utf8() {
         Command::new(&binary)
             .arg("--allow-env=KEEL_STD_TEST")
             .env("KEEL_STD_TEST", "present")
-            .status()
+            .fixture_status()
             .unwrap()
             .success()
     );
     assert!(
         !Command::new(&binary)
             .env("KEEL_STD_TEST", "present")
-            .output()
+            .fixture_output()
             .unwrap()
             .status
             .success()
@@ -170,11 +191,17 @@ fn tcp_and_udp_loopback_exchange() {
         ),
         &temp,
     );
-    assert!(!Command::new(&binary).output().unwrap().status.success());
+    assert!(
+        !Command::new(&binary)
+            .fixture_output()
+            .unwrap()
+            .status
+            .success()
+    );
     assert!(
         Command::new(&binary)
             .arg(format!("--allow-connect=tcp://127.0.0.1:{port}"))
-            .status()
+            .fixture_status()
             .unwrap()
             .success()
     );
@@ -199,7 +226,7 @@ fn tcp_and_udp_loopback_exchange() {
     assert!(
         Command::new(&binary)
             .arg(format!("--allow-connect=udp://127.0.0.1:{port}"))
-            .status()
+            .fixture_status()
             .unwrap()
             .success()
     );
@@ -250,7 +277,7 @@ fn http_json_loopback_status_auth_and_no_redirect() {
     );
     let output = Command::new(&binary)
         .arg(format!("--allow-connect=http://127.0.0.1:{port}"))
-        .output()
+        .fixture_output()
         .unwrap();
     assert!(
         output.status.success(),
@@ -312,7 +339,7 @@ fn websocket_capability_and_loopback() {
     let mut compiler = Command::new("cc");
     compiler.arg(&probe).arg("-o").arg(&binary);
     native_libraries(&mut compiler, &analysis).unwrap();
-    assert!(compiler.status().unwrap().success());
+    assert!(compiler.fixture_status().unwrap().success());
     let probe_result = process::capture(&mut Command::new(&binary), 2_000, 0).unwrap();
     assert!(
         !probe_result.timed_out,
@@ -363,7 +390,7 @@ fn websocket_capability_and_loopback() {
     );
     let output = Command::new(binary)
         .arg(format!("--allow-connect=ws://127.0.0.1:{port}"))
-        .output()
+        .fixture_output()
         .unwrap();
     assert!(server.wait().unwrap().success());
     assert!(
