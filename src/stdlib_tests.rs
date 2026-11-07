@@ -313,7 +313,12 @@ fn websocket_capability_and_loopback() {
     compiler.arg(&probe).arg("-o").arg(&binary);
     native_libraries(&mut compiler, &analysis).unwrap();
     assert!(compiler.status().unwrap().success());
-    if !Command::new(&binary).status().unwrap().success() {
+    let probe_result = process::capture(&mut Command::new(&binary), 2_000, 0).unwrap();
+    assert!(
+        !probe_result.timed_out,
+        "WebSocket capability probe timed out"
+    );
+    if !probe_result.status.success() {
         assert!(
             env::var_os("KEEL_REQUIRE_WEBSOCKET_TEST").is_none(),
             "WebSocket wire coverage required, but libcurl lacks ws or is older than 8.16"
@@ -323,11 +328,14 @@ fn websocket_capability_and_loopback() {
             &temp,
         );
         assert!(
-            Command::new(app)
-                .arg("--allow-connect=ws://127.0.0.1:1")
-                .status()
-                .unwrap()
-                .success()
+            process::capture(
+                Command::new(app).arg("--allow-connect=ws://127.0.0.1:1"),
+                2_000,
+                0,
+            )
+            .unwrap()
+            .status
+            .success()
         );
         eprintln!(
             "WebSocket wire test unavailable: host libcurl lacks ws or is older than 8.16; recoverable unsupported path tested."
