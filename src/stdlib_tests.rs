@@ -1,27 +1,6 @@
 use super::*;
 use std::net::UdpSocket;
 
-// Fresh native fixtures can encounter Linux ETXTBSY under parallel fork/exec.
-// Retry only failed starts; preserve output and never retry a failing exit status.
-trait FixtureCommand {
-    fn fixture_output(&mut self) -> std::io::Result<std::process::Output>;
-    fn fixture_status(&mut self) -> std::io::Result<std::process::ExitStatus>;
-}
-impl FixtureCommand for Command {
-    fn fixture_output(&mut self) -> std::io::Result<std::process::Output> {
-        process::retry_executable_busy(
-            || self.output(),
-            std::time::Instant::now() + Duration::from_millis(250),
-        )
-    }
-    fn fixture_status(&mut self) -> std::io::Result<std::process::ExitStatus> {
-        process::retry_executable_busy(
-            || self.status(),
-            std::time::Instant::now() + Duration::from_millis(250),
-        )
-    }
-}
-
 const STANDARD: &str = include_str!("../examples/stdlib.keel");
 #[test]
 fn standard_library_native_and_reference() {

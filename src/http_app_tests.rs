@@ -62,7 +62,7 @@ fn main() effects {{net.listen,fs.read}} {{http.serve_app(0,bad_root(),route)}}"
     let temp = Temp::new().unwrap();
     let binary = temp.0.join("arguments");
     compile(&p, &a, false, &binary, None).unwrap();
-    let output = Command::new(binary).output().unwrap();
+    let output = Command::new(binary).fixture_output().unwrap();
     let native: Value = serde_json::from_slice(&output.stderr).unwrap();
     // Normal tests cannot invoke effects. Parse directly to exercise the
     // reference engine's argument evaluation before its host-effect rejection.
@@ -176,7 +176,7 @@ fn static_assets_and_json_endpoints_under_sanitizers() {
         .arg(cpath)
         .arg("-o")
         .arg(&binary)
-        .output()
+        .fixture_output()
         .unwrap();
     assert!(
         compiled.status.success(),
@@ -191,7 +191,7 @@ fn static_assets_and_json_endpoints_under_sanitizers() {
         let output = Command::new(&binary)
             .args(args)
             .current_dir(&temp.0)
-            .output()
+            .fixture_output()
             .unwrap();
         assert!(!output.status.success());
         assert!(String::from_utf8_lossy(&output.stderr).contains(expected));
@@ -204,7 +204,7 @@ fn static_assets_and_json_endpoints_under_sanitizers() {
             .env("ASAN_OPTIONS", "detect_leaks=0")
             .stdout(Stdio::null())
             .stderr(fs::File::create(&errors).unwrap())
-            .spawn()
+            .fixture_spawn()
             .unwrap(),
     );
     let deadline = Instant::now() + Duration::from_secs(5);
@@ -360,7 +360,7 @@ fn main() effects {{net.connect}} {{
     });
     let output = Command::new(binary)
         .arg(format!("--allow-connect=http://127.0.0.1:{port}"))
-        .output()
+        .fixture_output()
         .unwrap();
     assert!(
         output.status.success(),
@@ -386,7 +386,7 @@ fn sanitized_server(source: &str, temp: &Temp) -> PathBuf {
         .arg(cpath)
         .arg("-o")
         .arg(&binary)
-        .output()
+        .fixture_output()
         .unwrap();
     assert!(
         output.status.success(),
@@ -419,7 +419,7 @@ fn start_server(binary: &Path, port: u16, temp: &Temp) -> ObservedServer {
             .env("ASAN_OPTIONS", "detect_leaks=0")
             .stdout(Stdio::null())
             .stderr(fs::File::create(&errors).unwrap())
-            .spawn()
+            .fixture_spawn()
             .unwrap(),
     );
     let deadline = Instant::now() + Duration::from_secs(5);
@@ -482,7 +482,7 @@ fn catalog_example_real_http_and_adversarial_requests_under_sanitizers() {
         include_str!("../examples/catalog_api/routes.keel")
     );
     let binary = sanitized_server(&source, &temp);
-    let denied = Command::new(&binary).output().unwrap();
+    let denied = Command::new(&binary).fixture_output().unwrap();
     assert!(String::from_utf8_lossy(&denied.stderr).contains("permission_denied_net"));
     drop(listener);
     let _child = start_server(&binary, port, &temp);
@@ -604,7 +604,7 @@ int main(void) {
         .arg(cpath)
         .arg("-o")
         .arg(&binary)
-        .output()
+        .fixture_output()
         .unwrap();
     assert!(
         output.status.success(),

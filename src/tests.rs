@@ -1,4 +1,32 @@
 use super::*;
+// Fresh native fixtures can encounter Linux ETXTBSY under parallel fork/exec.
+// Retry only failed starts; preserve output and never retry a failing exit status.
+trait FixtureCommand {
+    fn fixture_output(&mut self) -> std::io::Result<std::process::Output>;
+    fn fixture_status(&mut self) -> std::io::Result<std::process::ExitStatus>;
+    fn fixture_spawn(&mut self) -> std::io::Result<std::process::Child>;
+}
+impl FixtureCommand for Command {
+    fn fixture_spawn(&mut self) -> std::io::Result<std::process::Child> {
+        process::retry_executable_busy(
+            || self.spawn(),
+            std::time::Instant::now() + Duration::from_millis(250),
+        )
+    }
+    fn fixture_output(&mut self) -> std::io::Result<std::process::Output> {
+        process::retry_executable_busy(
+            || self.output(),
+            std::time::Instant::now() + Duration::from_millis(250),
+        )
+    }
+    fn fixture_status(&mut self) -> std::io::Result<std::process::ExitStatus> {
+        process::retry_executable_busy(
+            || self.status(),
+            std::time::Instant::now() + Duration::from_millis(250),
+        )
+    }
+}
+
 #[path = "feature_tests.rs"]
 mod feature_tests;
 #[path = "http_app_tests.rs"]
