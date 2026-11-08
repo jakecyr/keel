@@ -38,7 +38,7 @@ jobs:
       - name: Check browser script
         run: node --check site/app.js
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: build/site
   deploy:
