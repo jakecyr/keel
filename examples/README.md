@@ -29,3 +29,9 @@ logic in both engines. `holes.keel` intentionally reports BLOCKED and
 `counterexample.keel` intentionally reports FAILED; they teach diagnostics and
 must not be changed to pass. Long-running hosts and live integrations have separate
 offline socket/process fixtures; building them does not run a paid service.
+
+## Generated starter
+
+[Hello Keel](hello/README.md) is the output of `keel init examples/hello`.
+CI formats, lints, checks, tests, and builds it, and separately validates a fresh
+project generated from the current compiler.

@@ -153,3 +153,10 @@ documentation; for measurements, link the raw evidence and methodology.
 
 Review your diff for unrelated changes, generated build output, and secrets before
 submitting. Keep release publishing separate from an ordinary contribution.
+
+## PR titles and releases
+
+Use Conventional Commit titles (`fix(cli): clarify diagnostics`, `feat: add a command`,
+`feat!: change syntax`). CI checks the title. Maintainers squash merge using that
+title and wait for every required check. See [release workflow](docs/releases.md)
+for version rules, credential setup, and tested binary publishing.

@@ -10,6 +10,8 @@ test:
 	cargo test --locked --all-targets
 	python3 -m unittest discover -s benchmarks -p 'test_*.py'
 	python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+	python3 -m unittest discover -s examples/evolving_arena -p 'test_*.py'
+	python3 -m unittest discover -s examples/jev_pong -p 'test_*.py'
 	cargo run --locked -- test examples/web_server.keel --cases 1000 --seed 42
 	cargo run --locked -- test examples/ownership.keel
 	cargo run --locked -- test examples/web --engine both --cases 1000 --seed 42

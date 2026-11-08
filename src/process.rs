@@ -19,7 +19,7 @@ pub struct Output {
 // Linux then rejects a freshly published executable with ETXTBSY until that
 // unrelated child execs. Retry only this pre-execution error, never test failures.
 // See https://github.com/rust-lang/rust/issues/114554.
-fn retry_executable_busy<T>(
+pub(crate) fn retry_executable_busy<T>(
     mut spawn: impl FnMut() -> io::Result<T>,
     deadline: Instant,
 ) -> io::Result<T> {

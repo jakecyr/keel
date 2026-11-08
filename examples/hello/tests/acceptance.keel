@@ -1,0 +1,3 @@
+test "greeting" {
+    assert greet() == "Hello from Keel!"
+}
