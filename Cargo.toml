@@ -1,6 +1,6 @@
 [package]
 name = "keel"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "An experimental agent-oriented language and native development protocol"
 license = "MIT"
